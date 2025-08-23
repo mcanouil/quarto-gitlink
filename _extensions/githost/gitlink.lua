@@ -144,9 +144,9 @@ end
 --- @param key string The metadata key to retrieve
 --- @return string|nil The metadata value as a string, or nil if not found
 local function get_metadata_value(meta, key)
-  -- Check for the nested structure: extensions.githost.key
-  if meta['extensions'] and meta['extensions']['githost'] and meta['extensions']['githost'][key] then
-    return pandoc.utils.stringify(meta['extensions']['githost'][key])
+  -- Check for the nested structure: extensions.gitlink.key
+  if meta['extensions'] and meta['extensions']['gitlink'] and meta['extensions']['gitlink'][key] then
+    return pandoc.utils.stringify(meta['extensions']['gitlink'][key])
   end
 
   return nil
@@ -432,7 +432,7 @@ end
 --- Attempts to convert string elements into Git hosting links by trying different patterns
 --- @param elem pandoc.Str The string element to process
 --- @return pandoc.Str|pandoc.Link The original element or a Git hosting link
-function process_githost(elem)
+function process_gitlink(elem)
   if not platform or not base_url or is_empty(platform) then
     return elem
   end
@@ -465,6 +465,6 @@ end
 return {
   { Pandoc = get_references },
   { Meta = get_repository },
-  { Str = process_githost },
+  { Str = process_gitlink },
   { Cite = process_mentions }
 }

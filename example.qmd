@@ -6,13 +6,13 @@ format:
     output-file: index
 # Extension configuration
 filters:
-  - path: githost
+  - path: gitlink
     at: post-quarto
 extensions:
-  githost:
+  gitlink:
     platform: github
     base-url: https://github.com
-    repository-name: mcanouil/quarto-githost
+    repository-name: mcanouil/quarto-gitlink
 ---
 
 ## GitHub Examples
@@ -21,18 +21,18 @@ Configure for GitHub (default):
 
 ```yaml
 extensions:
-  githost:
+  gitlink:
     platform: github
     base-url: https://github.com
-    repository-name: mcanouil/quarto-githost
+    repository-name: mcanouil/quarto-gitlink
 ```
 
 Reference issues and pull requests:
 
 - Simple issue reference: #1
-- Cross-repository issue: mcanouil/quarto-githost#1
+- Cross-repository issue: mcanouil/quarto-gitlink#1
 - Commit reference: cb0350d0316d1c420508338d02e56f5c8f907226
-- Cross-repository commit: mcanouil/quarto-githost@cb0350d0316d1c420508338d02e56f5c8f907226
+- Cross-repository commit: mcanouil/quarto-gitlink@cb0350d0316d1c420508338d02e56f5c8f907226
 - User mention: @mcanouil
 - GitHub-style issue: GH-1
 
@@ -42,7 +42,7 @@ Configure for GitLab by changing the platform:
 
 ```yaml
 extensions:
-  githost:
+  gitlink:
     platform: gitlab
     base-url: https://gitlab.com
     repository-name: group/project
@@ -64,7 +64,7 @@ Configure for Codeberg by changing the platform:
 
 ```yaml
 extensions:
-  githost:
+  gitlink:
     platform: codeberg
     base-url: https://codeberg.org
     repository-name: owner/repo
@@ -85,7 +85,7 @@ Configure for Gitea:
 
 ```yaml
 extensions:
-  githost:
+  gitlink:
     platform: gitea
     base-url: https://gitea.com
     repository-name: owner/repo
@@ -107,7 +107,7 @@ Configure for Bitbucket by changing the platform:
 
 ```yaml
 extensions:
-  githost:
+  gitlink:
     platform: bitbucket
     base-url: https://bitbucket.org
     repository-name: workspace/repo
@@ -177,7 +177,7 @@ The `base-url` setting allows you to use self-hosted instances:
 
 ```yaml
 extensions:
-  githost:
+  gitlink:
     platform: gitlab
     base-url: https://gitlab.example.com
     repository-name: group/project
@@ -201,7 +201,7 @@ The extension can auto-detect the platform from the base URL:
 
 ```yaml
 extensions:
-  githost:
+  gitlink:
     base-url: https://gitlab.example.com
     repository-name: group/project
     # platform will be auto-detected as 'gitlab'
