@@ -22,9 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ]]
 
---- @type boolean Flag to track if deprecation warning has been shown
-local deprecation_warning_shown = false
-
 --- @type string The platform type (github, gitlab, codeberg, gitea, bitbucket)
 local platform = "github"
 
@@ -142,29 +139,14 @@ local function create_link(text, uri)
   return nil
 end
 
---- Extract metadata value from document meta, supporting both new nested structure and deprecated top-level keys
+--- Extract metadata value from document meta using nested structure
 --- @param meta table The document metadata table
 --- @param key string The metadata key to retrieve
 --- @return string|nil The metadata value as a string, or nil if not found
 local function get_metadata_value(meta, key)
-  -- Check for the new nested structure first: extensions.githost.key
+  -- Check for the nested structure: extensions.githost.key
   if meta['extensions'] and meta['extensions']['githost'] and meta['extensions']['githost'][key] then
     return pandoc.utils.stringify(meta['extensions']['githost'][key])
-  end
-
-  -- Check for deprecated top-level key and warn
-  if meta[key] then
-    if not deprecation_warning_shown then
-      quarto.log.warning(
-        "Using '" .. key .. "' directly in metadata is deprecated. " ..
-        "Please use the following structure instead:\n" ..
-        "extensions:\n" ..
-        "  githost:\n" ..
-        "    " .. key .. ": value"
-      )
-      deprecation_warning_shown = true
-    end
-    return pandoc.utils.stringify(meta[key])
   end
 
   return nil
@@ -189,7 +171,7 @@ function get_repository(meta)
 
   -- Set platform
   if not is_empty(meta_platform) then
-    platform = meta_platform:lower() --[[@as string]]
+    platform = (meta_platform --[[@as string]]):lower()
   else
     platform = "github" -- default platform
   end
