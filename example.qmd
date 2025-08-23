@@ -1,5 +1,5 @@
 ---
-title: "{{{EXTENSION}}}"
+title: "{githost}"
 subtitle: "Quarto Extension"
 format:
   html:
