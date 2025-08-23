@@ -1,7 +1,9 @@
 ---
 title: "Git Hosting Platform for Quarto"
 subtitle: "Quarto Extension"
-format: html
+format:
+  html:
+    output-file: index
 # Extension configuration
 filters:
   - path: githost
