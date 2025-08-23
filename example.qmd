@@ -1,57 +1,213 @@
 ---
-title: "{githost}"
+title: "Git Hosting Platform for Quarto"
 subtitle: "Quarto Extension"
-format:
-  html:
-    output-file: index
-  typst:
-    output-file: example-typst
-    papersize: a4
-    margin:
-      x: 2.5cm
-      y: 2.5cm
-  pdf-xelatex:
-    output-file: example-xelatex
-    papersize: a4
-    margin:
-      x: 2.5cm
-      y: 2.5cm
-  pdf-lualatex:
-    output-file: example-lualatex
-    pdf-engine: lualatex
-    papersize: a4
-    margin:
-      x: 2.5cm
-      y: 2.5cm
-  pdf-pdflatex:
-    output-file: example-pdflatex
-    pdf-engine: lualatex
-    papersize: a4
-    margin:
-      x: 2.5cm
-      y: 2.5cm
-  revealjs:
-    output-file: example-revealjs
-    shift-heading-level-by: -1
-  beamer:
-    output-file: example-beamer
-    aspectratio: 169
-  docx:
-    output-file: example-docx
-  pptx:
-    output-file: example-pptx
-format-links:
-  - html
-  - typst
-  - format: pdf-xelatex
-    text: "PDF (XeLaTeX)"
-  - format: pdf-lualatex
-    text: "PDF (LuaLaTeX)"
-  - format: pdf-pdflatex
-    text: "PDF (PDFLaTeX)"
-  - revealjs
-  - beamer
-  - docx
-  - pptx
-embed-resources: true
+format: html
+# Extension configuration
+filters:
+  - path: githost
+    at: post-quarto
+extensions:
+  githost:
+    platform: github
+    base-url: https://github.com
+    repository-name: mcanouil/quarto-githost
 ---
+
+## GitHub Examples
+
+Configure for GitHub (default):
+
+```yaml
+extensions:
+  githost:
+    platform: github
+    base-url: https://github.com
+    repository-name: mcanouil/quarto-githost
+```
+
+Reference issues and pull requests:
+
+- Simple issue reference: #1
+- Cross-repository issue: mcanouil/quarto-githost#1
+- Commit reference: cb0350d0316d1c420508338d02e56f5c8f907226
+- Cross-repository commit: mcanouil/quarto-githost@cb0350d0316d1c420508338d02e56f5c8f907226
+- User mention: @mcanouil
+- GitHub-style issue: GH-1
+
+## GitLab Examples
+
+Configure for GitLab by changing the platform:
+
+```yaml
+extensions:
+  githost:
+    platform: gitlab
+    base-url: https://gitlab.com
+    repository-name: group/project
+```
+
+Then you can use:
+
+- Issue reference: `#123`
+- Merge request: `!456`
+- Cross-repository issue: `group/project#123`
+- Cross-repository merge request: `group/project!456`
+- Commit reference: `a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890`
+- Cross-repository commit: `group/project@a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890`
+- User mention: `@username`
+
+## Codeberg Examples
+
+Configure for Codeberg by changing the platform:
+
+```yaml
+extensions:
+  githost:
+    platform: codeberg
+    base-url: https://codeberg.org
+    repository-name: owner/repo
+```
+
+Then you can use:
+
+- Issue reference: `#123`
+- Pull request reference: `#456` (same as issue in Codeberg/Forgejo)
+- Cross-repository issue: `owner/repo#123`
+- Commit reference: `a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890`
+- Cross-repository commit: `owner/repo@a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890`
+- User mention: `@username`
+
+## Gitea Examples
+
+Configure for Gitea:
+
+```yaml
+extensions:
+  githost:
+    platform: gitea
+    base-url: https://gitea.com
+    repository-name: owner/repo
+```
+
+Then you can use:
+
+- Issue reference: `#123`
+- Pull request reference: `!456`
+- Cross-repository issue: `owner/repo#123`
+- Cross-repository pull request: `owner/repo!456`
+- Commit reference: `a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890`
+- Cross-repository commit: `owner/repo@a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890`
+- User mention: `@username`
+
+## Bitbucket Examples
+
+Configure for Bitbucket by changing the platform:
+
+```yaml
+extensions:
+  githost:
+    platform: bitbucket
+    base-url: https://bitbucket.org
+    repository-name: workspace/repo
+```
+
+Then you can use:
+
+- Issue reference: `#123`
+- Pull request reference: `#456` (same as issue in Bitbucket)
+- Cross-repository issue: `workspace/repo#123`
+- Commit reference: `a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890`
+- Cross-repository commit: `workspace/repo@a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890`
+- User mention: `@username`
+
+## URL Processing
+
+The extension automatically processes full URLs and converts them to short references:
+
+**Input:** `https://github.com/owner/repo/issues/123`.
+
+**Output:** `owner/repo#123` (or `#123` if it's the current repository).
+
+## Platform-Specific Features
+
+### GitHub
+
+- Supports `GH-123` format for issues
+- Pull requests use same format as issues (`#123`)
+
+### GitLab
+
+- Merge requests use `!123` format
+- Issues use `#123` format
+- URLs include `/-/` in path
+
+### Codeberg/Forgejo
+
+- Pull requests and issues both use `#123` format
+- Based on Forgejo/Gitea architecture
+
+### Gitea
+
+- Issues use `#123` format
+- Pull requests use `!123` format
+- Supports both internal and external issue trackers
+
+### Bitbucket
+
+- Issues and pull requests both use `#123` format
+- Pull request URLs use `/pull-requests/` path
+
+## Configuration Options
+
+### Platform Detection
+
+The extension automatically detects the platform based on the `platform` setting:
+
+- `github` - GitHub (default)
+- `gitlab` - GitLab
+- `codeberg` - Codeberg
+- `gitea` - Gitea
+- `bitbucket` - Bitbucket
+
+### Base URL
+
+The `base-url` setting allows you to use self-hosted instances:
+
+```yaml
+extensions:
+  githost:
+    platform: gitlab
+    base-url: https://gitlab.example.com
+    repository-name: group/project
+```
+
+### Repository Name
+
+The `repository-name` setting is used for relative references. If not provided, the extension will attempt to detect it from the Git remote:
+
+```bash
+git remote get-url origin
+```
+
+- Commit: `9ba12248`
+- Cross-repository commit: `group/project@9ba12248`
+- User mention: `@username`
+
+## Platform Detection
+
+The extension can auto-detect the platform from the base URL:
+
+```yaml
+extensions:
+  githost:
+    base-url: https://gitlab.example.com
+    repository-name: group/project
+    # platform will be auto-detected as 'gitlab'
+```
+
+Supported platform detection:
+- `github.com` → github
+- `gitlab.com` or any `gitlab.*` → gitlab  
+- `codeberg.org` → codeberg
+- `gitea.com` or any `gitea.*` → gitea
+- `bitbucket.org` → bitbucket
