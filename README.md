@@ -1,11 +1,11 @@
-# Githost Extension For Quarto
+# Gitlink Extension For Quarto
 
 A Quarto extension that automatically converts Git hosting platform references (issues, pull requests, commits, users) into clickable links. Supports **GitHub**, **GitLab**, **Codeberg**, **Gitea**, and **Bitbucket**.
 
 ## Installation
 
 ```bash
-quarto add mcanouil/quarto-githost
+quarto add mcanouil/quarto-gitlink
 ```
 
 This will install the extension under the `_extensions` subdirectory.
@@ -21,9 +21,9 @@ Add the extension to your document's YAML front matter:
 ---
 title: "My Document"
 filters:
-  - githost
+  - gitlink
 extensions:
-  githost:
+  gitlink:
     platform: github              # Platform: github, gitlab, codeberg, gitea, bitbucket
     base-url: https://github.com   # Base URL (optional, auto-detected from platform)
     repository-name: owner/repo    # Repository name for relative references
@@ -36,7 +36,7 @@ extensions:
 
 ```yaml
 extensions:
-  githost:
+  gitlink:
     platform: github
     base-url: https://github.com
     repository-name: owner/repo
@@ -52,7 +52,7 @@ extensions:
 
 ```yaml
 extensions:
-  githost:
+  gitlink:
     platform: gitlab
     base-url: https://gitlab.com
     repository-name: group/project
@@ -69,7 +69,7 @@ extensions:
 
 ```yaml
 extensions:
-  githost:
+  gitlink:
     platform: codeberg
     base-url: https://codeberg.org
     repository-name: user/repo
@@ -85,7 +85,7 @@ extensions:
 
 ```yaml
 extensions:
-  githost:
+  gitlink:
     platform: gitea
     base-url: https://gitea.com
     repository-name: user/repo
@@ -102,7 +102,7 @@ extensions:
 
 ```yaml
 extensions:
-  githost:
+  gitlink:
     platform: bitbucket
     base-url: https://bitbucket.org
     repository-name: workspace/repo
