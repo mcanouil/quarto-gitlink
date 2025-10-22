@@ -22,6 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ]]
 
+--- Load utils and git modules
+local utils_path = quarto.utils.resolve_path("utils.lua")
+local utils = require(utils_path)
+local git_path = quarto.utils.resolve_path("git.lua")
+local git = require(git_path)
+
 --- @type string The platform type (github, gitlab, codeberg, gitea, bitbucket)
 local platform = "github"
 
@@ -113,44 +119,7 @@ local platform_configs = {
   }
 }
 
---- Check if a string is empty or nil
---- @param s string|nil The string to check
---- @return boolean true if the string is nil or empty
-local function is_empty(s)
-  return s == nil or s == ''
-end
 
---- Escape special pattern characters in a string
---- @param s string The string to escape
---- @return string The escaped string
-local function escape_pattern(s)
-  local escaped = s:gsub("([%^%$%(%)%%%.%[%]%*%+%-%?])", "%%%1")
-  return escaped
-end
-
---- Create a Git hosting URI link element
---- @param text string|nil The link text
---- @param uri string|nil The URI to link to
---- @return pandoc.Link|nil A Pandoc Link element or nil if text or uri is empty
-local function create_link(text, uri)
-  if not is_empty(uri) and not is_empty(text) then
-    return pandoc.Link({pandoc.Str(text --[[@as string]])}, uri --[[@as string]])
-  end
-  return nil
-end
-
---- Extract metadata value from document meta using nested structure
---- @param meta table The document metadata table
---- @param key string The metadata key to retrieve
---- @return string|nil The metadata value as a string, or nil if not found
-local function get_metadata_value(meta, key)
-  -- Check for the nested structure: extensions.gitlink.key
-  if meta['extensions'] and meta['extensions']['gitlink'] and meta['extensions']['gitlink'][key] then
-    return pandoc.utils.stringify(meta['extensions']['gitlink'][key])
-  end
-
-  return nil
-end
 
 --- Get platform configuration
 --- @param platform_name string The platform name
@@ -165,12 +134,12 @@ end
 --- @param meta table The document metadata table
 --- @return table The metadata table (unchanged)
 function get_repository(meta)
-  local meta_platform = get_metadata_value(meta, 'platform')
-  local meta_base_url = get_metadata_value(meta, 'base-url')
-  local meta_repository = get_metadata_value(meta, 'repository-name')
+  local meta_platform = utils.get_metadata_value(meta, 'gitlink', 'platform')
+  local meta_base_url = utils.get_metadata_value(meta, 'gitlink', 'base-url')
+  local meta_repository = utils.get_metadata_value(meta, 'gitlink', 'repository-name')
 
   -- Set platform
-  if not is_empty(meta_platform) then
+  if not utils.is_empty(meta_platform) then
     platform = (meta_platform --[[@as string]]):lower()
   else
     platform = "github" -- default platform
@@ -184,31 +153,15 @@ function get_repository(meta)
   end
 
   -- Set base URL
-  if not is_empty(meta_base_url) then
+  if not utils.is_empty(meta_base_url) then
     base_url = meta_base_url --[[@as string]]
   else
     base_url = config.default_url
   end
 
   -- Get repository name
-  if is_empty(meta_repository) then
-    local is_windows = package.config:sub(1, 1) == "\\"
-    local remote_repository_command
-    
-    if is_windows then
-      remote_repository_command = "(git remote get-url origin) -replace '.*[:/](.+?)(\\.git)?$', '$1'"
-    else
-      remote_repository_command = "git remote get-url origin 2>/dev/null | sed -E 's|.*[:/]([^/]+/[^/.]+)(\\.git)?$|\\1|'"
-    end
-
-    local handle = io.popen(remote_repository_command)
-    if handle then
-      local git_repo = handle:read("*a"):gsub("%s+$", "")
-      handle:close()
-      if not is_empty(git_repo) then
-        meta_repository = git_repo
-      end
-    end
+  if utils.is_empty(meta_repository) then
+    meta_repository = git.get_repository()
   end
 
   repository_name = meta_repository
@@ -245,7 +198,7 @@ function process_mentions(cite)
       if username then
         local url_format = config.url_formats.user
         local uri = base_url .. url_format:gsub("{username}", username)
-        local link = create_link(mention_text, uri)
+        local link = utils.create_link(mention_text, uri)
         return link or cite
       end
     end
@@ -310,7 +263,7 @@ function process_issues_and_mrs(elem)
 
   -- Try URL pattern matching
   if not number then
-    local escaped_base_url = escape_pattern(base_url)
+    local escaped_base_url = utils.escape_pattern(base_url)
     local url_pattern_issue = "^" .. escaped_base_url .. "/([^/]+/[^/]+)/[^/]+issues?[^/]*/(%d+)$"
     local url_pattern_mr = "^" .. escaped_base_url .. "/([^/]+/[^/]+)/[^/]*merge[_%-]?requests?[^/]*/(%d+)$"
     local url_pattern_pull = "^" .. escaped_base_url .. "/([^/]+/[^/]+)/[^/]*pulls?[^/]*/(%d+)$"
@@ -354,7 +307,7 @@ function process_issues_and_mrs(elem)
 
     if url_format then
       local uri = base_url .. url_format:gsub("{repo}", repo):gsub("{number}", number)
-      return create_link(short_link, uri)
+      return utils.create_link(short_link, uri)
     end
   end
 
@@ -405,7 +358,7 @@ function process_commits(elem)
 
   -- Try URL pattern matching
   if not commit_sha then
-    local escaped_base_url = escape_pattern(base_url)
+    local escaped_base_url = utils.escape_pattern(base_url)
     local url_pattern = "^" .. escaped_base_url .. "/([^/]+/[^/]+)/[^/]*commits?[^/]*/(%x+)$"
     if text:match(url_pattern) then
       repo, commit_sha = text:match(url_pattern)
@@ -422,7 +375,7 @@ function process_commits(elem)
   if commit_sha and repo and commit_sha:len() >= 7 then
     local url_format = config.url_formats.commit
     local uri = base_url .. url_format:gsub("{repo}", repo):gsub("{sha}", commit_sha)
-    return create_link(short_link, uri)
+    return utils.create_link(short_link, uri)
   end
 
   return nil
