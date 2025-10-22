@@ -23,9 +23,9 @@ SOFTWARE.
 ]]
 
 --- Load utils and git modules
-local utils_path = quarto.utils.resolve_path("utils.lua")
+local utils_path = quarto.utils.resolve_path("_modules/utils.lua")
 local utils = require(utils_path)
-local git_path = quarto.utils.resolve_path("git.lua")
+local git_path = quarto.utils.resolve_path("_modules/git.lua")
 local git = require(git_path)
 
 --- @type string The platform type (github, gitlab, codeberg, gitea, bitbucket)
