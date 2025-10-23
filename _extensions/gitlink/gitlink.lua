@@ -26,10 +26,8 @@
 local EXTENSION_NAME = "gitlink"
 
 --- Load utils and git modules
-local utils_path = quarto.utils.resolve_path("_modules/utils.lua")
-local utils = require(utils_path)
-local git_path = quarto.utils.resolve_path("_modules/git.lua")
-local git = require(git_path)
+local utils = require(quarto.utils.resolve_path("_modules/utils.lua"):gsub("%.lua$", ""))
+local git = require(quarto.utils.resolve_path("_modules/git.lua"):gsub("%.lua$", ""))
 
 --- @type string The platform type (github, gitlab, codeberg, gitea, bitbucket)
 local platform = "github"
