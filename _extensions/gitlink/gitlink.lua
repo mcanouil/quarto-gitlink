@@ -22,6 +22,9 @@
 # SOFTWARE.
 ]]
 
+--- Extension name constant
+local EXTENSION_NAME = "gitlink"
+
 --- Load utils and git modules
 local utils_path = quarto.utils.resolve_path("_modules/utils.lua")
 local utils = require(utils_path)
@@ -157,8 +160,9 @@ local function get_repository(meta)
   -- Get platform configuration
   local config = get_platform_config(platform)
   if not config then
-    quarto.log.error(
-      "[gitlink] Unsupported platform: '" .. platform ..
+    utils.log_error(
+      EXTENSION_NAME,
+      "Unsupported platform: '" .. platform ..
       "'. Supported platforms are: github, gitlab, codeberg, gitea, bitbucket."
     )
     return meta
