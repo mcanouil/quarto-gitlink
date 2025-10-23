@@ -1,25 +1,25 @@
 --[[
-MIT License
-
-Copyright (c) 2025 Mickaël Canouil
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+# MIT License
+#
+# Copyright (c) 2025 Mickaël Canouil
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 ]]
 
 --- Load utils and git modules
@@ -40,13 +40,22 @@ local base_url = "https://github.com"
 --- @type table<string, boolean> Set of reference IDs from the document
 local references_ids_set = {}
 
+--- @type integer Full length of a git commit SHA
+local COMMIT_SHA_FULL_LENGTH = 40
+
+--- @type integer Short length for displaying commit SHA
+local COMMIT_SHA_SHORT_LENGTH = 7
+
+--- @type integer Minimum length for a valid git commit SHA
+local COMMIT_SHA_MIN_LENGTH = 7
+
 --- @type table Platform-specific configuration
 local platform_configs = {
   github = {
     default_url = "https://github.com",
     patterns = {
       issue = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)", "GH%-(%d+)" },
-      merge_request = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" }, -- Same as issue for GitHub
+      merge_request = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },          -- Same as issue for GitHub
       commit = { "^(%x+)$", "([^/]+/[^/@]+)@(%x+)", "(%w+)@(%x+)" }, -- Use %x for hexadecimal
       user = "@([%w%-%.]+)"
     },
@@ -76,7 +85,7 @@ local platform_configs = {
     default_url = "https://codeberg.org",
     patterns = {
       issue = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },
-      merge_request = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" }, -- Same as issue for Codeberg/Forgejo
+      merge_request = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },          -- Same as issue for Codeberg/Forgejo
       commit = { "^(%x+)$", "([^/]+/[^/@]+)@(%x+)", "(%w+)@(%x+)" }, -- Use %x for hexadecimal
       user = "@([%w%-%.]+)"
     },
@@ -106,7 +115,7 @@ local platform_configs = {
     default_url = "https://bitbucket.org",
     patterns = {
       issue = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },
-      merge_request = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" }, -- Same as issue for Bitbucket
+      merge_request = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },          -- Same as issue for Bitbucket
       commit = { "^(%x+)$", "([^/]+/[^/@]+)@(%x+)", "(%w+)@(%x+)" }, -- Use %x for hexadecimal
       user = "@([%w%-%.]+)"
     },
@@ -133,7 +142,7 @@ end
 --- or by querying the git remote origin URL
 --- @param meta table The document metadata table
 --- @return table The metadata table (unchanged)
-function get_repository(meta)
+local function get_repository(meta)
   local meta_platform = utils.get_metadata_value(meta, 'gitlink', 'platform')
   local meta_base_url = utils.get_metadata_value(meta, 'gitlink', 'base-url')
   local meta_repository = utils.get_metadata_value(meta, 'gitlink', 'repository-name')
@@ -148,7 +157,10 @@ function get_repository(meta)
   -- Get platform configuration
   local config = get_platform_config(platform)
   if not config then
-    quarto.log.error("Unsupported platform: " .. platform)
+    quarto.log.error(
+      "[gitlink] Unsupported platform: '" .. platform ..
+      "'. Supported platforms are: github, gitlab, codeberg, gitea, bitbucket."
+    )
     return meta
   end
 
@@ -173,7 +185,7 @@ end
 --- between actual citations and Git hosting mentions
 --- @param doc pandoc.Pandoc The Pandoc document
 --- @return pandoc.Pandoc The document (unchanged)
-function get_references(doc)
+local function get_references(doc)
   local references = pandoc.utils.references(doc)
   for _, reference in ipairs(references) do
     if reference.id then
@@ -187,7 +199,7 @@ end
 --- Distinguishes between actual bibliography citations and Git hosting @mentions
 --- @param cite pandoc.Cite The citation element
 --- @return pandoc.Cite|pandoc.Link The original citation or a Git hosting mention link
-function process_mentions(cite)
+local function process_mentions(cite)
   if references_ids_set[cite.citations[1].id] then
     return cite
   else
@@ -209,7 +221,7 @@ end
 --- Process issues and merge requests
 --- @param elem pandoc.Str The string element to process
 --- @return pandoc.Link|nil A link or nil if no valid pattern found
-function process_issues_and_mrs(elem)
+local function process_issues_and_mrs(elem)
   local config = get_platform_config(platform)
   if not config then
     return nil
@@ -317,7 +329,7 @@ end
 --- Process commit references
 --- @param elem pandoc.Str The string element to process
 --- @return pandoc.Link|nil A commit link or nil if no valid pattern found
-function process_commits(elem)
+local function process_commits(elem)
   local config = get_platform_config(platform)
   if not config then
     return nil
@@ -330,26 +342,26 @@ function process_commits(elem)
 
   -- Try commit patterns
   for _, pattern in ipairs(config.patterns.commit) do
-    if pattern == "^(%x+)$" and text:match("^(%x+)$") and text:len() >= 7 and text:len() <= 40 then
+    if pattern == "^(%x+)$" and text:match("^(%x+)$") and text:len() >= COMMIT_SHA_MIN_LENGTH and text:len() <= COMMIT_SHA_FULL_LENGTH then
       -- Only match hexadecimal characters (valid for git SHA)
       commit_sha = text:match("^(%x+)$")
       repo = repository_name
-      short_link = commit_sha:sub(1, 7)
+      short_link = commit_sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
       break
     elseif pattern == "([^/]+/[^/@]+)@(%x+)" and text:match("^([^/]+/[^/@]+)@(%x+)$") then
       -- Only match hexadecimal characters for commit SHA
       repo, commit_sha = text:match("^([^/]+/[^/@]+)@(%x+)$")
-      short_link = repo .. "@" .. commit_sha:sub(1, 7)
+      short_link = repo .. "@" .. commit_sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
       break
     elseif pattern == "(%w+)@(%x+)" and text:match("^(%w+)@(%x+)$") then
       local user, sha = text:match("^(%w+)@(%x+)$")
-      if sha:len() >= 7 and sha:len() <= 40 and repository_name then
+      if sha:len() >= COMMIT_SHA_MIN_LENGTH and sha:len() <= COMMIT_SHA_FULL_LENGTH and repository_name then
         -- Extract repo name from repository_name for user-based commit reference
         local repo_part = repository_name:match("/(.+)")
         if repo_part then
           repo = user .. "/" .. repo_part
           commit_sha = sha
-          short_link = user .. "@" .. sha:sub(1, 7)
+          short_link = user .. "@" .. sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
           break
         end
       end
@@ -362,17 +374,17 @@ function process_commits(elem)
     local url_pattern = "^" .. escaped_base_url .. "/([^/]+/[^/]+)/[^/]*commits?[^/]*/(%x+)$"
     if text:match(url_pattern) then
       repo, commit_sha = text:match(url_pattern)
-      if commit_sha:len() >= 7 then -- Ensure it's a valid length SHA
+      if commit_sha:len() >= COMMIT_SHA_MIN_LENGTH then -- Ensure it's a valid length SHA
         if repo == repository_name then
-          short_link = commit_sha:sub(1, 7)
+          short_link = commit_sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
         else
-          short_link = repo .. "@" .. commit_sha:sub(1, 7)
+          short_link = repo .. "@" .. commit_sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
         end
       end
     end
   end
 
-  if commit_sha and repo and commit_sha:len() >= 7 then
+  if commit_sha and repo and commit_sha:len() >= COMMIT_SHA_MIN_LENGTH then
     local url_format = config.url_formats.commit
     local uri = base_url .. url_format:gsub("{repo}", repo):gsub("{sha}", commit_sha)
     return utils.create_link(short_link, uri)
@@ -385,7 +397,7 @@ end
 --- Attempts to convert string elements into Git hosting links by trying different patterns
 --- @param elem pandoc.Str The string element to process
 --- @return pandoc.Str|pandoc.Link The original element or a Git hosting link
-function process_gitlink(elem)
+local function process_gitlink(elem)
   if not platform or not base_url or is_empty(platform) then
     return elem
   end
