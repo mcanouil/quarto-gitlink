@@ -9,6 +9,7 @@ quarto add mcanouil/quarto-gitlink
 ```
 
 This will install the extension under the `_extensions` subdirectory.
+
 If you're using version control, you will want to check in this directory.
 
 ## Usage
@@ -30,7 +31,7 @@ extensions:
 ---
 ```
 
-### Supported Platforms & Reference Formats
+### Supported Platforms and Reference Formats
 
 #### GitHub
 
@@ -196,4 +197,8 @@ The fix is in: https://gitlab.com/group/project/-/commit/abc1234
 
 ## Example Document
 
-Here is the source code for a comprehensive example: [example.qmd](example.qmd)
+Here is the source code for a comprehensive example: [example.qmd](example.qmd).
+
+Output of `example.qmd`:
+
+- [HTML](https://m.canouil.dev/quarto-gitlink/)
