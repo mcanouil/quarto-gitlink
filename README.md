@@ -22,7 +22,8 @@ Add the extension to your document's YAML front matter:
 ---
 title: "My Document"
 filters:
-  - gitlink
+  - path: gitlink
+    at: post-quarto
 extensions:
   gitlink:
     platform: github              # Platform: github, gitlab, codeberg, gitea, bitbucket
@@ -30,6 +31,22 @@ extensions:
     repository-name: owner/repo    # Repository name for relative references
 ---
 ```
+
+- Old (<1.8.21):
+
+  ```yml
+  filters:
+    - quarto
+    - gitlink
+  ```
+
+- New (>=1.8.21):
+
+  ```yml
+  filters:
+    - path: gitlink
+      at: post-quarto
+  ```
 
 ### Supported Platforms and Reference Formats
 
