@@ -1,9 +1,14 @@
 ---
 title: "Git Hosting Platform for Quarto"
 subtitle: "Quarto Extension"
+author:
+  - name: "Mickaël CANOUIL, _Ph.D._"
+    orcid: "0000-0002-3396-4549"
+    url: "https://mickael.canouil.fr"
 format:
   html:
     output-file: index
+    toc: true
 # Extension configuration
 filters:
   - path: gitlink
@@ -15,7 +20,55 @@ extensions:
     repository-name: mcanouil/quarto-gitlink
 ---
 
-## GitHub Examples
+A Quarto extension that automatically converts Git hosting platform references (issues, pull requests, commits, users) into clickable links. Supports **GitHub**, **GitLab**, **Codeberg**, **Gitea**, and **Bitbucket**.
+
+## Installation
+
+```bash
+quarto add mcanouil/quarto-gitlink
+```
+
+This will install the extension under the `_extensions` subdirectory.
+
+If you're using version control, you will want to check in this directory.
+
+## Usage
+
+Add the extension to your document's YAML front matter:
+
+```yaml
+---
+title: "My Document"
+filters:
+  - path: gitlink
+    at: post-quarto
+extensions:
+  gitlink:
+    platform: github              # Platform: github, gitlab, codeberg, gitea, bitbucket
+    base-url: https://github.com   # Base URL (optional, auto-detected from platform)
+    repository-name: owner/repo    # Repository name for relative references
+---
+```
+
+- Old (<1.8.21):
+
+  ```yml
+  filters:
+    - quarto
+    - gitlink
+  ```
+
+- New (>=1.8.21):
+
+  ```yml
+  filters:
+    - path: gitlink
+      at: post-quarto
+  ```
+
+## Examples
+
+### GitHub Examples
 
 Configure for GitHub (default):
 
@@ -208,6 +261,7 @@ extensions:
 ```
 
 Supported platform detection:
+
 - `github.com` → github
 - `gitlab.com` or any `gitlab.*` → gitlab  
 - `codeberg.org` → codeberg

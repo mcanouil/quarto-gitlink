@@ -9,6 +9,7 @@ quarto add mcanouil/quarto-gitlink
 ```
 
 This will install the extension under the `_extensions` subdirectory.
+
 If you're using version control, you will want to check in this directory.
 
 ## Usage
@@ -21,7 +22,8 @@ Add the extension to your document's YAML front matter:
 ---
 title: "My Document"
 filters:
-  - gitlink
+  - path: gitlink
+    at: post-quarto
 extensions:
   gitlink:
     platform: github              # Platform: github, gitlab, codeberg, gitea, bitbucket
@@ -30,7 +32,23 @@ extensions:
 ---
 ```
 
-### Supported Platforms & Reference Formats
+- Old (<1.8.21):
+
+  ```yml
+  filters:
+    - quarto
+    - gitlink
+  ```
+
+- New (>=1.8.21):
+
+  ```yml
+  filters:
+    - path: gitlink
+      at: post-quarto
+  ```
+
+### Supported Platforms and Reference Formats
 
 #### GitHub
 
@@ -196,4 +214,8 @@ The fix is in: https://gitlab.com/group/project/-/commit/abc1234
 
 ## Example Document
 
-Here is the source code for a comprehensive example: [example.qmd](example.qmd)
+Here is the source code for a comprehensive example: [example.qmd](example.qmd).
+
+Output of `example.qmd`:
+
+- [HTML](https://m.canouil.dev/quarto-gitlink/)

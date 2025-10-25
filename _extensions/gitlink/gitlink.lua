@@ -1,26 +1,33 @@
 --[[
-MIT License
-
-Copyright (c) 2025 Mickaël Canouil
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+# MIT License
+#
+# Copyright (c) 2025 Mickaël Canouil
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 ]]
+
+--- Extension name constant
+local EXTENSION_NAME = "gitlink"
+
+--- Load utils and git modules
+local utils = require(quarto.utils.resolve_path("_modules/utils.lua"):gsub("%.lua$", ""))
+local git = require(quarto.utils.resolve_path("_modules/git.lua"):gsub("%.lua$", ""))
 
 --- @type string The platform type (github, gitlab, codeberg, gitea, bitbucket)
 local platform = "github"
@@ -34,13 +41,22 @@ local base_url = "https://github.com"
 --- @type table<string, boolean> Set of reference IDs from the document
 local references_ids_set = {}
 
+--- @type integer Full length of a git commit SHA
+local COMMIT_SHA_FULL_LENGTH = 40
+
+--- @type integer Short length for displaying commit SHA
+local COMMIT_SHA_SHORT_LENGTH = 7
+
+--- @type integer Minimum length for a valid git commit SHA
+local COMMIT_SHA_MIN_LENGTH = 7
+
 --- @type table Platform-specific configuration
 local platform_configs = {
   github = {
     default_url = "https://github.com",
     patterns = {
       issue = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)", "GH%-(%d+)" },
-      merge_request = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" }, -- Same as issue for GitHub
+      merge_request = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },          -- Same as issue for GitHub
       commit = { "^(%x+)$", "([^/]+/[^/@]+)@(%x+)", "(%w+)@(%x+)" }, -- Use %x for hexadecimal
       user = "@([%w%-%.]+)"
     },
@@ -70,7 +86,7 @@ local platform_configs = {
     default_url = "https://codeberg.org",
     patterns = {
       issue = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },
-      merge_request = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" }, -- Same as issue for Codeberg/Forgejo
+      merge_request = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },          -- Same as issue for Codeberg/Forgejo
       commit = { "^(%x+)$", "([^/]+/[^/@]+)@(%x+)", "(%w+)@(%x+)" }, -- Use %x for hexadecimal
       user = "@([%w%-%.]+)"
     },
@@ -100,7 +116,7 @@ local platform_configs = {
     default_url = "https://bitbucket.org",
     patterns = {
       issue = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },
-      merge_request = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" }, -- Same as issue for Bitbucket
+      merge_request = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },          -- Same as issue for Bitbucket
       commit = { "^(%x+)$", "([^/]+/[^/@]+)@(%x+)", "(%w+)@(%x+)" }, -- Use %x for hexadecimal
       user = "@([%w%-%.]+)"
     },
@@ -113,44 +129,7 @@ local platform_configs = {
   }
 }
 
---- Check if a string is empty or nil
---- @param s string|nil The string to check
---- @return boolean true if the string is nil or empty
-local function is_empty(s)
-  return s == nil or s == ''
-end
 
---- Escape special pattern characters in a string
---- @param s string The string to escape
---- @return string The escaped string
-local function escape_pattern(s)
-  local escaped = s:gsub("([%^%$%(%)%%%.%[%]%*%+%-%?])", "%%%1")
-  return escaped
-end
-
---- Create a Git hosting URI link element
---- @param text string|nil The link text
---- @param uri string|nil The URI to link to
---- @return pandoc.Link|nil A Pandoc Link element or nil if text or uri is empty
-local function create_link(text, uri)
-  if not is_empty(uri) and not is_empty(text) then
-    return pandoc.Link({pandoc.Str(text --[[@as string]])}, uri --[[@as string]])
-  end
-  return nil
-end
-
---- Extract metadata value from document meta using nested structure
---- @param meta table The document metadata table
---- @param key string The metadata key to retrieve
---- @return string|nil The metadata value as a string, or nil if not found
-local function get_metadata_value(meta, key)
-  -- Check for the nested structure: extensions.gitlink.key
-  if meta['extensions'] and meta['extensions']['gitlink'] and meta['extensions']['gitlink'][key] then
-    return pandoc.utils.stringify(meta['extensions']['gitlink'][key])
-  end
-
-  return nil
-end
 
 --- Get platform configuration
 --- @param platform_name string The platform name
@@ -164,13 +143,13 @@ end
 --- or by querying the git remote origin URL
 --- @param meta table The document metadata table
 --- @return table The metadata table (unchanged)
-function get_repository(meta)
-  local meta_platform = get_metadata_value(meta, 'platform')
-  local meta_base_url = get_metadata_value(meta, 'base-url')
-  local meta_repository = get_metadata_value(meta, 'repository-name')
+local function get_repository(meta)
+  local meta_platform = utils.get_metadata_value(meta, 'gitlink', 'platform')
+  local meta_base_url = utils.get_metadata_value(meta, 'gitlink', 'base-url')
+  local meta_repository = utils.get_metadata_value(meta, 'gitlink', 'repository-name')
 
   -- Set platform
-  if not is_empty(meta_platform) then
+  if not utils.is_empty(meta_platform) then
     platform = (meta_platform --[[@as string]]):lower()
   else
     platform = "github" -- default platform
@@ -179,36 +158,24 @@ function get_repository(meta)
   -- Get platform configuration
   local config = get_platform_config(platform)
   if not config then
-    quarto.log.error("Unsupported platform: " .. platform)
+    utils.log_error(
+      EXTENSION_NAME,
+      "Unsupported platform: '" .. platform ..
+      "'. Supported platforms are: github, gitlab, codeberg, gitea, bitbucket."
+    )
     return meta
   end
 
   -- Set base URL
-  if not is_empty(meta_base_url) then
+  if not utils.is_empty(meta_base_url) then
     base_url = meta_base_url --[[@as string]]
   else
     base_url = config.default_url
   end
 
   -- Get repository name
-  if is_empty(meta_repository) then
-    local is_windows = package.config:sub(1, 1) == "\\"
-    local remote_repository_command
-    
-    if is_windows then
-      remote_repository_command = "(git remote get-url origin) -replace '.*[:/](.+?)(\\.git)?$', '$1'"
-    else
-      remote_repository_command = "git remote get-url origin 2>/dev/null | sed -E 's|.*[:/]([^/]+/[^/.]+)(\\.git)?$|\\1|'"
-    end
-
-    local handle = io.popen(remote_repository_command)
-    if handle then
-      local git_repo = handle:read("*a"):gsub("%s+$", "")
-      handle:close()
-      if not is_empty(git_repo) then
-        meta_repository = git_repo
-      end
-    end
+  if utils.is_empty(meta_repository) then
+    meta_repository = git.get_repository()
   end
 
   repository_name = meta_repository
@@ -220,7 +187,7 @@ end
 --- between actual citations and Git hosting mentions
 --- @param doc pandoc.Pandoc The Pandoc document
 --- @return pandoc.Pandoc The document (unchanged)
-function get_references(doc)
+local function get_references(doc)
   local references = pandoc.utils.references(doc)
   for _, reference in ipairs(references) do
     if reference.id then
@@ -234,7 +201,7 @@ end
 --- Distinguishes between actual bibliography citations and Git hosting @mentions
 --- @param cite pandoc.Cite The citation element
 --- @return pandoc.Cite|pandoc.Link The original citation or a Git hosting mention link
-function process_mentions(cite)
+local function process_mentions(cite)
   if references_ids_set[cite.citations[1].id] then
     return cite
   else
@@ -245,7 +212,7 @@ function process_mentions(cite)
       if username then
         local url_format = config.url_formats.user
         local uri = base_url .. url_format:gsub("{username}", username)
-        local link = create_link(mention_text, uri)
+        local link = utils.create_link(mention_text, uri)
         return link or cite
       end
     end
@@ -256,7 +223,7 @@ end
 --- Process issues and merge requests
 --- @param elem pandoc.Str The string element to process
 --- @return pandoc.Link|nil A link or nil if no valid pattern found
-function process_issues_and_mrs(elem)
+local function process_issues_and_mrs(elem)
   local config = get_platform_config(platform)
   if not config then
     return nil
@@ -310,7 +277,7 @@ function process_issues_and_mrs(elem)
 
   -- Try URL pattern matching
   if not number then
-    local escaped_base_url = escape_pattern(base_url)
+    local escaped_base_url = utils.escape_pattern(base_url)
     local url_pattern_issue = "^" .. escaped_base_url .. "/([^/]+/[^/]+)/[^/]+issues?[^/]*/(%d+)$"
     local url_pattern_mr = "^" .. escaped_base_url .. "/([^/]+/[^/]+)/[^/]*merge[_%-]?requests?[^/]*/(%d+)$"
     local url_pattern_pull = "^" .. escaped_base_url .. "/([^/]+/[^/]+)/[^/]*pulls?[^/]*/(%d+)$"
@@ -354,7 +321,7 @@ function process_issues_and_mrs(elem)
 
     if url_format then
       local uri = base_url .. url_format:gsub("{repo}", repo):gsub("{number}", number)
-      return create_link(short_link, uri)
+      return utils.create_link(short_link, uri)
     end
   end
 
@@ -364,7 +331,7 @@ end
 --- Process commit references
 --- @param elem pandoc.Str The string element to process
 --- @return pandoc.Link|nil A commit link or nil if no valid pattern found
-function process_commits(elem)
+local function process_commits(elem)
   local config = get_platform_config(platform)
   if not config then
     return nil
@@ -377,26 +344,26 @@ function process_commits(elem)
 
   -- Try commit patterns
   for _, pattern in ipairs(config.patterns.commit) do
-    if pattern == "^(%x+)$" and text:match("^(%x+)$") and text:len() >= 7 and text:len() <= 40 then
+    if pattern == "^(%x+)$" and text:match("^(%x+)$") and text:len() >= COMMIT_SHA_MIN_LENGTH and text:len() <= COMMIT_SHA_FULL_LENGTH then
       -- Only match hexadecimal characters (valid for git SHA)
       commit_sha = text:match("^(%x+)$")
       repo = repository_name
-      short_link = commit_sha:sub(1, 7)
+      short_link = commit_sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
       break
     elseif pattern == "([^/]+/[^/@]+)@(%x+)" and text:match("^([^/]+/[^/@]+)@(%x+)$") then
       -- Only match hexadecimal characters for commit SHA
       repo, commit_sha = text:match("^([^/]+/[^/@]+)@(%x+)$")
-      short_link = repo .. "@" .. commit_sha:sub(1, 7)
+      short_link = repo .. "@" .. commit_sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
       break
     elseif pattern == "(%w+)@(%x+)" and text:match("^(%w+)@(%x+)$") then
       local user, sha = text:match("^(%w+)@(%x+)$")
-      if sha:len() >= 7 and sha:len() <= 40 and repository_name then
+      if sha:len() >= COMMIT_SHA_MIN_LENGTH and sha:len() <= COMMIT_SHA_FULL_LENGTH and repository_name then
         -- Extract repo name from repository_name for user-based commit reference
         local repo_part = repository_name:match("/(.+)")
         if repo_part then
           repo = user .. "/" .. repo_part
           commit_sha = sha
-          short_link = user .. "@" .. sha:sub(1, 7)
+          short_link = user .. "@" .. sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
           break
         end
       end
@@ -405,24 +372,24 @@ function process_commits(elem)
 
   -- Try URL pattern matching
   if not commit_sha then
-    local escaped_base_url = escape_pattern(base_url)
+    local escaped_base_url = utils.escape_pattern(base_url)
     local url_pattern = "^" .. escaped_base_url .. "/([^/]+/[^/]+)/[^/]*commits?[^/]*/(%x+)$"
     if text:match(url_pattern) then
       repo, commit_sha = text:match(url_pattern)
-      if commit_sha:len() >= 7 then -- Ensure it's a valid length SHA
+      if commit_sha:len() >= COMMIT_SHA_MIN_LENGTH then -- Ensure it's a valid length SHA
         if repo == repository_name then
-          short_link = commit_sha:sub(1, 7)
+          short_link = commit_sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
         else
-          short_link = repo .. "@" .. commit_sha:sub(1, 7)
+          short_link = repo .. "@" .. commit_sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
         end
       end
     end
   end
 
-  if commit_sha and repo and commit_sha:len() >= 7 then
+  if commit_sha and repo and commit_sha:len() >= COMMIT_SHA_MIN_LENGTH then
     local url_format = config.url_formats.commit
     local uri = base_url .. url_format:gsub("{repo}", repo):gsub("{sha}", commit_sha)
-    return create_link(short_link, uri)
+    return utils.create_link(short_link, uri)
   end
 
   return nil
@@ -432,7 +399,7 @@ end
 --- Attempts to convert string elements into Git hosting links by trying different patterns
 --- @param elem pandoc.Str The string element to process
 --- @return pandoc.Str|pandoc.Link The original element or a Git hosting link
-function process_gitlink(elem)
+local function process_gitlink(elem)
   if not platform or not base_url or is_empty(platform) then
     return elem
   end
