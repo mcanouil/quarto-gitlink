@@ -1,0 +1,21 @@
+---
+title: "Bitbucket Test"
+format: html
+filters:
+  - path: gitlink
+    at: post-quarto
+extensions:
+  gitlink:
+    platform: bitbucket
+    base-url: https://bitbucket.org
+    repository-name: atlassian/atlassian-connect-js
+---
+
+## Bitbucket References
+
+- Issue: issue #123
+- Pull request: pull request #456
+- Cross-repository issue: issue atlassian/atlassian-connect-js#123
+- Commit: 9c947a52234bf0cee9194277a8a93cc5acd115e9
+- Cross-repository commit: atlassian/atlassian-connect-js@9c947a52234bf0cee9194277a8a93cc5acd115e9
+- User mention: @atlassian

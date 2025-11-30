@@ -1,0 +1,22 @@
+---
+title: "Gitea Test"
+format: html
+filters:
+  - path: gitlink
+    at: post-quarto
+extensions:
+  gitlink:
+    platform: gitea
+    base-url: https://gitea.com
+    repository-name: gitea/blog
+---
+
+## Gitea References
+
+- Issue: #123
+- Pull request: #456
+- Cross-repository issue: gitea/blog#123
+- Cross-repository pull request: gitea/blog#456
+- Commit: 379b9974c422db1fcb229814d805f0a2e169a983
+- Cross-repository commit: gitea/blog@379b9974c422db1fcb229814d805f0a2e169a983
+- User mention: @gitea

@@ -1,0 +1,22 @@
+---
+title: "GitLab Test"
+format: html
+filters:
+  - path: gitlink
+    at: post-quarto
+extensions:
+  gitlink:
+    platform: gitlab
+    base-url: https://gitlab.com
+    repository-name: gitlab-org/gitlab
+---
+
+## GitLab References
+
+- Issue: #123
+- Merge request: !456
+- Cross-repository issue: gitlab-org/gitlab#123
+- Cross-repository merge request: gitlab-org/gitlab!456
+- Commit: 05dc96060954efb4e1ce31e08c7857f5d028b56f
+- Cross-repository commit: gitlab-org/gitlab@05dc96060954efb4e1ce31e08c7857f5d028b56f
+- User mention: @gitlab-org

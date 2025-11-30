@@ -25,9 +25,10 @@
 --- Extension name constant
 local EXTENSION_NAME = "gitlink"
 
---- Load utils and git modules
+--- Load utils, git, and bitbucket modules
 local utils = require(quarto.utils.resolve_path("_modules/utils.lua"):gsub("%.lua$", ""))
 local git = require(quarto.utils.resolve_path("_modules/git.lua"):gsub("%.lua$", ""))
+local bitbucket = require(quarto.utils.resolve_path("_modules/bitbucket.lua"):gsub("%.lua$", ""))
 
 --- @type string The platform type (github, gitlab, codeberg, gitea, bitbucket)
 local platform = "github"
@@ -116,7 +117,7 @@ local platform_configs = {
     default_url = "https://bitbucket.org",
     patterns = {
       issue = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },
-      merge_request = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },          -- Same as issue for Bitbucket
+      merge_request = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },
       commit = { "^(%x+)$", "([^/]+/[^/@]+)@(%x+)", "(%w+)@(%x+)" }, -- Use %x for hexadecimal
       user = "@([%w%-%.]+)"
     },
@@ -219,6 +220,7 @@ local function process_mentions(cite)
     return cite
   end
 end
+
 
 --- Process issues and merge requests
 --- @param elem pandoc.Str The string element to process
@@ -423,15 +425,27 @@ local function process_gitlink(elem)
   end
 end
 
+--- Process inline elements for Bitbucket multi-word patterns
+--- @param elem table Block element containing inline content
+--- @return table The modified element
+local function process_inlines(elem)
+  if elem.content and platform == "bitbucket" then
+    elem.content = bitbucket.process_inlines(elem.content, base_url, repository_name, utils)
+  end
+  return elem
+end
+
 --- Pandoc filter configuration
 --- Defines the order of filter execution:
 --- 1. Extract references from the document
 --- 2. Get repository information from metadata
---- 3. Process string elements for Git hosting patterns
---- 4. Process citations for Git hosting mentions
+--- 3. Process inline containers for Bitbucket multi-word patterns
+--- 4. Process string elements for Git hosting patterns
+--- 5. Process citations for Git hosting mentions
 return {
   { Pandoc = get_references },
   { Meta = get_repository },
+  { Plain = process_inlines, Para = process_inlines },
   { Str = process_gitlink },
   { Cite = process_mentions }
 }
