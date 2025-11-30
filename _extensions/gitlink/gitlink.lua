@@ -400,7 +400,7 @@ end
 --- @param elem pandoc.Str The string element to process
 --- @return pandoc.Str|pandoc.Link The original element or a Git hosting link
 local function process_gitlink(elem)
-  if not platform or not base_url or is_empty(platform) then
+  if not platform or not base_url or utils.is_empty(platform) then
     return elem
   end
 
