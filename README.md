@@ -52,6 +52,8 @@ extensions:
 
 #### GitHub
 
+Official documentation: [Autolinked references](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/autolinked-references-and-urls)
+
 ```yaml
 extensions:
   gitlink:
@@ -67,6 +69,8 @@ extensions:
 - Users: `@username`
 
 #### GitLab
+
+Official documentation: [GitLab Flavored Markdown](https://docs.gitlab.com/ee/user/markdown.html#gitlab-specific-references)
 
 ```yaml
 extensions:
@@ -85,6 +89,8 @@ extensions:
 
 #### Codeberg
 
+Official documentation: [Codeberg Documentation](https://docs.codeberg.org/) (uses Forgejo)
+
 ```yaml
 extensions:
   gitlink:
@@ -101,6 +107,8 @@ extensions:
 
 #### Gitea
 
+Official documentation: [Gitea Documentation](https://docs.gitea.com/usage/issues-prs/automatically-linked-references)
+
 ```yaml
 extensions:
   gitlink:
@@ -111,12 +119,13 @@ extensions:
 
 **References:**
 
-- Issues: `#123`, `user/repo#123`
-- Pull Requests: `!123`, `user/repo!123`
+- Issues/PRs: `#123`, `user/repo#123` (same format for both)
 - Commits: `e59ff077`, `user/repo@e59ff077`
 - Users: `@username`
 
 #### Bitbucket
+
+Official documentation: [Bitbucket markup syntax](https://support.atlassian.com/bitbucket-cloud/docs/markup-comments/)
 
 ```yaml
 extensions:
@@ -128,9 +137,14 @@ extensions:
 
 **References:**
 
-- Issues/PRs: `#123`, `workspace/repo#123` (same format for both)
+Bitbucket requires keyword prefixes:
+
+- Issues: `issue #123`, `issue workspace/repo#123`
+- Pull Requests: `pull request #456`, `pull request workspace/repo#456`
 - Commits: `9cc27f2`, `workspace/repo@9cc27f2`
 - Users: `@accountname`
+
+Note: The `issue` and `pull request` keywords are required to distinguish reference types.
 
 ### URL Processing
 
@@ -161,6 +175,7 @@ This works for most Git hosting platforms and extracts the `owner/repo` format f
 - Supports `GH-123` format for issues
 - Pull requests use same format as issues (`#123`)
 - Automatic 7-character SHA shortening for commits
+- Reference: [GitHub Autolinked references](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/autolinked-references-and-urls)
 
 #### GitLab Features
 
@@ -168,49 +183,31 @@ This works for most Git hosting platforms and extracts the `owner/repo` format f
 - Issues use `#123` format
 - URLs include `/-/` in the path structure
 - Full SHA support with automatic shortening
+- Reference: [GitLab Flavored Markdown](https://docs.gitlab.com/ee/user/markdown.html#gitlab-specific-references)
 
 #### Codeberg Features (Forgejo)
 
 - Issues and pull requests both use `#123` format
 - Follows Forgejo/Gitea conventions
 - Automatic reference linking in comments
+- Reference: [Codeberg Documentation](https://docs.codeberg.org/)
 
 #### Gitea Features
 
 - Issues use `#123` format
-- Pull requests use `!123` format (GitLab-style)
+- Pull requests use `#123` format (same as issues)
 - Supports both internal and external issue trackers
 - Actionable references (closes, fixes, etc.)
+- Reference: [Gitea Documentation](https://docs.gitea.com/usage/issues-prs/automatically-linked-references)
 
 #### Bitbucket Features
 
-- Issues and pull requests both use `#123` format
+- Issues require `issue #123` format (with "issue" keyword)
+- Pull requests require `pull request #456` format (with "pull request" keyword)
+- Cross-repository references: `issue workspace/repo#123` or `pull request workspace/repo#456`
 - Pull request URLs use `/pull-requests/` path
 - Workspace-based repository structure
-
-## Examples
-
-### Basic Usage
-
-```markdown
-See issue #123 for details.
-Commit a5c3785 fixes the bug.
-Thanks @contributor for the review!
-```
-
-### Cross-Repository References
-
-```markdown
-Related to mcanouil/quarto-github#45
-Implemented in microsoft/vscode@9ba12248
-```
-
-### Full URL Processing
-
-```markdown
-Check this issue: https://github.com/owner/repo/issues/123
-The fix is in: https://gitlab.com/group/project/-/commit/abc1234
-```
+- Follows [official Bitbucket markup syntax](https://support.atlassian.com/bitbucket-cloud/docs/markup-comments/)
 
 ## Example Document
 
