@@ -101,7 +101,7 @@ local platform_configs = {
     default_url = "https://gitea.com",
     patterns = {
       issue = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },
-      merge_request = { "!(%d+)", "([^/]+/[^/#]+)!(%d+)" },
+      merge_request = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },
       commit = { "^(%x+)$", "([^/]+/[^/@]+)@(%x+)", "(%w+)@(%x+)" }, -- Use %x for hexadecimal
       user = "@([%w%-%.]+)"
     },
