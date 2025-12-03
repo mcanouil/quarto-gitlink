@@ -2,6 +2,16 @@
 
 A Quarto extension that automatically converts Git hosting platform references (issues, pull requests, commits, users) into clickable links. Supports **GitHub**, **GitLab**, **Codeberg**, **Gitea**, and **Bitbucket**.
 
+## Features
+
+- **Automatic URL shortening**: Converts long URLs into short, readable references.
+- **Platform badges**: Displays subtle, always-visible platform badges in HTML output for improved accessibility.
+- **Platform tooltips**: Shows the platform name on hover in HTML output (accessible via `title` attribute).
+- **Platform labels**: Adds platform name in parentheses for non-HTML formats (PDF, DOCX, etc.).
+- **Multi-platform support**: Works with GitHub, GitLab, Codeberg, Gitea, and Bitbucket.
+- **Cross-repository references**: Link to issues, PRs, and commits in other repositories.
+- **User mentions**: Convert user profile URLs to `@username` format.
+
 ## Installation
 
 ```bash
@@ -26,7 +36,7 @@ filters:
     at: post-quarto
 extensions:
   gitlink:
-    platform: github              # Platform: github, gitlab, codeberg, gitea, bitbucket
+    platform: github               # Platform: github, gitlab, codeberg, gitea, bitbucket
     base-url: https://github.com   # Base URL (optional, auto-detected from platform)
     repository-name: owner/repo    # Repository name for relative references
 ---
@@ -144,11 +154,12 @@ Bitbucket requires keyword prefixes:
 - Commits: `9cc27f2`, `workspace/repo@9cc27f2`
 - Users: `@accountname`
 
-Note: The `issue` and `pull request` keywords are required to distinguish reference types.
+> [!NOTE]
+> The `issue` and `pull request` keywords are required to distinguish reference types.
 
 ### URL Processing
 
-The extension automatically processes full URLs and converts them to short references:
+The extension automatically processes full URLs and converts them to the appropriate short references:
 
 **Input:** `https://github.com/owner/repo/issues/123`
 
@@ -167,6 +178,33 @@ This works for most Git hosting platforms and extracts the `owner/repo` format f
 - `https://github.com/owner/repo.git`
 - `git@gitlab.com:group/project.git`
 - `ssh://git@codeberg.org/user/repo.git`
+
+### Platform Badges
+
+In HTML output, Gitlink adds subtle platform badges to links, making it easy to identify which platform a link references at a glance.
+
+Platform badges are:
+
+- Always visible (not just on hover).
+- Accessible to screen readers with proper ARIA labels.
+- Styled using Bootstrap for automatic theme compatibility.
+- Accompanied by tooltips with full platform names.
+
+You can control badge appearance using metadata options:
+
+```yaml
+extensions:
+  gitlink:
+    show-platform-badge: true      # Show/hide badges (default: true)
+    badge-position: "after"        # "after" or "before" link (default: "after")
+```
+
+**Configuration Options**:
+
+- `show-platform-badge` (boolean): Toggle badge visibility, default `true`.
+- `badge-position` (string): Badge placement relative to link, default `"after"`.
+
+In non-HTML formats, platform names appear in parentheses after the link text, such as `#123 (GitHub)`.
 
 ### Platform-Specific Features
 

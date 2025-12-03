@@ -44,7 +44,7 @@ filters:
     at: post-quarto
 extensions:
   gitlink:
-    platform: github              # Platform: github, gitlab, codeberg, gitea, bitbucket
+    platform: github               # Platform: github, gitlab, codeberg, gitea, bitbucket
     base-url: https://github.com   # Base URL (optional, auto-detected from platform)
     repository-name: owner/repo    # Repository name for relative references
 ---
@@ -68,7 +68,7 @@ extensions:
 
 ## Examples
 
-### GitHub Examples
+### GitHub
 
 Configure for GitHub (default):
 
@@ -89,7 +89,15 @@ Reference issues and pull requests:
 - User mention: @mcanouil
 - GitHub-style issue: GH-1
 
-## GitLab Examples
+Full URL examples (automatically shortened):
+
+- Issue URL: https://github.com/mcanouil/quarto-gitlink/issues/1
+- Pull request URL: https://github.com/mcanouil/quarto-gitlink/pull/10
+- Commit URL: https://github.com/mcanouil/quarto-gitlink/commit/cb0350d0316d1c420508338d02e56f5c8f907226
+- Cross-repository issue URL: https://github.com/quarto-dev/quarto-cli/issues/10000
+- User/organisation URL: https://github.com/mcanouil
+
+### GitLab
 
 Configure for GitLab by changing the platform:
 
@@ -111,7 +119,15 @@ Then you can use:
 - Cross-repository commit: `group/project@a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890`
 - User mention: `@username`
 
-## Codeberg Examples
+Full URL examples (automatically shortened):
+
+- Issue URL: https://gitlab.com/group/project/-/issues/123
+- Merge request URL: https://gitlab.com/group/project/-/merge_requests/456
+- Commit URL: https://gitlab.com/group/project/-/commit/a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890
+- Cross-repository issue URL: https://gitlab.com/other-group/other-project/-/issues/789
+- User/organisation URL: https://gitlab.com/username
+
+### Codeberg
 
 Configure for Codeberg by changing the platform:
 
@@ -132,7 +148,15 @@ Then you can use:
 - Cross-repository commit: `owner/repo@a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890`
 - User mention: `@username`
 
-## Gitea Examples
+Full URL examples (automatically shortened):
+
+- Issue URL: https://codeberg.org/owner/repo/issues/123
+- Pull request URL: https://codeberg.org/owner/repo/pulls/456
+- Commit URL: https://codeberg.org/owner/repo/commit/a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890
+- Cross-repository issue URL: https://codeberg.org/other-owner/other-repo/issues/789
+- User/organisation URL: https://codeberg.org/username
+
+### Gitea
 
 Configure for Gitea:
 
@@ -156,7 +180,15 @@ Then you can use:
 - Cross-repository commit: `owner/repo@a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890`
 - User mention: `@username`
 
-## Bitbucket Examples
+Full URL examples (automatically shortened):
+
+- Issue URL: https://gitea.com/owner/repo/issues/123
+- Pull request URL: https://gitea.com/owner/repo/pulls/456
+- Commit URL: https://gitea.com/owner/repo/commit/a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890
+- Cross-repository issue URL: https://gitea.com/other-owner/other-repo/issues/789
+- User/organisation URL: https://gitea.com/username
+
+### Bitbucket
 
 Configure for Bitbucket by changing the platform:
 
@@ -178,15 +210,19 @@ Bitbucket follows the [official markup syntax](https://support.atlassian.com/bit
 - Cross-repository commit: `workspace/repo@a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890`
 - User mention: `@username`
 
-Note: Unlike GitHub or GitLab, Bitbucket requires the `issue` or `pull request` prefix to distinguish between different reference types.
+Full URL examples (automatically shortened):
 
-## URL Processing
+- Issue URL: https://bitbucket.org/workspace/repo/issues/123
+- Pull request URL: https://bitbucket.org/workspace/repo/pull-requests/456
+- Commit URL: https://bitbucket.org/workspace/repo/commits/a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890
+- Cross-repository issue URL: https://bitbucket.org/other-workspace/other-repo/issues/789
+- User/organisation URL: https://bitbucket.org/username
 
-The extension automatically processes full URLs and converts them to short references:
+:::: {.callout-note}
 
-**Input:** `https://github.com/owner/repo/issues/123`.
+Unlike GitHub or GitLab, Bitbucket requires the `issue` or `pull request` prefix to distinguish between different reference types.
 
-**Output:** `owner/repo#123` (or `#123` if it's the current repository).
+:::
 
 ## Platform-Specific Features
 
@@ -250,7 +286,8 @@ extensions:
 
 ### Repository Name
 
-The `repository-name` setting is used for relative references. If not provided, the extension will attempt to detect it from the Git remote:
+The `repository-name` setting is used for relative references.
+If not provided, the extension will attempt to detect it from the Git remote:
 
 ```bash
 git remote get-url origin
@@ -259,6 +296,39 @@ git remote get-url origin
 - Commit: `9ba12248`
 - Cross-repository commit: `group/project@9ba12248`
 - User mention: `@username`
+
+### Platform Badges
+
+In HTML output, Gitlink displays subtle platform badges next to links for improved accessibility and quick visual identification.
+
+**Features**:
+
+- Always visible badges showing the full platform name (GitHub, GitLab, etc.).
+- Tooltips on both links and badges.
+- Accessible to screen readers with proper ARIA labels.
+- Theme-aware styling using Bootstrap classes.
+
+**Configuration**:
+
+```yaml
+extensions:
+  gitlink:
+    show-platform-badge: true      # Show/hide badges (default: true)
+    badge-position: "after"        # "after" or "before" link (default: "after")
+```
+
+**Options**:
+
+- `show-platform-badge` (boolean): Toggle badge visibility, default `true`.
+- `badge-position` (string): Badge placement relative to link, default `"after"`.
+
+To disable badges and use only tooltips:
+
+```yaml
+extensions:
+  gitlink:
+    show-platform-badge: false
+```
 
 ## Platform Detection
 
