@@ -205,7 +205,7 @@ Create a YAML file (e.g., `my-platforms.yml`):
 ```yaml
 platforms:
   gitplatform:
-    default-url: https://git.example.com
+    base-url: https://git.example.com
     patterns:
       issue:
         - '#(%d+)'
@@ -244,8 +244,8 @@ Every platform configuration must follow this schema for validation and proper f
 
 ```yaml
 platforms:
-  platform_name:
-    default-url: string                  # Required: Base URL for the platform
+  platform-name:
+    base-url: string                  # Required: Base URL for the platform
     patterns:
       issue: [string, ...]               # Required: Lua regex patterns for issues
       merge-request: [string, ...]       # Required: Lua regex patterns for merge requests/PRs
@@ -261,7 +261,7 @@ platforms:
 
 #### Field Descriptions
 
-**default-url** (required, string):
+**base-url** (required, string):
 
 - The base URL of the Git hosting platform.
 - Must start with `http://` or `https://`.
@@ -350,7 +350,7 @@ Common patterns used in Gitlink configurations:
 
 Platform configurations are automatically validated for:
 
-1. **Required fields**: `default-url`, `patterns`, `url-formats` must all exist.
+1. **Required fields**: `base-url`, `patterns`, `url-formats` must all exist.
 2. **Pattern syntax**: All regex patterns are checked for valid Lua regex syntax.
 3. **URL format syntax**: URL templates must start with `/` and contain at least one placeholder.
 4. **Field completeness**: All required pattern and format types must be defined.
@@ -371,7 +371,7 @@ If your platform configuration is invalid, you will see detailed error messages 
 ```yaml
 platforms:
   gitea:
-    default-url: https://gitea.io
+    base-url: https://gitea.io
     patterns:
       issue:
         - '#(%d+)'

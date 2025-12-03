@@ -210,13 +210,16 @@ local function validate_patterns(patterns, pattern_type, result)
   if not is_array(patterns) then
     add_error(
       result,
-      string.format('Pattern type "%s" must be an array of patterns, got %s (e.g., [\'#(%%d+)\', \'owner/repo#(%%d+)\'])', pattern_type:gsub('_', '-'), type(patterns))
+      string.format(
+        'Pattern type "%s" must be an array of patterns, got %s (e.g., [\'#(%%d+)\', \'owner/repo#(%%d+)\'])',
+        pattern_type:gsub('_', '-'), type(patterns))
     )
     return
   end
 
   if #patterns == 0 then
-    add_warning(result, string.format('Pattern type "%s" is empty (add at least one pattern)', pattern_type:gsub('_', '-')))
+    add_warning(result,
+      string.format('Pattern type "%s" is empty (add at least one pattern)', pattern_type:gsub('_', '-')))
     return
   end
 
@@ -234,7 +237,8 @@ end
 --- @return nil
 local function validate_patterns_section(patterns, result)
   if not patterns then
-    add_error(result, 'Missing required field: "patterns" (add patterns section with: issue, merge-request, commit, user)')
+    add_error(result,
+      'Missing required field: "patterns" (add patterns section with: issue, merge-request, commit, user)')
     return
   end
 
@@ -267,7 +271,8 @@ end
 --- @return nil
 local function validate_url_formats_section(url_formats, result)
   if not url_formats then
-    add_error(result, 'Missing required field: "url-formats" (add url-formats section with: issue, pull, merge-request, commit, user)')
+    add_error(result,
+      'Missing required field: "url-formats" (add url-formats section with: issue, pull, merge-request, commit, user)')
     return
   end
 
@@ -280,10 +285,10 @@ local function validate_url_formats_section(url_formats, result)
     local format = url_formats[format_type]
     if not format then
       local hint = format_type == 'issue' and '/{repo}/issues/{number}' or
-                   format_type == 'pull' and '/{repo}/pull/{number}' or
-                   format_type == 'merge_request' and '/{repo}/pull/{number}' or
-                   format_type == 'commit' and '/{repo}/commit/{sha}' or
-                   format_type == 'user' and '/{username}' or '/{path}'
+          format_type == 'pull' and '/{repo}/pull/{number}' or
+          format_type == 'merge_request' and '/{repo}/pull/{number}' or
+          format_type == 'commit' and '/{repo}/commit/{sha}' or
+          format_type == 'user' and '/{username}' or '/{path}'
       add_error(result, string.format('Missing required URL format: "%s" (e.g., "%s")', format_type:gsub('_', '-'), hint))
     else
       local valid, err = is_valid_url_format(format)
@@ -336,12 +341,12 @@ function schema_module.validate_platform(platform_name, config)
     return result
   end
 
-  if not config.default_url then
-    add_error(result, 'Missing required field: "default-url" (e.g., https://github.com)')
+  if not config.base_url then
+    add_error(result, 'Missing required field: "base-url" (e.g., https://github.com)')
   else
-    local valid, err = is_valid_base_url(config.default_url)
+    local valid, err = is_valid_base_url(config.base_url)
     if not valid then
-      add_error(result, string.format('Invalid default-url: %s (e.g., https://git.example.com)', err))
+      add_error(result, string.format('Invalid base-url: %s (e.g., https://git.example.com)', err))
     end
   end
 

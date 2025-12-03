@@ -352,7 +352,7 @@ Create a YAML file (e.g., `custom-platforms.yml`) with your platform definitions
 ```yaml
 platforms:
   gitplatform:
-    default-url: https://git.example.com
+    base-url: https://git.example.com
     patterns:
       issue:
         - '#(%d+)'

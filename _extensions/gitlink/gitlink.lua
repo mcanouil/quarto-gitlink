@@ -165,7 +165,7 @@ local function get_repository(meta)
   if not utils.is_empty(meta_base_url) then
     base_url = meta_base_url --[[@as string]]
   else
-    base_url = config.default_url
+    base_url = config.base_url
   end
 
   if utils.is_empty(meta_repository) then
@@ -290,7 +290,7 @@ local function process_issues_and_mrs(elem, current_platform, current_base_url)
     for _, platform_name in ipairs(all_platform_names) do
       local platform_config = platforms.get_platform_config(platform_name)
       if platform_config then
-        local platform_base_url = platform_config.default_url
+        local platform_base_url = platform_config.base_url
         local escaped_platform_url = utils.escape_pattern(platform_base_url)
         local url_pattern_issue = '^' .. escaped_platform_url .. '/([^/]+/[^/]+)/%-?/?issues?/(%d+)'
         local url_pattern_mr = '^' .. escaped_platform_url .. '/([^/]+/[^/]+)/%-?/?merge[_%-]requests/(%d+)'
@@ -388,7 +388,7 @@ local function process_users(elem, current_platform)
   for _, platform_name in ipairs(all_platform_names) do
     local platform_config = platforms.get_platform_config(platform_name)
     if platform_config then
-      local platform_base_url = platform_config.default_url
+      local platform_base_url = platform_config.base_url
       local escaped_platform_url = utils.escape_pattern(platform_base_url)
       local url_pattern = '^' .. escaped_platform_url .. '/([%w%-%.]+)$'
 
@@ -455,7 +455,7 @@ local function process_commits(elem, current_platform, current_base_url)
     for _, platform_name in ipairs(all_platform_names) do
       local platform_config = platforms.get_platform_config(platform_name)
       if platform_config then
-        local platform_base_url = platform_config.default_url
+        local platform_base_url = platform_config.base_url
         local escaped_platform_url = utils.escape_pattern(platform_base_url)
         local url_pattern = '^' .. escaped_platform_url .. '/([^/]+/[^/]+)/%-?/?commits?/(%x+)'
         if text:match(url_pattern) then
