@@ -30,6 +30,19 @@
 local bitbucket_module = {}
 
 -- ============================================================================
+-- HELPER FUNCTIONS
+-- ============================================================================
+
+--- Create a Bitbucket link with platform label
+--- @param text string The link text
+--- @param uri string The URI
+--- @param create_link_fn function The link creation function from main filter
+--- @return pandoc.Link A Pandoc Link element with platform label
+local function create_bitbucket_link(text, uri, create_link_fn)
+  return create_link_fn(text, uri, "bitbucket")
+end
+
+-- ============================================================================
 -- BITBUCKET MULTI-WORD PATTERN PROCESSING
 -- ============================================================================
 
@@ -39,10 +52,10 @@ local bitbucket_module = {}
 --- @param inlines table List of inline elements
 --- @param base_url string The base URL for the Bitbucket instance
 --- @param repository_name string|nil The repository name (e.g., "owner/repo")
---- @param utils table The utils module for creating links
+--- @param create_link_fn function The link creation function from main filter
 --- @return table Modified list of inline elements
---- @usage local result = bitbucket_module.process_inlines(inlines, "https://bitbucket.org", "owner/repo", utils)
-function bitbucket_module.process_inlines(inlines, base_url, repository_name, utils)
+--- @usage local result = bitbucket_module.process_inlines(inlines, "https://bitbucket.org", "owner/repo", create_platform_link)
+function bitbucket_module.process_inlines(inlines, base_url, repository_name, create_link_fn)
   local result = {}
   local i = 1
 
@@ -60,9 +73,9 @@ function bitbucket_module.process_inlines(inlines, base_url, repository_name, ut
         if repository_name then
           uri = base_url .. "/" .. repository_name .. "/issues/" .. number
         else
-          return inlines -- Cannot create link without repository name
+          return inlines
         end
-        local link = utils.create_link("issue " .. elem3.text, uri)
+        local link = create_bitbucket_link("issue " .. elem3.text, uri, create_link_fn)
         if link then
           table.insert(result, link)
           i = i + 3
@@ -79,7 +92,7 @@ function bitbucket_module.process_inlines(inlines, base_url, repository_name, ut
          elem3.t == "Str" and elem3.text:match("^([^/]+/[^/#]+)#(%d+)$") then
         local repo, number = elem3.text:match("^([^/]+/[^/#]+)#(%d+)$")
         local uri = base_url .. "/" .. repo .. "/issues/" .. number
-        local link = utils.create_link("issue " .. elem3.text, uri)
+        local link = create_bitbucket_link("issue " .. elem3.text, uri, create_link_fn)
         if link then
           table.insert(result, link)
           i = i + 3
@@ -101,9 +114,9 @@ function bitbucket_module.process_inlines(inlines, base_url, repository_name, ut
         if repository_name then
           uri = base_url .. "/" .. repository_name .. "/pull-requests/" .. number
         else
-          return inlines -- Cannot create link without repository name
+          return inlines
         end
-        local link = utils.create_link("pull request " .. elem5.text, uri)
+        local link = create_bitbucket_link("pull request " .. elem5.text, uri, create_link_fn)
         if link then
           table.insert(result, link)
           i = i + 5
@@ -122,7 +135,7 @@ function bitbucket_module.process_inlines(inlines, base_url, repository_name, ut
          elem5.t == "Str" and elem5.text:match("^([^/]+/[^/#]+)#(%d+)$") then
         local repo, number = elem5.text:match("^([^/]+/[^/#]+)#(%d+)$")
         local uri = base_url .. "/" .. repo .. "/pull-requests/" .. number
-        local link = utils.create_link("pull request " .. elem5.text, uri)
+        local link = create_bitbucket_link("pull request " .. elem5.text, uri, create_link_fn)
         if link then
           table.insert(result, link)
           i = i + 5
