@@ -111,21 +111,30 @@ local function load_platforms(yaml_path)
   return nil
 end
 
---- Initialize platform configurations
+--- Initialise platform configurations
 --- @param yaml_path string|nil Optional path to custom YAML file
---- @return boolean True if initialization was successful, false otherwise
---- @usage platforms_module.initialize('custom-platforms.yml')
-function platforms_module.initialize(yaml_path)
-  if platform_configs then
+--- @return boolean True if initialisation was successful, false otherwise
+--- @usage platforms_module.initialise('custom-platforms.yml')
+function platforms_module.initialise(yaml_path)
+  if platform_configs and not yaml_path then
     return true
   end
 
-  platform_configs = load_platforms(yaml_path)
+  local loaded_configs = load_platforms(yaml_path)
 
-  if not platform_configs then
-    -- Fallback to hardcoded configurations if YAML loading fails
-    platform_configs = {}
+  if not loaded_configs then
+    if not platform_configs then
+      platform_configs = {}
+    end
     return false
+  end
+
+  if platform_configs and yaml_path then
+    for name, config in pairs(loaded_configs) do
+      custom_platforms[name] = config
+    end
+  else
+    platform_configs = loaded_configs
   end
 
   return true
@@ -140,19 +149,16 @@ end
 --- @return table|nil The platform configuration or nil if not found
 --- @usage local config = platforms_module.get_platform_config('github')
 function platforms_module.get_platform_config(platform_name)
-  -- Initialize if not already done
   if not platform_configs then
-    platforms_module.initialize()
+    platforms_module.initialise()
   end
 
   local name_lower = platform_name:lower()
 
-  -- Check custom platforms first
   if custom_platforms[name_lower] then
     return custom_platforms[name_lower]
   end
 
-  -- Fall back to loaded platforms
   if platform_configs and platform_configs[name_lower] then
     return platform_configs[name_lower]
   end
@@ -164,9 +170,8 @@ end
 --- @return table<integer, string> List of available platform names
 --- @usage local platforms = platforms_module.get_all_platform_names()
 function platforms_module.get_all_platform_names()
-  -- Initialize if not already done
   if not platform_configs then
-    platforms_module.initialize()
+    platforms_module.initialise()
   end
 
   local names = {}

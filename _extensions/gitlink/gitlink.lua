@@ -136,12 +136,11 @@ local function get_repository(meta)
   local meta_repository = utils.get_metadata_value(meta, 'gitlink', 'repository-name')
   local meta_custom_platforms = utils.get_metadata_value(meta, 'gitlink', 'custom-platforms-file')
 
-  -- Load custom platforms file if specified
   if not utils.is_empty(meta_custom_platforms) then
     local custom_file_path = quarto.utils.resolve_path(meta_custom_platforms --[[@as string]])
-    platforms.initialize(custom_file_path)
+    platforms.initialise(custom_file_path)
   else
-    platforms.initialize()
+    platforms.initialise()
   end
 
   if not utils.is_empty(meta_platform) then
@@ -371,12 +370,11 @@ end
 
 --- Process user/organisation references
 --- @param elem pandoc.Str The string element to process
---- @param current_platform string The current platform name (unused but kept for consistency)
---- @param current_base_url string The current base URL (unused but kept for consistency)
+--- @param current_platform string The current platform name
 --- @return pandoc.Link|nil A user link or nil if no valid pattern found
 --- @return string|nil The platform name used for this match
 --- @return string|nil The base URL used for this match
-local function process_users(elem, current_platform, current_base_url)
+local function process_users(elem, current_platform)
   local config = get_platform_config(current_platform)
   if not config then
     return nil, nil, nil
@@ -506,7 +504,7 @@ local function process_gitlink(elem)
   end
 
   if link == nil then
-    link = process_users(elem, platform, base_url)
+    link = process_users(elem, platform)
   end
 
   if link == nil then
