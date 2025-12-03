@@ -139,7 +139,7 @@ local function is_valid_lua_pattern(pattern)
   end
 
   local success, err = pcall(function()
-    string.find('test', pattern)
+    _ = string.find('test', pattern)
   end)
 
   if not success then
