@@ -165,6 +165,10 @@ The extension automatically processes full URLs and converts them to the appropr
 
 **Output:** `owner/repo#123` (or `#123` if it's the current repository)
 
+> [!TIP]
+> For best results, wrap URLs in angle brackets (`<URL>`) rather than using bare URLs.
+> For example, use `<https://github.com/owner/repo/issues/123>` instead of `https://github.com/owner/repo/issues/123`.
+
 ### Repository Detection
 
 If `repository-name` is not specified, the extension attempts to detect it from the Git remote:

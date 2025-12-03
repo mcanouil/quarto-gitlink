@@ -66,6 +66,13 @@ extensions:
       at: post-quarto
   ```
 
+:::: {.callout-tip}
+
+For best results, wrap URLs in angle brackets (`<URL>`) rather than using bare URLs.
+For example, use `<https://github.com/owner/repo/issues/123>` instead of `https://github.com/owner/repo/issues/123`.
+
+:::
+
 ## Examples
 
 ### GitHub
@@ -91,11 +98,11 @@ Reference issues and pull requests:
 
 Full URL examples (automatically shortened):
 
-- Issue URL: https://github.com/mcanouil/quarto-gitlink/issues/1
-- Pull request URL: https://github.com/mcanouil/quarto-gitlink/pull/10
-- Commit URL: https://github.com/mcanouil/quarto-gitlink/commit/cb0350d0316d1c420508338d02e56f5c8f907226
-- Cross-repository issue URL: https://github.com/quarto-dev/quarto-cli/issues/10000
-- User/organisation URL: https://github.com/mcanouil
+- Issue URL: <https://github.com/mcanouil/quarto-gitlink/issues/1>
+- Pull request URL: <https://github.com/mcanouil/quarto-gitlink/pull/10>
+- Commit URL: <https://github.com/mcanouil/quarto-gitlink/commit/cb0350d0316d1c420508338d02e56f5c8f907226>
+- Cross-repository issue URL: <https://github.com/quarto-dev/quarto-cli/issues/10000>
+- User/organisation URL: <https://github.com/mcanouil>
 
 ### GitLab
 
@@ -121,11 +128,11 @@ Then you can use:
 
 Full URL examples (automatically shortened):
 
-- Issue URL: https://gitlab.com/group/project/-/issues/123
-- Merge request URL: https://gitlab.com/group/project/-/merge_requests/456
-- Commit URL: https://gitlab.com/group/project/-/commit/a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890
-- Cross-repository issue URL: https://gitlab.com/other-group/other-project/-/issues/789
-- User/organisation URL: https://gitlab.com/username
+- Issue URL: <https://gitlab.com/group/project/-/issues/123>
+- Merge request URL: <https://gitlab.com/group/project/-/merge_requests/456>
+- Commit URL: <https://gitlab.com/group/project/-/commit/a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890>
+- Cross-repository issue URL: <https://gitlab.com/other-group/other-project/-/issues/789>
+- User/organisation URL: <https://gitlab.com/username>
 
 ### Codeberg
 
@@ -150,11 +157,11 @@ Then you can use:
 
 Full URL examples (automatically shortened):
 
-- Issue URL: https://codeberg.org/owner/repo/issues/123
-- Pull request URL: https://codeberg.org/owner/repo/pulls/456
-- Commit URL: https://codeberg.org/owner/repo/commit/a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890
-- Cross-repository issue URL: https://codeberg.org/other-owner/other-repo/issues/789
-- User/organisation URL: https://codeberg.org/username
+- Issue URL: <https://codeberg.org/owner/repo/issues/123>
+- Pull request URL: <https://codeberg.org/owner/repo/pulls/456>
+- Commit URL: <https://codeberg.org/owner/repo/commit/a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890>
+- Cross-repository issue URL: <https://codeberg.org/other-owner/other-repo/issues/789>
+- User/organisation URL: <https://codeberg.org/username>
 
 ### Gitea
 
@@ -182,11 +189,11 @@ Then you can use:
 
 Full URL examples (automatically shortened):
 
-- Issue URL: https://gitea.com/owner/repo/issues/123
-- Pull request URL: https://gitea.com/owner/repo/pulls/456
-- Commit URL: https://gitea.com/owner/repo/commit/a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890
-- Cross-repository issue URL: https://gitea.com/other-owner/other-repo/issues/789
-- User/organisation URL: https://gitea.com/username
+- Issue URL: <https://gitea.com/owner/repo/issues/123>
+- Pull request URL: <https://gitea.com/owner/repo/pulls/456>
+- Commit URL: <https://gitea.com/owner/repo/commit/a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890>
+- Cross-repository issue URL: <https://gitea.com/other-owner/other-repo/issues/789>
+- User/organisation URL: <https://gitea.com/username>
 
 ### Bitbucket
 
@@ -212,11 +219,11 @@ Bitbucket follows the [official markup syntax](https://support.atlassian.com/bit
 
 Full URL examples (automatically shortened):
 
-- Issue URL: https://bitbucket.org/workspace/repo/issues/123
-- Pull request URL: https://bitbucket.org/workspace/repo/pull-requests/456
-- Commit URL: https://bitbucket.org/workspace/repo/commits/a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890
-- Cross-repository issue URL: https://bitbucket.org/other-workspace/other-repo/issues/789
-- User/organisation URL: https://bitbucket.org/username
+- Issue URL: <https://bitbucket.org/workspace/repo/issues/123>
+- Pull request URL: <https://bitbucket.org/workspace/repo/pull-requests/456>
+- Commit URL: <https://bitbucket.org/workspace/repo/commits/a5c3785dc2e23c1d8e7e4d9a8b91c6f234567890>
+- Cross-repository issue URL: <https://bitbucket.org/other-workspace/other-repo/issues/789>
+- User/organisation URL: <https://bitbucket.org/username>
 
 :::: {.callout-note}
 
