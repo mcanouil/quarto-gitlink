@@ -93,7 +93,6 @@ end
 local function load_platforms(yaml_path)
   local config_path = yaml_path or quarto.utils.resolve_path('platforms.yml')
 
-  -- Check if file exists
   local file = io.open(config_path, 'r')
   if not file then
     return nil
@@ -101,7 +100,6 @@ local function load_platforms(yaml_path)
   local content = file:read('*all')
   file:close()
 
-  -- Parse YAML using Pandoc
   local success, result = pcall(function()
     local meta = pandoc.read('---\n' .. content .. '\n---', 'markdown').meta
     if meta and meta.platforms then
@@ -137,7 +135,6 @@ function platforms_module.initialise(yaml_path)
     return false, msg
   end
 
-  -- Validate all loaded platforms
   local validation_results_all = schema.validate_all_platforms(loaded_configs)
   local has_errors = false
   local error_messages = {}
@@ -196,6 +193,20 @@ function platforms_module.get_platform_config(platform_name)
   return nil
 end
 
+--- Get platform display name
+--- Returns the display name from the platform configuration or a capitalised default
+--- @param platform_name string The platform name
+--- @return string The platform display name
+--- @usage local name = platforms_module.get_platform_display_name('github')
+function platforms_module.get_platform_display_name(platform_name)
+  local config = platforms_module.get_platform_config(platform_name)
+  if config and config.display_name then
+    return config.display_name
+  end
+  local name_str = tostring(platform_name)
+  return name_str:sub(1, 1):upper() .. name_str:sub(2)
+end
+
 --- Get all available platform names
 --- @return table<integer, string> List of available platform names
 --- @usage local platforms = platforms_module.get_all_platform_names()
@@ -206,14 +217,12 @@ function platforms_module.get_all_platform_names()
 
   local names = {}
 
-  -- Add loaded platform names
   if platform_configs then
     for name, _ in pairs(platform_configs) do
       table.insert(names, name)
     end
   end
 
-  -- Add custom platform names
   for name, _ in pairs(custom_platforms) do
     if not platform_configs or not platform_configs[name] then
       table.insert(names, name)
@@ -235,7 +244,6 @@ function platforms_module.register_custom_platform(platform_name, config)
     return false, 'Platform name and configuration are required'
   end
 
-  -- Validate configuration against schema
   local result = schema.validate_platform(platform_name, config)
 
   if not result.valid then

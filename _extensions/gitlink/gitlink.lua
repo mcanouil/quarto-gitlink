@@ -75,15 +75,7 @@ local function create_platform_link(text, uri, platform_name)
     return nil
   end
 
-  local platform_names = {
-    github = "GitHub",
-    gitlab = "GitLab",
-    codeberg = "Codeberg",
-    gitea = "Gitea",
-    bitbucket = "Bitbucket"
-  }
-  local platform_label = platform_names[(platform_name --[[@as string]]):lower()] or
-      (platform_name --[[@as string]]):sub(1, 1):upper() .. (platform_name --[[@as string]]):sub(2)
+  local platform_label = platforms.get_platform_display_name(platform_name --[[@as string]])
 
   local link_content = { pandoc.Str(text --[[@as string]]) }
   local link_attr = pandoc.Attr('', {}, {})
@@ -182,7 +174,6 @@ local function get_repository(meta)
 
   repository_name = meta_repository
 
-  -- Read badge configuration
   local show_badge_meta = utils.get_metadata_value(meta, 'gitlink', 'show-platform-badge')
   if show_badge_meta ~= nil then
     show_platform_badge = (show_badge_meta == "true" or show_badge_meta == true)
@@ -295,7 +286,6 @@ local function process_issues_and_mrs(elem, current_platform, current_base_url)
   end
 
   if not number then
-    -- Try to match URLs from any supported platform
     local all_platform_names = platforms.get_all_platform_names()
     for _, platform_name in ipairs(all_platform_names) do
       local platform_config = platforms.get_platform_config(platform_name)
@@ -539,17 +529,13 @@ end
 --- @param elem pandoc.Link The link element to process
 --- @return pandoc.Link The original or modified link
 local function process_link(elem)
-  -- Only process links where the text is the same as the URL (auto-generated links)
   local link_text = pandoc.utils.stringify(elem.content)
   local link_target = elem.target
 
-  -- If the link text equals the target URL, try to shorten it
   if link_text == link_target then
-    -- Create a temporary Str element to use existing processing logic
     local temp_str = pandoc.Str(link_text)
     local result = process_gitlink(temp_str)
 
-    -- If process_gitlink returned a link, use its content as the new link text
     if pandoc.utils.type(result) == "Link" then
       return result
     end

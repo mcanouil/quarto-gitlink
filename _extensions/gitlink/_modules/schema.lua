@@ -194,12 +194,11 @@ end
 --- @return nil
 local function validate_patterns(patterns, pattern_type, result)
   if not patterns then
-    local hint = 'Expected: patterns:\n      ' .. pattern_type .. ': [\'pattern1\', \'pattern2\']'
-    add_error(result, string.format('Missing required pattern type: "%s" (%s)', pattern_type, hint))
+    local hint = 'Expected: patterns:\n      ' .. pattern_type:gsub('_', '-') .. ': [\'pattern1\', \'pattern2\']'
+    add_error(result, string.format('Missing required pattern type: "%s" (%s)', pattern_type:gsub('_', '-'), hint))
     return
   end
 
-  -- User patterns can be a single string
   if pattern_type == 'user' and is_string(patterns) then
     local valid, err = is_valid_lua_pattern(patterns)
     if not valid then
@@ -211,20 +210,20 @@ local function validate_patterns(patterns, pattern_type, result)
   if not is_array(patterns) then
     add_error(
       result,
-      string.format('Pattern type "%s" must be an array of patterns, got %s (e.g., [\'#(%%d+)\', \'owner/repo#(%%d+)\'])', pattern_type, type(patterns))
+      string.format('Pattern type "%s" must be an array of patterns, got %s (e.g., [\'#(%%d+)\', \'owner/repo#(%%d+)\'])', pattern_type:gsub('_', '-'), type(patterns))
     )
     return
   end
 
   if #patterns == 0 then
-    add_warning(result, string.format('Pattern type "%s" is empty (add at least one pattern)', pattern_type))
+    add_warning(result, string.format('Pattern type "%s" is empty (add at least one pattern)', pattern_type:gsub('_', '-')))
     return
   end
 
   for i, pattern in ipairs(patterns) do
     local valid, err = is_valid_lua_pattern(pattern)
     if not valid then
-      add_error(result, string.format('Invalid Lua regex in %s[%d]: %s', pattern_type, i, err))
+      add_error(result, string.format('Invalid Lua regex in %s[%d]: %s', pattern_type:gsub('_', '-'), i, err))
     end
   end
 end
@@ -248,7 +247,6 @@ local function validate_patterns_section(patterns, result)
     validate_patterns(patterns[pattern_type], pattern_type, result)
   end
 
-  -- Warn about unknown pattern types
   for key, _ in pairs(patterns) do
     local found = false
     for _, pattern_type in ipairs(REQUIRED_PATTERN_TYPES) do
@@ -295,7 +293,6 @@ local function validate_url_formats_section(url_formats, result)
     end
   end
 
-  -- Warn about unknown format types
   for key, _ in pairs(url_formats) do
     local found = false
     for _, format_type in ipairs(REQUIRED_URL_FORMAT_TYPES) do
@@ -339,7 +336,6 @@ function schema_module.validate_platform(platform_name, config)
     return result
   end
 
-  -- Validate default_url
   if not config.default_url then
     add_error(result, 'Missing required field: "default_url" (e.g., https://github.com)')
   else
@@ -349,10 +345,8 @@ function schema_module.validate_platform(platform_name, config)
     end
   end
 
-  -- Validate patterns section
   validate_patterns_section(config.patterns, result)
 
-  -- Validate url_formats section
   validate_url_formats_section(config.url_formats, result)
 
   return result
