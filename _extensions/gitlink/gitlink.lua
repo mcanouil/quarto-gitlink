@@ -25,10 +25,11 @@
 --- Extension name constant
 local EXTENSION_NAME = "gitlink"
 
---- Load utils, git, and bitbucket modules
-local utils = require(quarto.utils.resolve_path("_modules/utils.lua"):gsub("%.lua$", ""))
-local git = require(quarto.utils.resolve_path("_modules/git.lua"):gsub("%.lua$", ""))
-local bitbucket = require(quarto.utils.resolve_path("_modules/bitbucket.lua"):gsub("%.lua$", ""))
+--- Load utils, git, bitbucket, and platforms modules
+local utils = require(quarto.utils.resolve_path('_modules/utils.lua'):gsub('%.lua$', ''))
+local git = require(quarto.utils.resolve_path('_modules/git.lua'):gsub('%.lua$', ''))
+local bitbucket = require(quarto.utils.resolve_path('_modules/bitbucket.lua'):gsub('%.lua$', ''))
+local platforms = require(quarto.utils.resolve_path('_modules/platforms.lua'):gsub('%.lua$', ''))
 
 --- @type string The platform type (github, gitlab, codeberg, gitea, bitbucket)
 local platform = "github"
@@ -57,92 +58,11 @@ local COMMIT_SHA_SHORT_LENGTH = 7
 --- @type integer Minimum length for a valid git commit SHA
 local COMMIT_SHA_MIN_LENGTH = 7
 
---- @type table Platform-specific configuration
-local platform_configs = {
-  github = {
-    default_url = "https://github.com",
-    patterns = {
-      issue = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)", "GH%-(%d+)" },
-      merge_request = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },
-      commit = { "^(%x+)$", "([^/]+/[^/@]+)@(%x+)", "(%w+)@(%x+)" },
-      user = "@([%w%-%.]+)"
-    },
-    url_formats = {
-      issue = "/{repo}/issues/{number}",
-      pull = "/{repo}/pull/{number}",
-      commit = "/{repo}/commit/{sha}",
-      user = "/{username}"
-    }
-  },
-  gitlab = {
-    default_url = "https://gitlab.com",
-    patterns = {
-      issue = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },
-      merge_request = { "!(%d+)", "([^/]+/[^/#]+)!(%d+)" },
-      commit = { "^(%x+)$", "([^/]+/[^/@]+)@(%x+)", "(%w+)@(%x+)" },
-      user = "@([%w%-%.]+)"
-    },
-    url_formats = {
-      issue = "/{repo}/-/issues/{number}",
-      merge_request = "/{repo}/-/merge_requests/{number}",
-      commit = "/{repo}/-/commit/{sha}",
-      user = "/{username}"
-    }
-  },
-  codeberg = {
-    default_url = "https://codeberg.org",
-    patterns = {
-      issue = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },
-      merge_request = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },
-      commit = { "^(%x+)$", "([^/]+/[^/@]+)@(%x+)", "(%w+)@(%x+)" },
-      user = "@([%w%-%.]+)"
-    },
-    url_formats = {
-      issue = "/{repo}/issues/{number}",
-      pull = "/{repo}/pulls/{number}",
-      commit = "/{repo}/commit/{sha}",
-      user = "/{username}"
-    }
-  },
-  gitea = {
-    default_url = "https://gitea.com",
-    patterns = {
-      issue = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },
-      merge_request = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },
-      commit = { "^(%x+)$", "([^/]+/[^/@]+)@(%x+)", "(%w+)@(%x+)" },
-      user = "@([%w%-%.]+)"
-    },
-    url_formats = {
-      issue = "/{repo}/issues/{number}",
-      pull = "/{repo}/pulls/{number}",
-      commit = "/{repo}/commit/{sha}",
-      user = "/{username}"
-    }
-  },
-  bitbucket = {
-    default_url = "https://bitbucket.org",
-    patterns = {
-      issue = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },
-      merge_request = { "#(%d+)", "([^/]+/[^/#]+)#(%d+)" },
-      commit = { "^(%x+)$", "([^/]+/[^/@]+)@(%x+)", "(%w+)@(%x+)" },
-      user = "@([%w%-%.]+)"
-    },
-    url_formats = {
-      issue = "/{repo}/issues/{number}",
-      pull = "/{repo}/pull-requests/{number}",
-      commit = "/{repo}/commits/{sha}",
-      user = "/{username}"
-    }
-  }
-}
-
-
-
 --- Get platform configuration
 --- @param platform_name string The platform name
 --- @return table|nil The platform configuration or nil if not found
 local function get_platform_config(platform_name)
-  return platform_configs[platform_name:lower()]
+  return platforms.get_platform_config(platform_name:lower())
 end
 
 --- Create a link with platform label
@@ -214,18 +134,28 @@ local function get_repository(meta)
   local meta_platform = utils.get_metadata_value(meta, 'gitlink', 'platform')
   local meta_base_url = utils.get_metadata_value(meta, 'gitlink', 'base-url')
   local meta_repository = utils.get_metadata_value(meta, 'gitlink', 'repository-name')
+  local meta_custom_platforms = utils.get_metadata_value(meta, 'gitlink', 'custom-platforms-file')
+
+  -- Load custom platforms file if specified
+  if not utils.is_empty(meta_custom_platforms) then
+    local custom_file_path = quarto.utils.resolve_path(meta_custom_platforms --[[@as string]])
+    platforms.initialize(custom_file_path)
+  else
+    platforms.initialize()
+  end
 
   if not utils.is_empty(meta_platform) then
     platform = (meta_platform --[[@as string]]):lower()
   else
-    platform = "github"
+    platform = 'github'
   end
   local config = get_platform_config(platform)
   if not config then
+    local available_platforms = table.concat(platforms.get_all_platform_names(), ', ')
     utils.log_error(
       EXTENSION_NAME,
       "Unsupported platform: '" .. platform ..
-      "'. Supported platforms are: github, gitlab, codeberg, gitea, bitbucket."
+      "'. Supported platforms are: " .. available_platforms .. '.'
     )
     return meta
   end
@@ -356,62 +286,66 @@ local function process_issues_and_mrs(elem, current_platform, current_base_url)
 
   if not number then
     -- Try to match URLs from any supported platform
-    for platform_name, platform_config in pairs(platform_configs) do
-      local platform_base_url = platform_config.default_url
-      local escaped_platform_url = utils.escape_pattern(platform_base_url)
-      local url_pattern_issue = "^" .. escaped_platform_url .. "/([^/]+/[^/]+)/%-?/?issues?/(%d+)"
-      local url_pattern_mr = "^" .. escaped_platform_url .. "/([^/]+/[^/]+)/%-?/?merge[_%-]requests/(%d+)"
-      local url_pattern_pull_requests = "^" .. escaped_platform_url .. "/([^/]+/[^/]+)/%-?/?pull%-requests/(%d+)"
-      local url_pattern_pull = "^" .. escaped_platform_url .. "/([^/]+/[^/]+)/%-?/?pulls?/(%d+)"
+    local all_platform_names = platforms.get_all_platform_names()
+    for _, platform_name in ipairs(all_platform_names) do
+      local platform_config = platforms.get_platform_config(platform_name)
+      if platform_config then
+        local platform_base_url = platform_config.default_url
+        local escaped_platform_url = utils.escape_pattern(platform_base_url)
+        local url_pattern_issue = '^' .. escaped_platform_url .. '/([^/]+/[^/]+)/%-?/?issues?/(%d+)'
+        local url_pattern_mr = '^' .. escaped_platform_url .. '/([^/]+/[^/]+)/%-?/?merge[_%-]requests/(%d+)'
+        local url_pattern_pull_requests = '^' .. escaped_platform_url .. '/([^/]+/[^/]+)/%-?/?pull%-requests/(%d+)'
+        local url_pattern_pull = '^' .. escaped_platform_url .. '/([^/]+/[^/]+)/%-?/?pulls?/(%d+)'
 
-      if text:match(url_pattern_issue) then
-        repo, number = text:match(url_pattern_issue)
-        ref_type = "issue"
-        if repo == repository_name then
-          short_link = "#" .. number
-        else
-          short_link = repo .. "#" .. number
+        if text:match(url_pattern_issue) then
+          repo, number = text:match(url_pattern_issue)
+          ref_type = 'issue'
+          if repo == repository_name then
+            short_link = '#' .. number
+          else
+            short_link = repo .. '#' .. number
+          end
+          matched_platform = platform_name
+          matched_base_url = platform_base_url
+          config = platform_config
+          break
+        elseif text:match(url_pattern_mr) then
+          repo, number = text:match(url_pattern_mr)
+          ref_type = 'merge_request'
+          if repo == repository_name then
+            short_link = '!' .. number
+          else
+            short_link = repo .. '!' .. number
+          end
+          matched_platform = platform_name
+          matched_base_url = platform_base_url
+          config = platform_config
+          break
+        elseif text:match(url_pattern_pull_requests) then
+          repo, number = text:match(url_pattern_pull_requests)
+          ref_type = 'pull'
+          if repo == repository_name then
+            short_link = '#' .. number
+          else
+            short_link = repo .. '#' .. number
+          end
+          matched_platform = platform_name
+          matched_base_url = platform_base_url
+          config = platform_config
+          break
+        elseif text:match(url_pattern_pull) then
+          repo, number = text:match(url_pattern_pull)
+          ref_type = 'pull'
+          if repo == repository_name then
+            short_link = '#' .. number
+          else
+            short_link = repo .. '#' .. number
+          end
+          matched_platform = platform_name
+          matched_base_url = platform_base_url
+          config = platform_config
+          break
         end
-        matched_platform = platform_name
-        matched_base_url = platform_base_url
-        config = platform_config
-        break
-      elseif text:match(url_pattern_mr) then
-        repo, number = text:match(url_pattern_mr)
-        ref_type = "merge_request"
-        if repo == repository_name then
-          short_link = "!" .. number
-        else
-          short_link = repo .. "!" .. number
-        end
-        matched_platform = platform_name
-        matched_base_url = platform_base_url
-        config = platform_config
-        break
-      elseif text:match(url_pattern_pull_requests) then
-        repo, number = text:match(url_pattern_pull_requests)
-        ref_type = "pull"
-        if repo == repository_name then
-          short_link = "#" .. number
-        else
-          short_link = repo .. "#" .. number
-        end
-        matched_platform = platform_name
-        matched_base_url = platform_base_url
-        config = platform_config
-        break
-      elseif text:match(url_pattern_pull) then
-        repo, number = text:match(url_pattern_pull)
-        ref_type = "pull"
-        if repo == repository_name then
-          short_link = "#" .. number
-        else
-          short_link = repo .. "#" .. number
-        end
-        matched_platform = platform_name
-        matched_base_url = platform_base_url
-        config = platform_config
-        break
       end
     end
   end
@@ -451,17 +385,21 @@ local function process_users(elem, current_platform, current_base_url)
   local text = elem.text
   local username = nil
 
-  for platform_name, platform_config in pairs(platform_configs) do
-    local platform_base_url = platform_config.default_url
-    local escaped_platform_url = utils.escape_pattern(platform_base_url)
-    local url_pattern = "^" .. escaped_platform_url .. "/([%w%-%.]+)$"
+  local all_platform_names = platforms.get_all_platform_names()
+  for _, platform_name in ipairs(all_platform_names) do
+    local platform_config = platforms.get_platform_config(platform_name)
+    if platform_config then
+      local platform_base_url = platform_config.default_url
+      local escaped_platform_url = utils.escape_pattern(platform_base_url)
+      local url_pattern = '^' .. escaped_platform_url .. '/([%w%-%.]+)$'
 
-    if text:match(url_pattern) then
-      username = text:match(url_pattern)
-      if username then
-        local url_format = platform_config.url_formats.user
-        local uri = platform_base_url .. url_format:gsub("{username}", username)
-        return create_platform_link("@" .. username, uri, platform_name), platform_name, platform_base_url
+      if text:match(url_pattern) then
+        username = text:match(url_pattern)
+        if username then
+          local url_format = platform_config.url_formats.user
+          local uri = platform_base_url .. url_format:gsub('{username}', username)
+          return create_platform_link('@' .. username, uri, platform_name), platform_name, platform_base_url
+        end
       end
     end
   end
@@ -514,22 +452,26 @@ local function process_commits(elem, current_platform, current_base_url)
   end
 
   if not commit_sha then
-    for platform_name, platform_config in pairs(platform_configs) do
-      local platform_base_url = platform_config.default_url
-      local escaped_platform_url = utils.escape_pattern(platform_base_url)
-      local url_pattern = "^" .. escaped_platform_url .. "/([^/]+/[^/]+)/%-?/?commits?/(%x+)"
-      if text:match(url_pattern) then
-        repo, commit_sha = text:match(url_pattern)
-        if commit_sha:len() >= COMMIT_SHA_MIN_LENGTH then
-          if repo == repository_name then
-            short_link = commit_sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
-          else
-            short_link = repo .. "@" .. commit_sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
+    local all_platform_names = platforms.get_all_platform_names()
+    for _, platform_name in ipairs(all_platform_names) do
+      local platform_config = platforms.get_platform_config(platform_name)
+      if platform_config then
+        local platform_base_url = platform_config.default_url
+        local escaped_platform_url = utils.escape_pattern(platform_base_url)
+        local url_pattern = '^' .. escaped_platform_url .. '/([^/]+/[^/]+)/%-?/?commits?/(%x+)'
+        if text:match(url_pattern) then
+          repo, commit_sha = text:match(url_pattern)
+          if commit_sha:len() >= COMMIT_SHA_MIN_LENGTH then
+            if repo == repository_name then
+              short_link = commit_sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
+            else
+              short_link = repo .. '@' .. commit_sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
+            end
+            matched_platform = platform_name
+            matched_base_url = platform_base_url
+            config = platform_config
+            break
           end
-          matched_platform = platform_name
-          matched_base_url = platform_base_url
-          config = platform_config
-          break
         end
       end
     end

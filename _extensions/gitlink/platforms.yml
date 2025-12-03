@@ -1,0 +1,105 @@
+# Platform Configuration for Gitlink Extension
+# This file defines the built-in platform configurations and serves as a template
+# for custom platform definitions.
+
+platforms:
+  github:
+    default_url: https://github.com
+    patterns:
+      issue:
+        - '#(%d+)'
+        - '([^/]+/[^/#]+)#(%d+)'
+        - 'GH%-(%d+)'
+      merge_request:
+        - '#(%d+)'
+        - '([^/]+/[^/#]+)#(%d+)'
+      commit:
+        - '^(%x+)$'
+        - '([^/]+/[^/@]+)@(%x+)'
+        - '(%w+)@(%x+)'
+      user: '@([%w%-%.]+)'
+    url_formats:
+      issue: '/{repo}/issues/{number}'
+      pull: '/{repo}/pull/{number}'
+      commit: '/{repo}/commit/{sha}'
+      user: '/{username}'
+
+  gitlab:
+    default_url: https://gitlab.com
+    patterns:
+      issue:
+        - '#(%d+)'
+        - '([^/]+/[^/#]+)#(%d+)'
+      merge_request:
+        - '!(%d+)'
+        - '([^/]+/[^/#]+)!(%d+)'
+      commit:
+        - '^(%x+)$'
+        - '([^/]+/[^/@]+)@(%x+)'
+        - '(%w+)@(%x+)'
+      user: '@([%w%-%.]+)'
+    url_formats:
+      issue: '/{repo}/-/issues/{number}'
+      merge_request: '/{repo}/-/merge_requests/{number}'
+      commit: '/{repo}/-/commit/{sha}'
+      user: '/{username}'
+
+  codeberg:
+    default_url: https://codeberg.org
+    patterns:
+      issue:
+        - '#(%d+)'
+        - '([^/]+/[^/#]+)#(%d+)'
+      merge_request:
+        - '#(%d+)'
+        - '([^/]+/[^/#]+)#(%d+)'
+      commit:
+        - '^(%x+)$'
+        - '([^/]+/[^/@]+)@(%x+)'
+        - '(%w+)@(%x+)'
+      user: '@([%w%-%.]+)'
+    url_formats:
+      issue: '/{repo}/issues/{number}'
+      pull: '/{repo}/pulls/{number}'
+      commit: '/{repo}/commit/{sha}'
+      user: '/{username}'
+
+  gitea:
+    default_url: https://gitea.com
+    patterns:
+      issue:
+        - '#(%d+)'
+        - '([^/]+/[^/#]+)#(%d+)'
+      merge_request:
+        - '#(%d+)'
+        - '([^/]+/[^/#]+)#(%d+)'
+      commit:
+        - '^(%x+)$'
+        - '([^/]+/[^/@]+)@(%x+)'
+        - '(%w+)@(%x+)'
+      user: '@([%w%-%.]+)'
+    url_formats:
+      issue: '/{repo}/issues/{number}'
+      pull: '/{repo}/pulls/{number}'
+      commit: '/{repo}/commit/{sha}'
+      user: '/{username}'
+
+  bitbucket:
+    default_url: https://bitbucket.org
+    patterns:
+      issue:
+        - '#(%d+)'
+        - '([^/]+/[^/#]+)#(%d+)'
+      merge_request:
+        - '#(%d+)'
+        - '([^/]+/[^/#]+)#(%d+)'
+      commit:
+        - '^(%x+)$'
+        - '([^/]+/[^/@]+)@(%x+)'
+        - '(%w+)@(%x+)'
+      user: '@([%w%-%.]+)'
+    url_formats:
+      issue: '/{repo}/issues/{number}'
+      pull: '/{repo}/pull-requests/{number}'
+      commit: '/{repo}/commits/{sha}'
+      user: '/{username}'

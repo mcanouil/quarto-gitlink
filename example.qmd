@@ -308,6 +308,62 @@ If not provided, the extension will attempt to detect it from the Git remote:
 git remote get-url origin
 ```
 
+### Custom Platforms
+
+You can add support for additional platforms or customise existing ones by providing a custom platforms configuration file.
+
+**Creating a Custom Platforms File**:
+
+Create a YAML file (e.g., `custom-platforms.yml`) with your platform definitions:
+
+```yaml
+platforms:
+  gitplatform:
+    default_url: https://git.example.com
+    patterns:
+      issue:
+        - '#(%d+)'
+        - '([^/]+/[^/#]+)#(%d+)'
+      merge_request:
+        - '#(%d+)'
+        - '([^/]+/[^/#]+)#(%d+)'
+      commit:
+        - '^(%x+)$'
+        - '([^/]+/[^/@]+)@(%x+)'
+        - '(%w+)@(%x+)'
+      user: '@([%w%-%.]+)'
+    url_formats:
+      issue: '/{repo}/issues/{number}'
+      pull: '/{repo}/pulls/{number}'
+      commit: '/{repo}/commit/{sha}'
+      user: '/{username}'
+```
+
+**Using Custom Platforms**:
+
+Reference your custom platforms file in the document metadata:
+
+```yaml
+extensions:
+  gitlink:
+    platform: gitplatform
+    custom-platforms-file: custom-platforms.yml
+    repository-name: owner/repo
+```
+
+The extension will load both built-in and custom platform definitions, allowing you to use any platform you define.
+
+**Contributing New Platforms**:
+
+To contribute a new platform to the built-in configuration:
+
+1. Fork the repository.
+2. Edit [`_extensions/gitlink/platforms.yml`](_extensions/gitlink/platforms.yml) to add your platform definition.
+3. Test your configuration with a custom platforms file first.
+4. Submit a pull request with your changes.
+
+This makes it easy for the community to add support for new Git hosting platforms without modifying the main Lua code.
+
 ### Platform Badges
 
 In HTML output, Gitlink displays subtle platform badges next to links for improved accessibility and quick visual identification.

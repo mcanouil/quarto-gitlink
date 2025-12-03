@@ -251,6 +251,58 @@ In non-HTML formats, platform names appear in parentheses after the link text, s
 - Workspace-based repository structure
 - Follows [official Bitbucket markup syntax](https://support.atlassian.com/bitbucket-cloud/docs/markup-comments/)
 
+## Custom Platforms
+
+You can add support for additional Git hosting platforms by creating a custom YAML configuration file.
+
+### Creating a Custom Platform
+
+Create a YAML file (e.g., `my-platforms.yml`):
+
+```yaml
+platforms:
+  gitplatform:
+    default_url: https://git.example.com
+    patterns:
+      issue:
+        - '#(%d+)'
+        - '([^/]+/[^/#]+)#(%d+)'
+      merge_request:
+        - '#(%d+)'
+        - '([^/]+/[^/#]+)#(%d+)'
+      commit:
+        - '^(%x+)$'
+        - '([^/]+/[^/@]+)@(%x+)'
+        - '(%w+)@(%x+)'
+      user: '@([%w%-%.]+)'
+    url_formats:
+      issue: '/{repo}/issues/{number}'
+      pull: '/{repo}/pulls/{number}'
+      commit: '/{repo}/commit/{sha}'
+      user: '/{username}'
+```
+
+Reference it in your document:
+
+```yaml
+extensions:
+  gitlink:
+    platform: gitplatform
+    custom-platforms-file: my-platforms.yml
+    repository-name: owner/repo
+```
+
+### Contributing New Platforms
+
+To add a new platform to the built-in configuration:
+
+1. Fork the repository.
+2. Edit [`_extensions/gitlink/platforms.yml`](_extensions/gitlink/platforms.yml).
+3. Test your configuration using a custom platforms file first.
+4. Submit a pull request.
+
+This approach makes it easy to add support for new platforms without modifying Lua code.
+
 ## Example Document
 
 Here is the source code for a comprehensive example: [example.qmd](example.qmd).
