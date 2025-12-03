@@ -395,5 +395,3 @@ To contribute a new platform to the built-in configuration:
 2. Edit [`_extensions/gitlink/platforms.yml`](_extensions/gitlink/platforms.yml) to add your platform definition.
 3. Test your configuration with a custom platforms file first.
 4. Submit a pull request with your changes.
-
-This makes it easy for the community to add support for new Git hosting platforms without modifying the main Lua code.
