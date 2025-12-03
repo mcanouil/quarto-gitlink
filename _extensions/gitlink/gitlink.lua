@@ -137,7 +137,7 @@ local function get_repository(meta)
   local meta_custom_platforms = utils.get_metadata_value(meta, 'gitlink', 'custom-platforms-file')
 
   if not utils.is_empty(meta_custom_platforms) then
-    local custom_file_path = quarto.utils.resolve_path(meta_custom_platforms --[[@as string]])
+    local custom_file_path = meta_custom_platforms --[[@as string]]
     local ok, err = platforms.initialise(custom_file_path)
     if not ok then
       utils.log_error(
