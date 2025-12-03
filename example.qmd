@@ -334,6 +334,7 @@ platforms:
       user: '@([%w%-%.]+)'
     url_formats:
       issue: '/{repo}/issues/{number}'
+      merge_request: '/{repo}/pull/{number}'
       pull: '/{repo}/pulls/{number}'
       commit: '/{repo}/commit/{sha}'
       user: '/{username}'

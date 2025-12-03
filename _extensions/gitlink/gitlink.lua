@@ -138,9 +138,20 @@ local function get_repository(meta)
 
   if not utils.is_empty(meta_custom_platforms) then
     local custom_file_path = quarto.utils.resolve_path(meta_custom_platforms --[[@as string]])
-    platforms.initialise(custom_file_path)
+    local ok, err = platforms.initialise(custom_file_path)
+    if not ok then
+      utils.log_error(
+        EXTENSION_NAME,
+        "Failed to load custom platforms from '" .. meta_custom_platforms .. "':\n" .. (err or 'unknown error')
+      )
+      return meta
+    end
   else
-    platforms.initialise()
+    local ok, err = platforms.initialise()
+    if not ok then
+      utils.log_error(EXTENSION_NAME, "Failed to load built-in platforms:\n" .. (err or 'unknown error'))
+      return meta
+    end
   end
 
   if not utils.is_empty(meta_platform) then

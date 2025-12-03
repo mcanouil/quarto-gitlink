@@ -20,6 +20,7 @@ platforms:
       user: '@([%w%-%.]+)'
     url_formats:
       issue: '/{repo}/issues/{number}'
+      merge_request: '/{repo}/pull/{number}'
       pull: '/{repo}/pull/{number}'
       commit: '/{repo}/commit/{sha}'
       user: '/{username}'
@@ -41,6 +42,7 @@ platforms:
     url_formats:
       issue: '/{repo}/-/issues/{number}'
       merge_request: '/{repo}/-/merge_requests/{number}'
+      pull: '/{repo}/-/merge_requests/{number}'
       commit: '/{repo}/-/commit/{sha}'
       user: '/{username}'
 
@@ -60,6 +62,7 @@ platforms:
       user: '@([%w%-%.]+)'
     url_formats:
       issue: '/{repo}/issues/{number}'
+      merge_request: '/{repo}/pulls/{number}'
       pull: '/{repo}/pulls/{number}'
       commit: '/{repo}/commit/{sha}'
       user: '/{username}'
@@ -80,6 +83,7 @@ platforms:
       user: '@([%w%-%.]+)'
     url_formats:
       issue: '/{repo}/issues/{number}'
+      merge_request: '/{repo}/pulls/{number}'
       pull: '/{repo}/pulls/{number}'
       commit: '/{repo}/commit/{sha}'
       user: '/{username}'
@@ -100,6 +104,7 @@ platforms:
       user: '@([%w%-%.]+)'
     url_formats:
       issue: '/{repo}/issues/{number}'
+      merge_request: '/{repo}/pull-requests/{number}'
       pull: '/{repo}/pull-requests/{number}'
       commit: '/{repo}/commits/{sha}'
       user: '/{username}'

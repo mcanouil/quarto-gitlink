@@ -30,6 +30,9 @@
 
 local platforms_module = {}
 
+-- Load schema validation module
+local schema = require(quarto.utils.resolve_path('_modules/schema.lua'):gsub('%.lua$', ''))
+
 -- ============================================================================
 -- CONFIGURATION STORAGE
 -- ============================================================================
@@ -39,6 +42,9 @@ local platform_configs = nil
 
 --- @type table<string, table> Custom platform configurations
 local custom_platforms = {}
+
+--- @type table<string, table> Validation results for last loaded platforms
+local validation_results = {}
 
 -- ============================================================================
 -- HELPER FUNCTIONS
@@ -112,12 +118,13 @@ local function load_platforms(yaml_path)
 end
 
 --- Initialise platform configurations
+--- Loads platforms from YAML and validates them
 --- @param yaml_path string|nil Optional path to custom YAML file
---- @return boolean True if initialisation was successful, false otherwise
---- @usage platforms_module.initialise('custom-platforms.yml')
+--- @return boolean, string|nil True if initialisation was successful, error message if failed
+--- @usage local ok, err = platforms_module.initialise('custom-platforms.yml')
 function platforms_module.initialise(yaml_path)
   if platform_configs and not yaml_path then
-    return true
+    return true, nil
   end
 
   local loaded_configs = load_platforms(yaml_path)
@@ -126,18 +133,41 @@ function platforms_module.initialise(yaml_path)
     if not platform_configs then
       platform_configs = {}
     end
-    return false
+    local msg = yaml_path and ('Failed to load platforms from ' .. yaml_path) or 'Failed to load built-in platforms'
+    return false, msg
+  end
+
+  -- Validate all loaded platforms
+  local validation_results_all = schema.validate_all_platforms(loaded_configs)
+  local has_errors = false
+  local error_messages = {}
+
+  for platform_name, result in pairs(validation_results_all) do
+    if not result.valid then
+      has_errors = true
+      local platform_errors = {}
+      for _, err in ipairs(result.errors) do
+        table.insert(platform_errors, '  - ' .. err)
+      end
+      table.insert(error_messages, platform_name .. ':\n' .. table.concat(platform_errors, '\n'))
+    end
+  end
+
+  if has_errors then
+    local msg = table.concat(error_messages, '\n')
+    return false, msg
   end
 
   if platform_configs and yaml_path then
     for name, config in pairs(loaded_configs) do
       custom_platforms[name] = config
+      validation_results[name] = validation_results_all[name]
     end
   else
     platform_configs = loaded_configs
   end
 
-  return true
+  return true, nil
 end
 
 -- ============================================================================
@@ -195,38 +225,44 @@ function platforms_module.get_all_platform_names()
 end
 
 --- Register a custom platform configuration
+--- Validates the configuration against the schema before registration
 --- @param platform_name string The platform name
 --- @param config table The platform configuration
---- @return boolean True if registration was successful, false otherwise
---- @usage platforms_module.register_custom_platform('forgejo', {...})
+--- @return boolean, string|nil True if registration was successful, error message if failed
+--- @usage local ok, err = platforms_module.register_custom_platform('forgejo', {...})
 function platforms_module.register_custom_platform(platform_name, config)
   if not platform_name or not config then
-    return false
+    return false, 'Platform name and configuration are required'
   end
 
-  -- Validate required fields
-  if not config.default_url then
-    return false
-  end
+  -- Validate configuration against schema
+  local result = schema.validate_platform(platform_name, config)
 
-  if not config.patterns or not config.url_formats then
-    return false
+  if not result.valid then
+    local error_lines = {}
+    for _, err in ipairs(result.errors) do
+      table.insert(error_lines, '  - ' .. err)
+    end
+    local error_msg = 'Invalid platform configuration "' .. platform_name .. '":\n' .. table.concat(error_lines, '\n')
+    return false, error_msg
   end
 
   local name_lower = platform_name:lower()
   custom_platforms[name_lower] = config
+  validation_results[name_lower] = result
 
-  return true
+  return true, nil
 end
 
 --- Load custom platform from YAML string
+--- Parses YAML and registers the platform with full validation
 --- @param yaml_string string The YAML string containing platform configuration
 --- @param platform_name string The platform name to register
---- @return boolean True if registration was successful, false otherwise
---- @usage platforms_module.load_custom_platform_from_yaml(yaml_str, 'forgejo')
+--- @return boolean, string|nil True if registration was successful, error message if failed
+--- @usage local ok, err = platforms_module.load_custom_platform_from_yaml(yaml_str, 'forgejo')
 function platforms_module.load_custom_platform_from_yaml(yaml_string, platform_name)
   if is_empty(yaml_string) or is_empty(platform_name) then
-    return false
+    return false, 'YAML string and platform name are required'
   end
 
   local success, result = pcall(function()
@@ -237,11 +273,15 @@ function platforms_module.load_custom_platform_from_yaml(yaml_string, platform_n
     return nil
   end)
 
-  if success and result then
-    return platforms_module.register_custom_platform(platform_name, result)
+  if not success then
+    return false, 'Failed to parse YAML: ' .. tostring(result)
   end
 
-  return false
+  if not result then
+    return false, 'No platform configuration found for "' .. platform_name .. '" in YAML'
+  end
+
+  return platforms_module.register_custom_platform(platform_name, result)
 end
 
 --- Clear all custom platform configurations
@@ -258,6 +298,37 @@ end
 function platforms_module.is_platform_available(platform_name)
   local name_lower = platform_name:lower()
   return platforms_module.get_platform_config(name_lower) ~= nil
+end
+
+--- Get the validation result for a platform
+--- @param platform_name string The platform name
+--- @return table|nil The validation result or nil if not found
+--- @usage local result = platforms_module.get_validation_result('forgejo')
+function platforms_module.get_validation_result(platform_name)
+  local name_lower = platform_name:lower()
+  return validation_results[name_lower]
+end
+
+--- Validate a platform configuration against the schema
+--- Useful for testing custom platforms before registering them
+--- @param platform_name string The platform name
+--- @param config table The platform configuration to validate
+--- @return table ValidationResult with valid, errors, warnings, and info fields
+--- @usage
+---   local result = platforms_module.validate_platform_config('forgejo', config)
+---   if result.valid then print('OK') else print(table.concat(result.errors, ', ')) end
+function platforms_module.validate_platform_config(platform_name, config)
+  return schema.validate_platform(platform_name, config)
+end
+
+--- Validate all platforms in a configuration table
+--- Useful for validating entire custom platform files
+--- @param platforms table Table of platform configurations
+--- @return table<string, table> ValidationResult for each platform
+--- @usage
+---   local results = platforms_module.validate_all_platforms(platforms_config)
+function platforms_module.validate_all_platforms(platforms)
+  return schema.validate_all_platforms(platforms)
 end
 
 -- ============================================================================
