@@ -75,6 +75,8 @@ For example, use `<https://github.com/owner/repo/issues/123>` instead of `https:
 
 ## Examples
 
+:::: {.panel-tabset}
+
 ### GitHub
 
 Configure for GitHub (default):
@@ -231,7 +233,11 @@ Unlike GitHub or GitLab, Bitbucket requires the `issue` or `pull request` prefix
 
 :::
 
+:::
+
 ## Platform-Specific Features
+
+:::: {.panel-tabset}
 
 ### GitHub
 
@@ -267,6 +273,8 @@ Unlike GitHub or GitLab, Bitbucket requires the `issue` or `pull request` prefix
 - Pull request URLs use `/pull-requests/` path
 - Follows [Bitbucket's official markup syntax](https://support.atlassian.com/bitbucket-cloud/docs/markup-comments/)
 
+:::
+
 ## Configuration Options
 
 ### Platform Detection
@@ -300,10 +308,6 @@ If not provided, the extension will attempt to detect it from the Git remote:
 git remote get-url origin
 ```
 
-- Commit: `9ba12248`
-- Cross-repository commit: `group/project@9ba12248`
-- User mention: `@username`
-
 ### Platform Badges
 
 In HTML output, Gitlink displays subtle platform badges next to links for improved accessibility and quick visual identification.
@@ -336,23 +340,3 @@ extensions:
   gitlink:
     show-platform-badge: false
 ```
-
-## Platform Detection
-
-The extension can auto-detect the platform from the base URL:
-
-```yaml
-extensions:
-  gitlink:
-    base-url: https://gitlab.example.com
-    repository-name: group/project
-    # platform will be auto-detected as 'gitlab'
-```
-
-Supported platform detection:
-
-- `github.com` → github
-- `gitlab.com` or any `gitlab.*` → gitlab  
-- `codeberg.org` → codeberg
-- `gitea.com` or any `gitea.*` → gitea
-- `bitbucket.org` → bitbucket
