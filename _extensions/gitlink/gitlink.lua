@@ -117,11 +117,11 @@ local function create_platform_link(text, uri, platform_name)
   end
 end
 
---- Get repository name from metadata or git remote
+--- Get repository name from metadata or git remote.
 --- This function extracts the repository name either from document metadata
---- or by querying the git remote origin URL
---- @param meta table The document metadata table
---- @return table The metadata table (unchanged)
+--- or by querying the git remote origin URL.
+--- @param meta table The document metadata table.
+--- @return table The metadata table (unchanged).
 local function get_repository(meta)
   local meta_platform = utils.get_metadata_value(meta, 'gitlink', 'platform')
   local meta_base_url = utils.get_metadata_value(meta, 'gitlink', 'base-url')

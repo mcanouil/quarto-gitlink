@@ -205,12 +205,12 @@ Create a YAML file (e.g., `my-platforms.yml`):
 ```yaml
 platforms:
   gitplatform:
-    default_url: https://git.example.com
+    default-url: https://git.example.com
     patterns:
       issue:
         - '#(%d+)'
         - '([^/]+/[^/#]+)#(%d+)'
-      merge_request:
+      merge-request:
         - '#(%d+)'
         - '([^/]+/[^/#]+)#(%d+)'
       commit:
@@ -218,9 +218,9 @@ platforms:
         - '([^/]+/[^/@]+)@(%x+)'
         - '(%w+)@(%x+)'
       user: '@([%w%-%.]+)'
-    url_formats:
+    url-formats:
       issue: '/{repo}/issues/{number}'
-      merge_request: '/{repo}/pull/{number}'
+      merge-request: '/{repo}/pull/{number}'
       pull: '/{repo}/pulls/{number}'
       commit: '/{repo}/commit/{sha}'
       user: '/{username}'
@@ -245,23 +245,23 @@ Every platform configuration must follow this schema for validation and proper f
 ```yaml
 platforms:
   platform_name:
-    default_url: string                  # Required: Base URL for the platform
+    default-url: string                  # Required: Base URL for the platform
     patterns:
       issue: [string, ...]               # Required: Lua regex patterns for issues
-      merge_request: [string, ...]       # Required: Lua regex patterns for merge requests/PRs
+      merge-request: [string, ...]       # Required: Lua regex patterns for merge requests/PRs
       commit: [string, ...]              # Required: Lua regex patterns for commits
       user: string                       # Required: Lua regex pattern for user mentions
-    url_formats:
+    url-formats:
       issue: string                      # Required: URL template for issues
       pull: string                       # Required: URL template for pull requests
       commit: string                     # Required: URL template for commits
       user: string                       # Required: URL template for user profiles
-      merge_request: string              # Required: URL template for merge requests
+      merge-request: string              # Required: URL template for merge requests
 ```
 
 #### Field Descriptions
 
-**default_url** (required, string):
+**default-url** (required, string):
 
 - The base URL of the Git hosting platform.
 - Must start with `http://` or `https://`.
@@ -279,7 +279,7 @@ platforms:
 - Should have 1-2 patterns (single issue, cross-repository issue).
 - Example: `['#(%d+)', '([^/]+/[^/#]+)#(%d+)']`
 
-**patterns.merge_request** (required, array of strings):
+**patterns.merge-request** (required, array of strings):
 
 - Lua regex patterns for matching merge request/pull request references.
 - Should have 1-2 patterns (similar to issue patterns).
@@ -297,36 +297,36 @@ platforms:
 - Typically starts with `@`.
 - Example: `'@([%w%-%.]+)'`
 
-**url_formats** (required, object):
+**url-formats** (required, object):
 
 - URL templates for generating links.
 - Must contain five format types.
 
-**url_formats.issue** (required, string):
+**url-formats.issue** (required, string):
 
 - Template for issue URLs.
 - Placeholders: `{repo}` (repository), `{number}` (issue number).
 - Example: `'/{repo}/issues/{number}'`
 
-**url_formats.pull** (required, string):
+**url-formats.pull** (required, string):
 
 - Template for pull request URLs.
 - Placeholders: `{repo}`, `{number}`.
 - Example: `'/{repo}/pull/{number}'`
 
-**url_formats.merge_request** (required, string):
+**url-formats.merge-request** (required, string):
 
 - Template for merge request URLs.
 - Placeholders: `{repo}`, `{number}`.
 - Example: `'/{repo}/-/merge_requests/{number}'`
 
-**url_formats.commit** (required, string):
+**url-formats.commit** (required, string):
 
 - Template for commit URLs.
 - Placeholders: `{repo}`, `{sha}` (commit hash).
 - Example: `'/{repo}/commit/{sha}'`
 
-**url_formats.user** (required, string):
+**url-formats.user** (required, string):
 
 - Template for user profile URLs.
 - Placeholder: `{username}`.
@@ -350,7 +350,7 @@ Common patterns used in Gitlink configurations:
 
 Platform configurations are automatically validated for:
 
-1. **Required fields**: `default_url`, `patterns`, `url_formats` must all exist.
+1. **Required fields**: `default-url`, `patterns`, `url-formats` must all exist.
 2. **Pattern syntax**: All regex patterns are checked for valid Lua regex syntax.
 3. **URL format syntax**: URL templates must start with `/` and contain at least one placeholder.
 4. **Field completeness**: All required pattern and format types must be defined.
@@ -364,19 +364,19 @@ If your platform configuration is invalid, you will see detailed error messages 
 - `Invalid Lua regex in issue[1]: ... bad escape ...` - Pattern has invalid regex syntax.
 - `Missing required pattern type: "commit"` - A required pattern type is missing.
 - `Missing required URL format: "pull"` - A required URL format is missing.
-- `Invalid url_formats.issue: URL format must contain at least one placeholder` - Template missing placeholders.
+- `Invalid url-formats.issue: URL format must contain at least one placeholder` - Template missing placeholders.
 
 #### Example: Complete Gitea Platform
 
 ```yaml
 platforms:
   gitea:
-    default_url: https://gitea.io
+    default-url: https://gitea.io
     patterns:
       issue:
         - '#(%d+)'
         - '([^/]+/[^/#]+)#(%d+)'
-      merge_request:
+      merge-request:
         - '#(%d+)'
         - '([^/]+/[^/#]+)#(%d+)'
       commit:
@@ -384,10 +384,10 @@ platforms:
         - '([^/]+/[^/@]+)@(%x+)'
         - '(%w+)@(%x+)'
       user: '@([%w%-%.]+)'
-    url_formats:
+    url-formats:
       issue: '/{repo}/issues/{number}'
       pull: '/{repo}/pulls/{number}'
-      merge_request: '/{repo}/pulls/{number}'
+      merge-request: '/{repo}/pulls/{number}'
       commit: '/{repo}/commit/{sha}'
       user: '/{username}'
 ```

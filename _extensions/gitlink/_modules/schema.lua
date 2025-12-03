@@ -234,7 +234,7 @@ end
 --- @return nil
 local function validate_patterns_section(patterns, result)
   if not patterns then
-    add_error(result, 'Missing required field: "patterns" (add patterns section with: issue, merge_request, commit, user)')
+    add_error(result, 'Missing required field: "patterns" (add patterns section with: issue, merge-request, commit, user)')
     return
   end
 
@@ -256,23 +256,23 @@ local function validate_patterns_section(patterns, result)
       end
     end
     if not found then
-      add_warning(result, string.format('Unknown pattern type: "%s" (not recognised)', key))
+      add_warning(result, string.format('Unknown pattern type: "%s" (not recognised)', key:gsub('_', '-')))
     end
   end
 end
 
---- Validate the url_formats section of a platform configuration
---- @param url_formats any The url_formats object to validate
+--- Validate the url-formats section of a platform configuration
+--- @param url_formats any The url-formats object to validate
 --- @param result ValidationResult The validation result to update
 --- @return nil
 local function validate_url_formats_section(url_formats, result)
   if not url_formats then
-    add_error(result, 'Missing required field: "url_formats" (add url_formats section with: issue, pull, merge_request, commit, user)')
+    add_error(result, 'Missing required field: "url-formats" (add url-formats section with: issue, pull, merge-request, commit, user)')
     return
   end
 
   if not is_table(url_formats) then
-    add_error(result, string.format('Field "url_formats" must be a table, got %s', type(url_formats)))
+    add_error(result, string.format('Field "url-formats" must be a table, got %s', type(url_formats)))
     return
   end
 
@@ -284,11 +284,11 @@ local function validate_url_formats_section(url_formats, result)
                    format_type == 'merge_request' and '/{repo}/pull/{number}' or
                    format_type == 'commit' and '/{repo}/commit/{sha}' or
                    format_type == 'user' and '/{username}' or '/{path}'
-      add_error(result, string.format('Missing required URL format: "%s" (e.g., "%s")', format_type, hint))
+      add_error(result, string.format('Missing required URL format: "%s" (e.g., "%s")', format_type:gsub('_', '-'), hint))
     else
       local valid, err = is_valid_url_format(format)
       if not valid then
-        add_error(result, string.format('Invalid url_formats.%s: %s', format_type, err))
+        add_error(result, string.format('Invalid url-formats.%s: %s', format_type:gsub('_', '-'), err))
       end
     end
   end
@@ -302,7 +302,7 @@ local function validate_url_formats_section(url_formats, result)
       end
     end
     if not found then
-      add_warning(result, string.format('Unknown URL format type: "%s" (not recognised)', key))
+      add_warning(result, string.format('Unknown URL format type: "%s" (not recognised)', key:gsub('_', '-')))
     end
   end
 end
@@ -337,11 +337,11 @@ function schema_module.validate_platform(platform_name, config)
   end
 
   if not config.default_url then
-    add_error(result, 'Missing required field: "default_url" (e.g., https://github.com)')
+    add_error(result, 'Missing required field: "default-url" (e.g., https://github.com)')
   else
     local valid, err = is_valid_base_url(config.default_url)
     if not valid then
-      add_error(result, string.format('Invalid default_url: %s (e.g., https://git.example.com)', err))
+      add_error(result, string.format('Invalid default-url: %s (e.g., https://git.example.com)', err))
     end
   end
 

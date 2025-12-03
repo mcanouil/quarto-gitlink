@@ -74,7 +74,8 @@ local function convert_yaml_value(yaml_value)
   elseif type(yaml_value) == 'table' then
     local result = {}
     for key, value in pairs(yaml_value) do
-      result[key] = convert_yaml_value(value)
+      local converted_key = key:gsub('-', '_')
+      result[converted_key] = convert_yaml_value(value)
     end
     return result
   else
