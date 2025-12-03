@@ -308,6 +308,39 @@ If not provided, the extension will attempt to detect it from the Git remote:
 git remote get-url origin
 ```
 
+### Platform Badges
+
+In HTML output, Gitlink displays subtle platform badges next to links for improved accessibility and quick visual identification.
+
+**Features**:
+
+- Always visible badges showing the full platform name (GitHub, GitLab, etc.).
+- Tooltips on both links and badges.
+- Accessible to screen readers with proper ARIA labels.
+- Theme-aware styling using Bootstrap classes.
+
+**Configuration**:
+
+```yaml
+extensions:
+  gitlink:
+    show-platform-badge: true      # Show/hide badges (default: true)
+    badge-position: "after"        # "after" or "before" link (default: "after")
+```
+
+**Options**:
+
+- `show-platform-badge` (boolean): Toggle badge visibility, default `true`.
+- `badge-position` (string): Badge placement relative to link, default `"after"`.
+
+To disable badges and use only tooltips:
+
+```yaml
+extensions:
+  gitlink:
+    show-platform-badge: false
+```
+
 ### Custom Platforms
 
 You can add support for additional platforms or customise existing ones by providing a custom platforms configuration file.
@@ -364,36 +397,3 @@ To contribute a new platform to the built-in configuration:
 4. Submit a pull request with your changes.
 
 This makes it easy for the community to add support for new Git hosting platforms without modifying the main Lua code.
-
-### Platform Badges
-
-In HTML output, Gitlink displays subtle platform badges next to links for improved accessibility and quick visual identification.
-
-**Features**:
-
-- Always visible badges showing the full platform name (GitHub, GitLab, etc.).
-- Tooltips on both links and badges.
-- Accessible to screen readers with proper ARIA labels.
-- Theme-aware styling using Bootstrap classes.
-
-**Configuration**:
-
-```yaml
-extensions:
-  gitlink:
-    show-platform-badge: true      # Show/hide badges (default: true)
-    badge-position: "after"        # "after" or "before" link (default: "after")
-```
-
-**Options**:
-
-- `show-platform-badge` (boolean): Toggle badge visibility, default `true`.
-- `badge-position` (string): Badge placement relative to link, default `"after"`.
-
-To disable badges and use only tooltips:
-
-```yaml
-extensions:
-  gitlink:
-    show-platform-badge: false
-```
