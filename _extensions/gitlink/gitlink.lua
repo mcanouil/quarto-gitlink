@@ -49,6 +49,12 @@ local show_platform_badge = true
 --- @type string Badge position: "after" or "before"
 local badge_position = "after"
 
+--- @type string Badge background colour (hex or colour name)
+local badge_background_colour = "#c3c3c3"
+
+--- @type string Badge text colour (hex or colour name)
+local badge_text_colour = nil
+
 --- @type integer Full length of a git commit SHA
 local COMMIT_SHA_FULL_LENGTH = 40
 
@@ -92,12 +98,48 @@ local function create_platform_link(text, uri, platform_name)
         stylesheets = { css_path }
       })
 
+      local badge_classes = { 'gitlink-badge', 'badge', 'text-bg-secondary' }
+      local badge_style = {}
+      if not utils.is_empty(badge_background_colour) then
+        table.insert(badge_style, 'background-color: ' .. badge_background_colour .. ';')
+      end
+      if not utils.is_empty(badge_text_colour) then
+        table.insert(badge_style, 'color: ' .. badge_text_colour .. ';')
+      end
+
       local badge_attr = pandoc.Attr(
         '',
-        { 'gitlink-badge', 'badge', 'text-bg-secondary' },
-        { title = platform_label, ['aria-label'] = platform_label .. ' platform' }
+        badge_classes,
+        {
+          title = platform_label,
+          ['aria-label'] = platform_label .. ' platform',
+          style = table.concat(badge_style, ' ')
+        }
       )
       local badge = pandoc.Span({ pandoc.Str(platform_label) }, badge_attr)
+
+      local inlines = {}
+      if badge_position == "before" then
+        inlines = { badge, pandoc.Space(), link }
+      else
+        inlines = { link, badge }
+      end
+
+      return pandoc.Span(inlines)
+    else
+      return link
+    end
+  elseif quarto.doc.is_format("typst") then
+    local link = pandoc.Link(link_content, uri --[[@as string]], '', link_attr)
+
+    if show_platform_badge then
+      local bg_colour = badge_background_colour
+      local text_colour_opt = ''
+      if not utils.is_empty(badge_text_colour) then
+        text_colour_opt = ', fill: rgb("' .. badge_text_colour .. '")'
+      end
+      local badge_raw = '#box(fill: rgb("' .. bg_colour .. '"), inset: 2pt, outset: 0pt, radius: 3pt, baseline: -0.3em, text(size: 0.45em' .. text_colour_opt .. ', [' .. platform_label .. ']))'
+      local badge = pandoc.RawInline('typst', ' ' .. badge_raw)
 
       local inlines = {}
       if badge_position == "before" then
@@ -182,6 +224,16 @@ local function get_repository(meta)
   local badge_pos_meta = utils.get_metadata_value(meta, 'gitlink', 'badge-position')
   if badge_pos_meta ~= nil then
     badge_position = badge_pos_meta --[[@as string]]
+  end
+
+  local badge_bg_colour_meta = utils.get_metadata_value(meta, 'gitlink', 'badge-background-colour')
+  if not utils.is_empty(badge_bg_colour_meta) then
+    badge_background_colour = badge_bg_colour_meta --[[@as string]]
+  end
+
+  local badge_text_colour_meta = utils.get_metadata_value(meta, 'gitlink', 'badge-text-colour')
+  if not utils.is_empty(badge_text_colour_meta) then
+    badge_text_colour = badge_text_colour_meta --[[@as string]]
   end
 
   return meta

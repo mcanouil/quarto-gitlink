@@ -387,6 +387,37 @@ extensions:
 
 The extension will load both built-in and custom platform definitions, allowing you to use any platform you define.
 
+## Customising Badge Appearance
+
+You can customise the appearance of platform badges in HTML and Typst output:
+
+```yaml
+extensions:
+  gitlink:
+    show-platform-badge: true           # Show/hide badges (default: true)
+    badge-position: "after"             # Position: "after" or "before" (default: "after")
+    badge-background-colour: "#e8f4f8"  # Badge background colour (default: "#c3c3c3")
+    badge-text-colour: "#003366"        # Badge text colour (optional)
+```
+
+**Colour Options:**
+
+- `badge-background-colour`: Set the background colour using hex codes (e.g. `#e8f4f8`) or colour names.
+- `badge-text-colour`: Set the text colour (optional). If not specified, the default text colour is used.
+
+**Example with Custom Colours:**
+
+Here is an example with a light blue background and dark blue text:
+
+```yaml
+extensions:
+  gitlink:
+    badge-background-colour: "#e8f4f8"
+    badge-text-colour: "#003366"
+```
+
+These colours will be applied to badges in both HTML and Typst output formats.
+
 **Contributing New Platforms**:
 
 To contribute a new platform to the built-in configuration:

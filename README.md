@@ -183,16 +183,27 @@ Supports: `https://github.com/owner/repo.git`, `git@gitlab.com:group/project.git
 
 ### Platform Badges
 
-In HTML output, Gitlink adds subtle platform badges to links. You can control them with:
+Gitlink adds subtle platform badges to links in HTML and Typst output. You can control them with:
 
 ```yaml
 extensions:
   gitlink:
-    show-platform-badge: true      # Show/hide badges (default: true)
-    badge-position: "after"        # "after" or "before" link (default: "after")
+    show-platform-badge: true           # Show/hide badges (default: true)
+    badge-position: "after"             # "after" or "before" link (default: "after")
+    badge-background-colour: "#c3c3c3"  # Badge background colour (default: "#c3c3c3")
+    badge-text-colour: "#000000"        # Badge text colour (optional)
 ```
 
-Badges are always visible, accessible, styled with Bootstrap, and include tooltips. In non-HTML formats, platform names appear in parentheses (e.g., `#123 (GitHub)`).
+**Features:**
+
+- **HTML output**: Badges are styled with Bootstrap classes and include tooltips. You can customise colours with hex codes or colour names.
+- **Typst output**: Badges appear as styled boxes with configurable colours.
+- **Other formats**: Platform names appear in parentheses (e.g., `#123 (GitHub)`).
+
+**Colour Customisation:**
+
+- `badge-background-colour`: Set the background colour (hex code or colour name). Defaults to `#c3c3c3` (grey).
+- `badge-text-colour`: Set the text colour (hex code or colour name). If not specified, uses the default text colour.
 
 ## Custom Platforms
 
