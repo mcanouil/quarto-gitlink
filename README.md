@@ -58,9 +58,11 @@ extensions:
       at: post-quarto
   ```
 
-### Supported Platforms and Reference Formats
+## Supported Platforms
 
-#### GitHub
+Each platform has different reference formats. Choose your platform below:
+
+### GitHub
 
 Official documentation: [Autolinked references](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/autolinked-references-and-urls)
 
@@ -74,11 +76,11 @@ extensions:
 
 **References:**
 
-- Issues/PRs: `#123`, `owner/repo#123`
+- Issues/PRs: `#123`, `owner/repo#123`, `GH-123`
 - Commits: `a5c3785`, `owner/repo@a5c3785`
 - Users: `@username`
 
-#### GitLab
+### GitLab
 
 Official documentation: [GitLab Flavored Markdown](https://docs.gitlab.com/ee/user/markdown.html#gitlab-specific-references)
 
@@ -97,7 +99,7 @@ extensions:
 - Commits: `9ba12248`, `group/project@9ba12248`
 - Users: `@username`
 
-#### Codeberg
+### Codeberg
 
 Official documentation: [Codeberg Documentation](https://docs.codeberg.org/) (uses Forgejo)
 
@@ -115,7 +117,7 @@ extensions:
 - Commits: `e59ff077`, `user/repo@e59ff077`
 - Users: `@username`
 
-#### Gitea
+### Gitea
 
 Official documentation: [Gitea Documentation](https://docs.gitea.com/usage/issues-prs/automatically-linked-references)
 
@@ -133,7 +135,7 @@ extensions:
 - Commits: `e59ff077`, `user/repo@e59ff077`
 - Users: `@username`
 
-#### Bitbucket
+### Bitbucket
 
 Official documentation: [Bitbucket markup syntax](https://support.atlassian.com/bitbucket-cloud/docs/markup-comments/)
 
@@ -157,99 +159,268 @@ Bitbucket requires keyword prefixes:
 > [!NOTE]
 > The `issue` and `pull request` keywords are required to distinguish reference types.
 
+## Features and Configuration
+
 ### URL Processing
 
-The extension automatically processes full URLs and converts them to the appropriate short references:
+The extension automatically processes full URLs and converts them to short references:
 
 **Input:** `https://github.com/owner/repo/issues/123`
-
-**Output:** `owner/repo#123` (or `#123` if it's the current repository)
+**Output:** `owner/repo#123` (or `#123` if current repository)
 
 > [!TIP]
-> For best results, wrap URLs in angle brackets (`<URL>`) rather than using bare URLs.
-> For example, use `<https://github.com/owner/repo/issues/123>` instead of `https://github.com/owner/repo/issues/123`.
+> Wrap URLs in angle brackets (`<URL>`) for best results instead of bare URLs.
 
 ### Repository Detection
 
-If `repository-name` is not specified, the extension attempts to detect it from the Git remote:
+If `repository-name` is not specified, the extension auto-detects from git remote:
 
 ```bash
 git remote get-url origin
 ```
 
-This works for most Git hosting platforms and extracts the `owner/repo` format from URLs like:
-
-- `https://github.com/owner/repo.git`
-- `git@gitlab.com:group/project.git`
-- `ssh://git@codeberg.org/user/repo.git`
+Supports: `https://github.com/owner/repo.git`, `git@gitlab.com:group/project.git`, `ssh://git@codeberg.org/user/repo.git`
 
 ### Platform Badges
 
-In HTML output, Gitlink adds subtle platform badges to links, making it easy to identify which platform a link references at a glance.
-
-Platform badges are:
-
-- Always visible (not just on hover).
-- Accessible to screen readers with proper ARIA labels.
-- Styled using Bootstrap for automatic theme compatibility.
-- Accompanied by tooltips with full platform names.
-
-You can control badge appearance using metadata options:
+Gitlink adds subtle platform badges to links in HTML and Typst output. You can control them with:
 
 ```yaml
 extensions:
   gitlink:
-    show-platform-badge: true      # Show/hide badges (default: true)
-    badge-position: "after"        # "after" or "before" link (default: "after")
+    show-platform-badge: true           # Show/hide badges (default: true)
+    badge-position: "after"             # "after" or "before" link (default: "after")
+    badge-background-colour: "#c3c3c3"  # Badge background colour (default: "#c3c3c3")
+    badge-text-colour: "#000000"        # Badge text colour (optional)
 ```
 
-**Configuration Options**:
+**Features:**
 
-- `show-platform-badge` (boolean): Toggle badge visibility, default `true`.
-- `badge-position` (string): Badge placement relative to link, default `"after"`.
+- **HTML output**: Badges are styled with Bootstrap classes and include tooltips. You can customise colours with hex codes or colour names.
+- **Typst output**: Badges appear as styled boxes with configurable colours.
+- **Other formats**: Platform names appear in parentheses (e.g., `#123 (GitHub)`).
 
-In non-HTML formats, platform names appear in parentheses after the link text, such as `#123 (GitHub)`.
+**Colour Customisation:**
 
-### Platform-Specific Features
+- `badge-background-colour`: Set the background colour (hex code or colour name). Defaults to `#c3c3c3` (grey).
+- `badge-text-colour`: Set the text colour (hex code or colour name). If not specified, uses the default text colour.
 
-#### GitHub Features
+## Custom Platforms
 
-- Supports `GH-123` format for issues
-- Pull requests use same format as issues (`#123`)
-- Automatic 7-character SHA shortening for commits
-- Reference: [GitHub Autolinked references](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/autolinked-references-and-urls)
+You can add support for additional Git hosting platforms by creating a custom YAML configuration file.
 
-#### GitLab Features
+### Creating a Custom Platform
 
-- Merge requests use `!123` format (distinct from issues)
-- Issues use `#123` format
-- URLs include `/-/` in the path structure
-- Full SHA support with automatic shortening
-- Reference: [GitLab Flavored Markdown](https://docs.gitlab.com/ee/user/markdown.html#gitlab-specific-references)
+Create a YAML file (e.g., `my-platforms.yml`):
 
-#### Codeberg Features (Forgejo)
+```yaml
+platforms:
+  gitplatform:
+    base-url: https://git.example.com
+    patterns:
+      issue:
+        - '#(%d+)'
+        - '([^/]+/[^/#]+)#(%d+)'
+      merge-request:
+        - '#(%d+)'
+        - '([^/]+/[^/#]+)#(%d+)'
+      commit:
+        - '^(%x+)$'
+        - '([^/]+/[^/@]+)@(%x+)'
+        - '(%w+)@(%x+)'
+      user: '@([%w%-%.]+)'
+    url-formats:
+      issue: '/{repo}/issues/{number}'
+      merge-request: '/{repo}/pull/{number}'
+      pull: '/{repo}/pulls/{number}'
+      commit: '/{repo}/commit/{sha}'
+      user: '/{username}'
+```
 
-- Issues and pull requests both use `#123` format
-- Follows Forgejo/Gitea conventions
-- Automatic reference linking in comments
-- Reference: [Codeberg Documentation](https://docs.codeberg.org/)
+Reference it in your document:
 
-#### Gitea Features
+```yaml
+extensions:
+  gitlink:
+    platform: gitplatform
+    custom-platforms-file: my-platforms.yml
+    repository-name: owner/repo
+```
 
-- Issues use `#123` format
-- Pull requests use `#123` format (same as issues)
-- Supports both internal and external issue trackers
-- Actionable references (closes, fixes, etc.)
-- Reference: [Gitea Documentation](https://docs.gitea.com/usage/issues-prs/automatically-linked-references)
+### Platform Configuration Schema Reference
 
-#### Bitbucket Features
+Every platform configuration must follow this schema for validation and proper functionality.
 
-- Issues require `issue #123` format (with "issue" keyword)
-- Pull requests require `pull request #456` format (with "pull request" keyword)
-- Cross-repository references: `issue workspace/repo#123` or `pull request workspace/repo#456`
-- Pull request URLs use `/pull-requests/` path
-- Workspace-based repository structure
-- Follows [official Bitbucket markup syntax](https://support.atlassian.com/bitbucket-cloud/docs/markup-comments/)
+#### Platform Configuration Structure
+
+```yaml
+platforms:
+  platform-name:
+    base-url: string                  # Required: Base URL for the platform
+    patterns:
+      issue: [string, ...]               # Required: Lua regex patterns for issues
+      merge-request: [string, ...]       # Required: Lua regex patterns for merge requests/PRs
+      commit: [string, ...]              # Required: Lua regex patterns for commits
+      user: string                       # Required: Lua regex pattern for user mentions
+    url-formats:
+      issue: string                      # Required: URL template for issues
+      pull: string                       # Required: URL template for pull requests
+      commit: string                     # Required: URL template for commits
+      user: string                       # Required: URL template for user profiles
+      merge-request: string              # Required: URL template for merge requests
+```
+
+#### Field Descriptions
+
+**base-url** (required, string):
+
+- The base URL of the Git hosting platform.
+- Must start with `http://` or `https://`.
+- Example: `https://git.example.com`
+
+**patterns** (required, object):
+
+- Regular expressions for matching references.
+- Uses Lua regex syntax.
+- Must contain four pattern types.
+
+**patterns.issue** (required, array of strings):
+
+- Lua regex patterns for matching issue references.
+- Should have 1-2 patterns (single issue, cross-repository issue).
+- Example: `['#(%d+)', '([^/]+/[^/#]+)#(%d+)']`
+
+**patterns.merge-request** (required, array of strings):
+
+- Lua regex patterns for matching merge request/pull request references.
+- Should have 1-2 patterns (similar to issue patterns).
+- Example: `['!(%d+)', '([^/]+/[^/#]+)!(%d+)']`
+
+**patterns.commit** (required, array of strings):
+
+- Lua regex patterns for matching commit references.
+- Should have 2-3 patterns (SHA, cross-repository, user@SHA).
+- Example: `['^(%x+)$', '([^/]+/[^/@]+)@(%x+)', '(%w+)@(%x+)']`
+
+**patterns.user** (required, string):
+
+- Single Lua regex pattern for matching user mentions.
+- Typically starts with `@`.
+- Example: `'@([%w%-%.]+)'`
+
+**url-formats** (required, object):
+
+- URL templates for generating links.
+- Must contain five format types.
+
+**url-formats.issue** (required, string):
+
+- Template for issue URLs.
+- Placeholders: `{repo}` (repository), `{number}` (issue number).
+- Example: `'/{repo}/issues/{number}'`
+
+**url-formats.pull** (required, string):
+
+- Template for pull request URLs.
+- Placeholders: `{repo}`, `{number}`.
+- Example: `'/{repo}/pull/{number}'`
+
+**url-formats.merge-request** (required, string):
+
+- Template for merge request URLs.
+- Placeholders: `{repo}`, `{number}`.
+- Example: `'/{repo}/-/merge_requests/{number}'`
+
+**url-formats.commit** (required, string):
+
+- Template for commit URLs.
+- Placeholders: `{repo}`, `{sha}` (commit hash).
+- Example: `'/{repo}/commit/{sha}'`
+
+**url-formats.user** (required, string):
+
+- Template for user profile URLs.
+- Placeholder: `{username}`.
+- Example: `'/{username}'`
+
+#### Lua Regex Pattern Guide
+
+Common patterns used in Gitlink configurations:
+
+| Pattern                | Matches                   | Example           |
+| ---------------------- | ------------------------- | ----------------- |
+| `#(%d+)`               | Issue with number         | `#123`            |
+| `!(%d+)`               | Merge request with number | `!456`            |
+| `(%x+)`                | Hexadecimal string (SHA)  | `a5c3785d9`       |
+| `@([%w%-%.]+)`         | User mention              | `@username`       |
+| `([^/]+/[^/#]+)#(%d+)` | Cross-repo issue          | `owner/repo#123`  |
+| `^(%x+)$`              | Full commit SHA           | `abc123def`       |
+| `(%w+)@(%x+)`          | User with commit          | `username@abc123` |
+
+#### Validation Rules
+
+Platform configurations are automatically validated for:
+
+1. **Required fields**: `base-url`, `patterns`, `url-formats` must all exist.
+2. **Pattern syntax**: All regex patterns are checked for valid Lua regex syntax.
+3. **URL format syntax**: URL templates must start with `/` and contain at least one placeholder.
+4. **Field completeness**: All required pattern and format types must be defined.
+5. **Type correctness**: Patterns must be arrays, URL formats must be strings.
+
+#### Validation Errors
+
+If your platform configuration is invalid, you will see detailed error messages such as:
+
+- `Missing required field: "patterns"` - The patterns object is missing.
+- `Invalid Lua regex in issue[1]: ... bad escape ...` - Pattern has invalid regex syntax.
+- `Missing required pattern type: "commit"` - A required pattern type is missing.
+- `Missing required URL format: "pull"` - A required URL format is missing.
+- `Invalid url-formats.issue: URL format must contain at least one placeholder` - Template missing placeholders.
+
+#### Example: Complete Gitea Platform
+
+```yaml
+platforms:
+  gitea:
+    base-url: https://gitea.io
+    patterns:
+      issue:
+        - '#(%d+)'
+        - '([^/]+/[^/#]+)#(%d+)'
+      merge-request:
+        - '#(%d+)'
+        - '([^/]+/[^/#]+)#(%d+)'
+      commit:
+        - '^(%x+)$'
+        - '([^/]+/[^/@]+)@(%x+)'
+        - '(%w+)@(%x+)'
+      user: '@([%w%-%.]+)'
+    url-formats:
+      issue: '/{repo}/issues/{number}'
+      pull: '/{repo}/pulls/{number}'
+      merge-request: '/{repo}/pulls/{number}'
+      commit: '/{repo}/commit/{sha}'
+      user: '/{username}'
+```
+
+#### Testing Custom Platforms
+
+After creating a custom platform YAML file, you can validate it by:
+
+1. Using the Gitlink extension with `custom-platforms-file` option.
+2. Checking the Quarto output for validation errors.
+3. Creating a test document and running `quarto render`.
+
+### Contributing New Platforms
+
+To add a new platform to the built-in configuration:
+
+1. Fork the repository.
+2. Edit [`_extensions/gitlink/platforms.yml`](_extensions/gitlink/platforms.yml).
+3. Test your configuration using a custom platforms file first.
+4. Submit a pull request.
+
+This approach makes it easy to add support for new platforms without modifying Lua code.
 
 ## Example Document
 
