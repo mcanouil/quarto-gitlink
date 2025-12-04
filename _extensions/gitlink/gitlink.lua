@@ -138,7 +138,10 @@ local function create_platform_link(text, uri, platform_name)
       if not utils.is_empty(badge_text_colour) then
         text_colour_opt = ', fill: rgb("' .. badge_text_colour .. '")'
       end
-      local badge_raw = '#box(fill: rgb("' .. bg_colour .. '"), inset: 2pt, outset: 0pt, radius: 3pt, baseline: -0.3em, text(size: 0.45em' .. text_colour_opt .. ', [' .. platform_label .. ']))'
+      local badge_raw = '#box(fill: rgb("' ..
+          bg_colour ..
+          '"), inset: 2pt, outset: 0pt, radius: 3pt, baseline: -0.3em, text(size: 0.45em' ..
+          text_colour_opt .. ', [' .. platform_label .. ']))'
       local badge = pandoc.RawInline('typst', ' ' .. badge_raw)
 
       local inlines = {}
@@ -262,7 +265,7 @@ local function process_mentions(cite)
   if references_ids_set[cite.citations[1].id] then
     return cite
   else
-    local mention_text = pandoc.utils.stringify(cite.content)
+    local mention_text = utils.stringify(cite.content)
     local config = get_platform_config(platform)
     if config and config.patterns.user then
       local username = mention_text:match(config.patterns.user)
@@ -581,7 +584,7 @@ end
 --- @param elem pandoc.Link The link element to process
 --- @return pandoc.Link The original or modified link
 local function process_link(elem)
-  local link_text = pandoc.utils.stringify(elem.content)
+  local link_text = utils.stringify(elem.content)
   local link_target = elem.target
 
   if link_text == link_target then
