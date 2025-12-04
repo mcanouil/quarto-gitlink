@@ -42,22 +42,6 @@ extensions:
 ---
 ```
 
-- Old (<1.8.21):
-
-  ```yml
-  filters:
-    - quarto
-    - gitlink
-  ```
-
-- New (>=1.8.21):
-
-  ```yml
-  filters:
-    - path: gitlink
-      at: post-quarto
-  ```
-
 ## Supported Platforms
 
 Each platform has different reference formats. Choose your platform below:

@@ -50,21 +50,6 @@ extensions:
 ---
 ```
 
-- Old (<1.8.21):
-
-  ```yml
-  filters:
-    - quarto
-    - gitlink
-  ```
-
-- New (>=1.8.21):
-
-  ```yml
-  filters:
-    - path: gitlink
-      at: post-quarto
-  ```
 
 :::: {.callout-tip}
 
