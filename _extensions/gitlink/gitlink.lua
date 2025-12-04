@@ -174,12 +174,13 @@ local function get_repository(meta)
   local meta_custom_platforms = utils.get_metadata_value(meta, 'gitlink', 'custom-platforms-file')
 
   if not utils.is_empty(meta_custom_platforms) then
-    local custom_file_path = meta_custom_platforms --[[@as string]]
+    local original_path = meta_custom_platforms --[[@as string]]
+    local custom_file_path = utils.resolve_project_path(original_path)
     local ok, err = platforms.initialise(custom_file_path)
     if not ok then
       utils.log_error(
         EXTENSION_NAME,
-        "Failed to load custom platforms from '" .. meta_custom_platforms .. "':\n" .. (err or 'unknown error')
+        "Failed to load custom platforms from '" .. original_path .. "':\n" .. (err or 'unknown error')
       )
       return meta
     end
