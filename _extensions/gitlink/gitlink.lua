@@ -23,7 +23,7 @@
 ]]
 
 --- Extension name constant
-local EXTENSION_NAME = "gitlink"
+local EXTENSION_NAME = 'gitlink'
 
 --- Load utils, git, bitbucket, and platforms modules
 local utils = require(quarto.utils.resolve_path('_modules/utils.lua'):gsub('%.lua$', ''))
@@ -32,13 +32,13 @@ local bitbucket = require(quarto.utils.resolve_path('_modules/bitbucket.lua'):gs
 local platforms = require(quarto.utils.resolve_path('_modules/platforms.lua'):gsub('%.lua$', ''))
 
 --- @type string The platform type (github, gitlab, codeberg, gitea, bitbucket)
-local platform = "github"
+local platform = 'github'
 
 --- @type string|nil The repository name (e.g., "owner/repo")
 local repository_name = nil
 
 --- @type string The base URL for the Git hosting platform
-local base_url = "https://github.com"
+local base_url = 'https://github.com'
 
 --- @type table<string, boolean> Set of reference IDs from the document
 local references_ids_set = {}
@@ -47,10 +47,10 @@ local references_ids_set = {}
 local show_platform_badge = true
 
 --- @type string Badge position: "after" or "before"
-local badge_position = "after"
+local badge_position = 'after'
 
 --- @type string Badge background colour (hex or colour name)
-local badge_background_colour = "#c3c3c3"
+local badge_background_colour = '#c3c3c3'
 
 --- @type string Badge text colour (hex or colour name)
 local badge_text_colour = nil
