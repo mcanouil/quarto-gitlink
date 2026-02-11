@@ -17,7 +17,7 @@ extensions:
   gitlink:
     platform: github
     base-url: https://github.com
-    repository-name: mcanouil/quarto-gitlink
+    repository-name: mcanouil/quarto-gitlink@1.1.1
 ---
 
 A Quarto extension that automatically converts Git hosting platform references (issues, pull requests, commits, users) into clickable links. Supports **GitHub**, **GitLab**, **Codeberg**, **Gitea**, and **Bitbucket**.
@@ -25,7 +25,7 @@ A Quarto extension that automatically converts Git hosting platform references (
 ## Installation
 
 ```bash
-quarto add mcanouil/quarto-gitlink
+quarto add mcanouil/quarto-gitlink@1.1.1
 ```
 
 This will install the extension under the `_extensions` subdirectory.
@@ -71,13 +71,13 @@ extensions:
   gitlink:
     platform: github
     base-url: https://github.com
-    repository-name: mcanouil/quarto-gitlink
+    repository-name: mcanouil/quarto-gitlink@1.1.1
 ```
 
 Reference issues and pull requests:
 
 - Simple issue reference: #1
-- Cross-repository issue: mcanouil/quarto-gitlink#1
+- Cross-repository issue: mcanouil/quarto-gitlink@1.1.1#1
 - Commit reference: cb0350d0316d1c420508338d02e56f5c8f907226
 - Cross-repository commit: mcanouil/quarto-gitlink@cb0350d0316d1c420508338d02e56f5c8f907226
 - User mention: @mcanouil
@@ -85,9 +85,9 @@ Reference issues and pull requests:
 
 Full URL examples (automatically shortened):
 
-- Issue URL: <https://github.com/mcanouil/quarto-gitlink/issues/1>
-- Pull request URL: <https://github.com/mcanouil/quarto-gitlink/pull/10>
-- Commit URL: <https://github.com/mcanouil/quarto-gitlink/commit/cb0350d0316d1c420508338d02e56f5c8f907226>
+- Issue URL: <https://github.com/mcanouil/quarto-gitlink@1.1.1/issues/1>
+- Pull request URL: <https://github.com/mcanouil/quarto-gitlink@1.1.1/pull/10>
+- Commit URL: <https://github.com/mcanouil/quarto-gitlink@1.1.1/commit/cb0350d0316d1c420508338d02e56f5c8f907226>
 - Cross-repository issue URL: <https://github.com/quarto-dev/quarto-cli/issues/10000>
 - User/organisation URL: <https://github.com/mcanouil>
 

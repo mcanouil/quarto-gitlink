@@ -15,7 +15,7 @@ A Quarto extension that automatically converts Git hosting platform references (
 ## Installation
 
 ```bash
-quarto add mcanouil/quarto-gitlink
+quarto add mcanouil/quarto-gitlink@1.1.1
 ```
 
 This will install the extension under the `_extensions` subdirectory.
