@@ -1,0 +1,56 @@
+# _schema.yml for "gitlink" filter extension
+# Describes options for IDE tooling and runtime validation.
+
+# Extension-level metadata options.
+# Configured in _quarto.yml, _metadata.yml, or document front matter:
+#   extensions:
+#     gitlink:
+#       platform: "github"
+#       repository-name: "owner/repo"
+options:
+  platform:
+    type: string
+    default: "github"
+    description: "Git hosting platform to use for link generation."
+    enum:
+      - github
+      - gitlab
+      - codeberg
+      - gitea
+      - bitbucket
+    enum-case-insensitive: true
+  repository-name:
+    type: string
+    description: "Repository in 'owner/repo' format. Auto-detected from git remote if not set."
+  base-url:
+    type: string
+    description: "Base URL for the Git hosting platform. Defaults to the platform's standard URL."
+  show-platform-badge:
+    type: boolean
+    default: true
+    description: "Whether to display a platform badge alongside generated links."
+  badge-position:
+    type: string
+    default: "after"
+    description: "Position of the platform badge relative to the link."
+    enum:
+      - after
+      - before
+  badge-background-colour:
+    type: string
+    default: "#c3c3c3"
+    description: "Background colour for the platform badge."
+    aliases:
+      - badge-background-color
+    completion:
+      type: color
+  badge-text-colour:
+    type: string
+    description: "Text colour for the platform badge."
+    aliases:
+      - badge-text-color
+    completion:
+      type: color
+  custom-platforms-file:
+    type: string
+    description: "Path to a YAML file defining custom platform configurations."
