@@ -54,3 +54,8 @@ options:
   custom-platforms-file:
     type: string
     description: "Path to a YAML file defining custom platform configurations."
+    completion:
+      type: file
+      extensions:
+        - .yml
+        - .yaml
