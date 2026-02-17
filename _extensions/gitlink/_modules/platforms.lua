@@ -7,7 +7,7 @@
 local platforms_module = {}
 
 -- Load schema validation module
-local schema = require(quarto.utils.resolve_path('_modules/schema.lua'):gsub('%.lua$', ''))
+local schema = require(quarto.utils.resolve_path('_modules/platform-schema.lua'):gsub('%.lua$', ''))
 
 -- ============================================================================
 -- CONFIGURATION STORAGE
