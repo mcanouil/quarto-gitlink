@@ -1,0 +1,29 @@
+{
+	"GitHub config": {
+		"prefix": "gitlink-github",
+		"body": [
+			"filters:",
+			"  - path: gitlink",
+			"    at: post-quarto",
+			"extensions:",
+			"  gitlink:",
+			"    platform: github",
+			"    repository-name: ${1:owner/repo}"
+		],
+		"description": "Activate gitlink for GitHub references"
+	},
+	"GitLab config": {
+		"prefix": "gitlink-gitlab",
+		"body": [
+			"filters:",
+			"  - path: gitlink",
+			"    at: post-quarto",
+			"extensions:",
+			"  gitlink:",
+			"    platform: gitlab",
+			"    base-url: https://gitlab.com",
+			"    repository-name: ${1:group/project}"
+		],
+		"description": "Activate gitlink for GitLab references"
+	}
+}
