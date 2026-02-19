@@ -1,6 +1,6 @@
 {
 	"GitHub config": {
-		"prefix": "gitlink-github",
+		"prefix": "github-meta",
 		"body": [
 			"filters:",
 			"  - path: gitlink",
@@ -13,7 +13,7 @@
 		"description": "Activate gitlink for GitHub references"
 	},
 	"GitLab config": {
-		"prefix": "gitlink-gitlab",
+		"prefix": "gitlab-meta",
 		"body": [
 			"filters:",
 			"  - path: gitlink",
