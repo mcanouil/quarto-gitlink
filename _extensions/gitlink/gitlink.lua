@@ -6,11 +6,12 @@
 --- Extension name constant
 local EXTENSION_NAME = 'gitlink'
 
---- Load utils, git, bitbucket, and platforms modules
+--- Load utils, git, bitbucket, platforms, and schema modules
 local utils = require(quarto.utils.resolve_path('_modules/utils.lua'):gsub('%.lua$', ''))
 local git = require(quarto.utils.resolve_path('_modules/git.lua'):gsub('%.lua$', ''))
 local bitbucket = require(quarto.utils.resolve_path('_modules/bitbucket.lua'):gsub('%.lua$', ''))
 local platforms = require(quarto.utils.resolve_path('_modules/platforms.lua'):gsub('%.lua$', ''))
+local schema = require(quarto.utils.resolve_path('_modules/schema.lua'):gsub('%.lua$', ''))
 
 --- @type string The platform type (github, gitlab, codeberg, gitea, bitbucket)
 local platform = 'github'
@@ -149,6 +150,8 @@ end
 --- @param meta table The document metadata table.
 --- @return table The metadata table (unchanged).
 local function get_repository(meta)
+  schema.validate_options(meta, EXTENSION_NAME, quarto.utils.resolve_path('_schema.yml'))
+
   local meta_platform = utils.get_metadata_value(meta, 'gitlink', 'platform')
   local meta_base_url = utils.get_metadata_value(meta, 'gitlink', 'base-url')
   local meta_repository = utils.get_metadata_value(meta, 'gitlink', 'repository-name')
