@@ -6,8 +6,12 @@
 --- Extension name constant
 local EXTENSION_NAME = 'gitlink'
 
---- Load utils, git, bitbucket, and platforms modules
-local utils = require(quarto.utils.resolve_path('_modules/utils.lua'):gsub('%.lua$', ''))
+--- Load modules
+local str = require(quarto.utils.resolve_path('_modules/string.lua'):gsub('%.lua$', ''))
+local log = require(quarto.utils.resolve_path('_modules/logging.lua'):gsub('%.lua$', ''))
+local meta_mod = require(quarto.utils.resolve_path('_modules/metadata.lua'):gsub('%.lua$', ''))
+local html_mod = require(quarto.utils.resolve_path('_modules/html.lua'):gsub('%.lua$', ''))
+local paths = require(quarto.utils.resolve_path('_modules/paths.lua'):gsub('%.lua$', ''))
 local git = require(quarto.utils.resolve_path('_modules/git.lua'):gsub('%.lua$', ''))
 local bitbucket = require(quarto.utils.resolve_path('_modules/bitbucket.lua'):gsub('%.lua$', ''))
 local platforms = require(quarto.utils.resolve_path('_modules/platforms.lua'):gsub('%.lua$', ''))
@@ -58,7 +62,7 @@ end
 --- @param platform_name string|nil The platform name
 --- @return pandoc.Link|pandoc.Span|nil A Pandoc Link element with platform label or Span containing link and badge
 local function create_platform_link(text, uri, platform_name)
-  if utils.is_empty(uri) or utils.is_empty(text) or utils.is_empty(platform_name) then
+  if str.is_empty(uri) or str.is_empty(text) or str.is_empty(platform_name) then
     return nil
   end
 
@@ -73,7 +77,7 @@ local function create_platform_link(text, uri, platform_name)
 
     if show_platform_badge then
       local css_path = quarto.utils.resolve_path("gitlink.css")
-      utils.ensure_html_dependency({
+      html_mod.ensure_html_dependency({
         name = 'quarto-gitlink',
         version = '1.0.0',
         stylesheets = { css_path }
@@ -81,10 +85,10 @@ local function create_platform_link(text, uri, platform_name)
 
       local badge_classes = { 'gitlink-badge', 'badge', 'text-bg-secondary' }
       local badge_style = {}
-      if not utils.is_empty(badge_background_colour) then
+      if not str.is_empty(badge_background_colour) then
         table.insert(badge_style, 'background-color: ' .. badge_background_colour .. ';')
       end
-      if not utils.is_empty(badge_text_colour) then
+      if not str.is_empty(badge_text_colour) then
         table.insert(badge_style, 'color: ' .. badge_text_colour .. ';')
       end
 
@@ -116,7 +120,7 @@ local function create_platform_link(text, uri, platform_name)
     if show_platform_badge then
       local bg_colour = badge_background_colour
       local text_colour_opt = ''
-      if not utils.is_empty(badge_text_colour) then
+      if not str.is_empty(badge_text_colour) then
         text_colour_opt = ', fill: rgb("' .. badge_text_colour .. '")'
       end
       local badge_raw = '#box(fill: rgb("' ..
@@ -149,17 +153,17 @@ end
 --- @param meta table The document metadata table.
 --- @return table The metadata table (unchanged).
 local function get_repository(meta)
-  local meta_platform = utils.get_metadata_value(meta, 'gitlink', 'platform')
-  local meta_base_url = utils.get_metadata_value(meta, 'gitlink', 'base-url')
-  local meta_repository = utils.get_metadata_value(meta, 'gitlink', 'repository-name')
-  local meta_custom_platforms = utils.get_metadata_value(meta, 'gitlink', 'custom-platforms-file')
+  local meta_platform = meta_mod.get_metadata_value(meta, 'gitlink', 'platform')
+  local meta_base_url = meta_mod.get_metadata_value(meta, 'gitlink', 'base-url')
+  local meta_repository = meta_mod.get_metadata_value(meta, 'gitlink', 'repository-name')
+  local meta_custom_platforms = meta_mod.get_metadata_value(meta, 'gitlink', 'custom-platforms-file')
 
-  if not utils.is_empty(meta_custom_platforms) then
+  if not str.is_empty(meta_custom_platforms) then
     local original_path = meta_custom_platforms --[[@as string]]
-    local custom_file_path = utils.resolve_project_path(original_path)
+    local custom_file_path = paths.resolve_project_path(original_path)
     local ok, err = platforms.initialise(custom_file_path)
     if not ok then
-      utils.log_error(
+      log.log_error(
         EXTENSION_NAME,
         "Failed to load custom platforms from '" .. original_path .. "':\n" .. (err or 'unknown error')
       )
@@ -168,12 +172,12 @@ local function get_repository(meta)
   else
     local ok, err = platforms.initialise()
     if not ok then
-      utils.log_error(EXTENSION_NAME, "Failed to load built-in platforms:\n" .. (err or 'unknown error'))
+      log.log_error(EXTENSION_NAME, "Failed to load built-in platforms:\n" .. (err or 'unknown error'))
       return meta
     end
   end
 
-  if not utils.is_empty(meta_platform) then
+  if not str.is_empty(meta_platform) then
     platform = (meta_platform --[[@as string]]):lower()
   else
     platform = 'github'
@@ -181,7 +185,7 @@ local function get_repository(meta)
   local config = get_platform_config(platform)
   if not config then
     local available_platforms = table.concat(platforms.get_all_platform_names(), ', ')
-    utils.log_error(
+    log.log_error(
       EXTENSION_NAME,
       "Unsupported platform: '" .. platform ..
       "'. Supported platforms are: " .. available_platforms .. '.'
@@ -189,35 +193,35 @@ local function get_repository(meta)
     return meta
   end
 
-  if not utils.is_empty(meta_base_url) then
+  if not str.is_empty(meta_base_url) then
     base_url = meta_base_url --[[@as string]]
   else
     base_url = config.base_url
   end
 
-  if utils.is_empty(meta_repository) then
+  if str.is_empty(meta_repository) then
     meta_repository = git.get_repository()
   end
 
   repository_name = meta_repository
 
-  local show_badge_meta = utils.get_metadata_value(meta, 'gitlink', 'show-platform-badge')
+  local show_badge_meta = meta_mod.get_metadata_value(meta, 'gitlink', 'show-platform-badge')
   if show_badge_meta ~= nil then
     show_platform_badge = (show_badge_meta == "true" or show_badge_meta == true)
   end
 
-  local badge_pos_meta = utils.get_metadata_value(meta, 'gitlink', 'badge-position')
+  local badge_pos_meta = meta_mod.get_metadata_value(meta, 'gitlink', 'badge-position')
   if badge_pos_meta ~= nil then
     badge_position = badge_pos_meta --[[@as string]]
   end
 
-  local badge_bg_colour_meta = utils.get_metadata_value(meta, 'gitlink', 'badge-background-colour')
-  if not utils.is_empty(badge_bg_colour_meta) then
+  local badge_bg_colour_meta = meta_mod.get_metadata_value(meta, 'gitlink', 'badge-background-colour')
+  if not str.is_empty(badge_bg_colour_meta) then
     badge_background_colour = badge_bg_colour_meta --[[@as string]]
   end
 
-  local badge_text_colour_meta = utils.get_metadata_value(meta, 'gitlink', 'badge-text-colour')
-  if not utils.is_empty(badge_text_colour_meta) then
+  local badge_text_colour_meta = meta_mod.get_metadata_value(meta, 'gitlink', 'badge-text-colour')
+  if not str.is_empty(badge_text_colour_meta) then
     badge_text_colour = badge_text_colour_meta --[[@as string]]
   end
 
@@ -247,7 +251,7 @@ local function process_mentions(cite)
   if references_ids_set[cite.citations[1].id] then
     return cite
   else
-    local mention_text = utils.stringify(cite.content)
+    local mention_text = str.stringify(cite.content)
     local config = get_platform_config(platform)
     if config and config.patterns.user then
       local username = mention_text:match(config.patterns.user)
@@ -328,7 +332,7 @@ local function process_issues_and_mrs(elem, current_platform, current_base_url)
       local platform_config = platforms.get_platform_config(platform_name)
       if platform_config then
         local platform_base_url = platform_config.base_url
-        local escaped_platform_url = utils.escape_pattern(platform_base_url)
+        local escaped_platform_url = str.escape_pattern(platform_base_url)
         local url_pattern_issue = '^' .. escaped_platform_url .. '/([^/]+/[^/]+)/%-?/?issues?/(%d+)'
         local url_pattern_mr = '^' .. escaped_platform_url .. '/([^/]+/[^/]+)/%-?/?merge[_%-]requests/(%d+)'
         local url_pattern_pull_requests = '^' .. escaped_platform_url .. '/([^/]+/[^/]+)/%-?/?pull%-requests/(%d+)'
@@ -426,7 +430,7 @@ local function process_users(elem, current_platform)
     local platform_config = platforms.get_platform_config(platform_name)
     if platform_config then
       local platform_base_url = platform_config.base_url
-      local escaped_platform_url = utils.escape_pattern(platform_base_url)
+      local escaped_platform_url = str.escape_pattern(platform_base_url)
       local url_pattern = '^' .. escaped_platform_url .. '/([%w%-%.]+)$'
 
       if text:match(url_pattern) then
@@ -493,7 +497,7 @@ local function process_commits(elem, current_platform, current_base_url)
       local platform_config = platforms.get_platform_config(platform_name)
       if platform_config then
         local platform_base_url = platform_config.base_url
-        local escaped_platform_url = utils.escape_pattern(platform_base_url)
+        local escaped_platform_url = str.escape_pattern(platform_base_url)
         local url_pattern = '^' .. escaped_platform_url .. '/([^/]+/[^/]+)/%-?/?commits?/(%x+)'
         if text:match(url_pattern) then
           repo, commit_sha = text:match(url_pattern)
@@ -527,7 +531,7 @@ end
 --- @param elem pandoc.Str The string element to process
 --- @return pandoc.Str|pandoc.Link The original element or a Git hosting link
 local function process_gitlink(elem)
-  if not platform or not base_url or utils.is_empty(platform) then
+  if not platform or not base_url or str.is_empty(platform) then
     return elem
   end
 
@@ -566,7 +570,7 @@ end
 --- @param elem pandoc.Link The link element to process
 --- @return pandoc.Link The original or modified link
 local function process_link(elem)
-  local link_text = utils.stringify(elem.content)
+  local link_text = str.stringify(elem.content)
   local link_target = elem.target
 
   if link_text == link_target then
