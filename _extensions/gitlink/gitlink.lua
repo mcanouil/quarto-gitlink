@@ -70,8 +70,11 @@ local function parse_repo_url(url)
       local escaped = str.escape_pattern(config.base_url)
       local repo_path = url:match('^' .. escaped .. '/(.+)$')
       if repo_path then
+        repo_path = repo_path:match('^([^%?#]+)') or repo_path
         repo_path = repo_path:gsub('%.git$', ''):gsub('/$', '')
-        return name, config.base_url, repo_path
+        if not str.is_empty(repo_path) then
+          return name, config.base_url, repo_path
+        end
       end
     end
   end
