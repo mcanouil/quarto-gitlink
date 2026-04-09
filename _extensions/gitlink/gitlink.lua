@@ -207,6 +207,13 @@ local function get_repository(meta)
   local parsed_platform, parsed_base_url, parsed_repo_name = nil, nil, nil
   if project_repo_url then
     parsed_platform, parsed_base_url, parsed_repo_name = parse_repo_url(project_repo_url)
+    if not parsed_platform then
+      log.log_warning(
+        EXTENSION_NAME,
+        "Could not match project repo-url '" .. project_repo_url ..
+        "' to any known platform. Falling back to default resolution."
+      )
+    end
   end
 
   -- Resolve platform: explicit metadata > repo-url detection > default 'github'
