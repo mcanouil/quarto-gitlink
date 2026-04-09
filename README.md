@@ -157,13 +157,45 @@ The extension automatically processes full URLs and converts them to short refer
 
 ### Repository Detection
 
-If `repository-name` is not specified, the extension auto-detects from git remote:
+The extension resolves the repository URL using the following priority order:
 
-```bash
-git remote get-url origin
-```
+1. **Explicit configuration** (highest priority): Set `repository-name`, `platform`, and `base-url` directly in the document or project metadata.
 
-Supports: `https://github.com/owner/repo.git`, `git@gitlab.com:group/project.git`, `ssh://git@codeberg.org/user/repo.git`
+   ```yaml
+   extensions:
+     gitlink:
+       platform: github
+       base-url: https://github.com
+       repository-name: owner/repo
+   ```
+
+2. **Quarto project `repo-url`**: For website or book projects, the extension reads `repo-url` from the project configuration (`_quarto.yml`). The platform, base URL, and repository name are all auto-detected from the full URL.
+
+   ```yaml
+   # _quarto.yml
+   website:
+     repo-url: https://github.com/owner/repo
+   ```
+
+   This also works with `book` projects:
+
+   ```yaml
+   # _quarto.yml
+   book:
+     repo-url: https://gitlab.com/group/project
+   ```
+
+   > [!NOTE]
+   > When using `repo-url`, the platform is auto-detected from the URL.
+   > You can still override individual values (e.g., set `platform` explicitly) while letting the rest be auto-detected.
+
+3. **Git remote** (lowest priority): If neither of the above is available, the extension falls back to detecting the repository from the git remote origin URL.
+
+   ```bash
+   git remote get-url origin
+   ```
+
+   Supports: `https://github.com/owner/repo.git`, `git@gitlab.com:group/project.git`, `ssh://git@codeberg.org/user/repo.git`.
 
 ### Platform Badges
 
