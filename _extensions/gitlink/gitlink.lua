@@ -56,6 +56,31 @@ local function get_platform_config(platform_name)
   return platforms.get_platform_config(platform_name:lower())
 end
 
+--- Parse a full repository URL to extract platform, base-url, and owner/repo.
+--- Matches the URL against all known platform base URLs.
+--- @param url string The full repository URL (e.g., "https://github.com/owner/repo")
+--- @return string|nil platform_name The matched platform name
+--- @return string|nil matched_base_url The base URL portion
+--- @return string|nil repo_path The owner/repo portion
+local function parse_repo_url(url)
+  local all_names = platforms.get_all_platform_names()
+  for _, name in ipairs(all_names) do
+    local config = platforms.get_platform_config(name)
+    if config and config.base_url then
+      local escaped = str.escape_pattern(config.base_url)
+      local repo_path = url:match('^' .. escaped .. '/(.+)$')
+      if repo_path then
+        repo_path = repo_path:match('^([^%?#]+)') or repo_path
+        repo_path = repo_path:gsub('%.git$', ''):gsub('/$', '')
+        if not str.is_empty(repo_path) then
+          return name, config.base_url, repo_path
+        end
+      end
+    end
+  end
+  return nil, nil, nil
+end
+
 --- Create a link with platform label
 --- @param text string|nil The link text
 --- @param uri string|nil The URI
@@ -177,11 +202,29 @@ local function get_repository(meta)
     end
   end
 
+  -- Parse repo-url from project metadata (website/book)
+  local project_repo_url = meta_mod.get_project_repo_url()
+  local parsed_platform, parsed_base_url, parsed_repo_name = nil, nil, nil
+  if project_repo_url then
+    parsed_platform, parsed_base_url, parsed_repo_name = parse_repo_url(project_repo_url)
+    if not parsed_platform then
+      log.log_warning(
+        EXTENSION_NAME,
+        "Could not match project repo-url '" .. project_repo_url ..
+        "' to any known platform. Falling back to default resolution."
+      )
+    end
+  end
+
+  -- Resolve platform: explicit metadata > repo-url detection > default 'github'
   if not str.is_empty(meta_platform) then
     platform = (meta_platform --[[@as string]]):lower()
+  elseif parsed_platform then
+    platform = parsed_platform
   else
     platform = 'github'
   end
+
   local config = get_platform_config(platform)
   if not config then
     local available_platforms = table.concat(platforms.get_all_platform_names(), ', ')
@@ -193,17 +236,23 @@ local function get_repository(meta)
     return meta
   end
 
+  -- Resolve base-url: explicit metadata > repo-url detection > platform default
   if not str.is_empty(meta_base_url) then
     base_url = meta_base_url --[[@as string]]
+  elseif parsed_base_url then
+    base_url = parsed_base_url
   else
     base_url = config.base_url
   end
 
-  if str.is_empty(meta_repository) then
-    meta_repository = git.get_repository()
+  -- Resolve repository-name: explicit metadata > repo-url path > git remote
+  if not str.is_empty(meta_repository) then
+    repository_name = meta_repository
+  elseif parsed_repo_name then
+    repository_name = parsed_repo_name
+  else
+    repository_name = git.get_repository()
   end
-
-  repository_name = meta_repository
 
   local show_badge_meta = meta_mod.get_metadata_value(meta, 'gitlink', 'show-platform-badge')
   if show_badge_meta ~= nil then

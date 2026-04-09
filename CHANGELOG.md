@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### New Features
+
+- feat: Auto-detect repository from Quarto project `repo-url` for website and book projects.
+
 ## 1.3.0 (2026-03-23)
 
 ### Refactoring
