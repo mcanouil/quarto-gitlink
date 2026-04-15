@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.5.0 (2026-04-15)
+
 ### New Features
 
 - feat: Support references surrounded by parentheses, brackets, quotes, and trailing punctuation.
