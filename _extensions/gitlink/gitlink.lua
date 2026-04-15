@@ -578,31 +578,45 @@ end
 --- Main Git hosting processing function
 --- Attempts to convert string elements into Git hosting links by trying different patterns
 --- @param elem pandoc.Str The string element to process
---- @return pandoc.Str|pandoc.Link The original element or a Git hosting link
+--- @return pandoc.Str|pandoc.Link|pandoc.List The original element, a link, or a list of inlines
 local function process_gitlink(elem)
   if not platform or not base_url or str.is_empty(platform) then
     return elem
   end
 
-  local link = nil
+  -- Fast path: try matching the raw text directly
+  local link = process_issues_and_mrs(elem, platform, base_url)
+    or process_commits(elem, platform, base_url)
+    or process_users(elem, platform)
 
-  if link == nil then
-    link = process_issues_and_mrs(elem, platform, base_url)
-  end
-
-  if link == nil then
-    link = process_commits(elem, platform, base_url)
-  end
-
-  if link == nil then
-    link = process_users(elem, platform)
-  end
-
-  if link == nil then
-    return elem
-  else
+  if link then
     return link
   end
+
+  -- Slow path: strip one layer of surrounding punctuation and retry
+  local prefix, inner, suffix = str.strip_surrounding(elem.text)
+  if (prefix == "" and suffix == "") or inner == "" then
+    return elem
+  end
+
+  local inner_elem = pandoc.Str(inner)
+  link = process_issues_and_mrs(inner_elem, platform, base_url)
+    or process_commits(inner_elem, platform, base_url)
+    or process_users(inner_elem, platform)
+
+  if link then
+    local result = pandoc.List({})
+    if prefix ~= "" then
+      result:insert(pandoc.Str(prefix))
+    end
+    result:insert(link)
+    if suffix ~= "" then
+      result:insert(pandoc.Str(suffix))
+    end
+    return result
+  end
+
+  return elem
 end
 
 --- Process inline elements for Bitbucket multi-word patterns

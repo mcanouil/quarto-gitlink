@@ -57,6 +57,47 @@ function M.trim(str)
   return str:match('^%s*(.-)%s*$')
 end
 
+--- Strip one layer of surrounding bracket or punctuation characters.
+--- Handles balanced pairs: () [] {} "" '' `` «»
+--- Handles trailing-only punctuation: , . ; : ! ?
+--- @param text string The input text
+--- @return string prefix Characters stripped from the start (may be empty)
+--- @return string inner The inner text after stripping
+--- @return string suffix Characters stripped from the end (may be empty)
+function M.strip_surrounding(text)
+  if not text or #text < 2 then
+    return "", text or "", ""
+  end
+
+  local balanced = {
+    ["("] = ")", ["["] = "]", ["{"] = "}",
+    ['"'] = '"', ["'"] = "'", ["`"] = "`",
+  }
+  -- UTF-8 guillemets
+  local first_two = text:sub(1, 2)
+  local last_two = text:sub(-2)
+  if first_two == "\xC2\xAB" and last_two == "\xC2\xBB" then
+    return first_two, text:sub(3, -3), last_two
+  end
+
+  local first = text:sub(1, 1)
+  local last = text:sub(-1)
+
+  if balanced[first] and last == balanced[first] then
+    return first, text:sub(2, -2), last
+  end
+
+  local trailing = {
+    [","] = true, ["."] = true, [";"] = true,
+    [":"] = true, ["!"] = true, ["?"] = true,
+  }
+  if trailing[last] then
+    return "", text:sub(1, -2), last
+  end
+
+  return "", text, ""
+end
+
 --- Convert any value to a string, handling Pandoc objects and empty values.
 --- Returns nil for empty or nil values, otherwise returns a string representation.
 --- @param val any The value to convert
