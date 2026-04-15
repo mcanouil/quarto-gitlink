@@ -4,6 +4,8 @@
 --- @copyright 2026 Mickaël Canouil
 --- @author Mickaël Canouil
 
+local str = require("_modules/string")
+
 local bitbucket_module = {}
 
 -- ============================================================================
@@ -17,6 +19,28 @@ local bitbucket_module = {}
 --- @return pandoc.Link A Pandoc Link element with platform label
 local function create_bitbucket_link(text, uri, create_link_fn)
   return create_link_fn(text, uri, "bitbucket")
+end
+
+--- Try matching a Str element's text against a pattern, with stripping fallback.
+--- @param elem_text string The text to match
+--- @param pattern string The Lua pattern (anchored with ^ and $)
+--- @return string|nil prefix Stripped prefix (empty if direct match)
+--- @return string|nil ... Captures from the pattern match
+--- @return string|nil suffix Stripped suffix (empty if direct match)
+local function match_with_stripping(elem_text, pattern)
+  local captures = { elem_text:match("^" .. pattern .. "$") }
+  if #captures > 0 then
+    return "", captures, ""
+  end
+  local prefix, inner, suffix = str.strip_surrounding(elem_text)
+  if (prefix == "" and suffix == "") or inner == "" then
+    return nil, nil, nil
+  end
+  captures = { inner:match("^" .. pattern .. "$") }
+  if #captures > 0 then
+    return prefix, captures, suffix
+  end
+  return nil, nil, nil
 end
 
 -- ============================================================================
@@ -44,19 +68,24 @@ function bitbucket_module.process_inlines(inlines, base_url, repository_name, cr
       local elem1, elem2, elem3 = inlines[i], inlines[i + 1], inlines[i + 2]
       if elem1.t == "Str" and elem1.text == "issue" and
           elem2.t == "Space" and
-          elem3.t == "Str" and elem3.text:match("^#(%d+)$") then
-        local number = elem3.text:match("^#(%d+)$")
-        local uri
-        if repository_name then
-          uri = base_url .. "/" .. repository_name .. "/issues/" .. number
-        else
-          return inlines
-        end
-        local link = create_bitbucket_link("issue " .. elem3.text, uri, create_link_fn)
-        if link then
-          table.insert(result, link)
-          i = i + 3
-          matched = true
+          elem3.t == "Str" then
+        local prefix, captures, suffix = match_with_stripping(elem3.text, "#(%d+)")
+        if captures then
+          local number = captures[1]
+          local uri
+          if repository_name then
+            uri = base_url .. "/" .. repository_name .. "/issues/" .. number
+          else
+            return inlines
+          end
+          local link = create_bitbucket_link("issue #" .. number, uri, create_link_fn)
+          if link then
+            if prefix ~= "" then table.insert(result, pandoc.Str(prefix)) end
+            table.insert(result, link)
+            if suffix ~= "" then table.insert(result, pandoc.Str(suffix)) end
+            i = i + 3
+            matched = true
+          end
         end
       end
     end
@@ -66,14 +95,19 @@ function bitbucket_module.process_inlines(inlines, base_url, repository_name, cr
       local elem1, elem2, elem3 = inlines[i], inlines[i + 1], inlines[i + 2]
       if elem1.t == "Str" and elem1.text == "issue" and
           elem2.t == "Space" and
-          elem3.t == "Str" and elem3.text:match("^([^/]+/[^/#]+)#(%d+)$") then
-        local repo, number = elem3.text:match("^([^/]+/[^/#]+)#(%d+)$")
-        local uri = base_url .. "/" .. repo .. "/issues/" .. number
-        local link = create_bitbucket_link("issue " .. elem3.text, uri, create_link_fn)
-        if link then
-          table.insert(result, link)
-          i = i + 3
-          matched = true
+          elem3.t == "Str" then
+        local prefix, captures, suffix = match_with_stripping(elem3.text, "([^/]+/[^/#]+)#(%d+)")
+        if captures then
+          local repo, number = captures[1], captures[2]
+          local uri = base_url .. "/" .. repo .. "/issues/" .. number
+          local link = create_bitbucket_link("issue " .. repo .. "#" .. number, uri, create_link_fn)
+          if link then
+            if prefix ~= "" then table.insert(result, pandoc.Str(prefix)) end
+            table.insert(result, link)
+            if suffix ~= "" then table.insert(result, pandoc.Str(suffix)) end
+            i = i + 3
+            matched = true
+          end
         end
       end
     end
@@ -85,19 +119,24 @@ function bitbucket_module.process_inlines(inlines, base_url, repository_name, cr
           elem2.t == "Space" and
           elem3.t == "Str" and elem3.text == "request" and
           elem4.t == "Space" and
-          elem5.t == "Str" and elem5.text:match("^#(%d+)$") then
-        local number = elem5.text:match("^#(%d+)$")
-        local uri
-        if repository_name then
-          uri = base_url .. "/" .. repository_name .. "/pull-requests/" .. number
-        else
-          return inlines
-        end
-        local link = create_bitbucket_link("pull request " .. elem5.text, uri, create_link_fn)
-        if link then
-          table.insert(result, link)
-          i = i + 5
-          matched = true
+          elem5.t == "Str" then
+        local prefix, captures, suffix = match_with_stripping(elem5.text, "#(%d+)")
+        if captures then
+          local number = captures[1]
+          local uri
+          if repository_name then
+            uri = base_url .. "/" .. repository_name .. "/pull-requests/" .. number
+          else
+            return inlines
+          end
+          local link = create_bitbucket_link("pull request #" .. number, uri, create_link_fn)
+          if link then
+            if prefix ~= "" then table.insert(result, pandoc.Str(prefix)) end
+            table.insert(result, link)
+            if suffix ~= "" then table.insert(result, pandoc.Str(suffix)) end
+            i = i + 5
+            matched = true
+          end
         end
       end
     end
@@ -109,14 +148,19 @@ function bitbucket_module.process_inlines(inlines, base_url, repository_name, cr
           elem2.t == "Space" and
           elem3.t == "Str" and elem3.text == "request" and
           elem4.t == "Space" and
-          elem5.t == "Str" and elem5.text:match("^([^/]+/[^/#]+)#(%d+)$") then
-        local repo, number = elem5.text:match("^([^/]+/[^/#]+)#(%d+)$")
-        local uri = base_url .. "/" .. repo .. "/pull-requests/" .. number
-        local link = create_bitbucket_link("pull request " .. elem5.text, uri, create_link_fn)
-        if link then
-          table.insert(result, link)
-          i = i + 5
-          matched = true
+          elem5.t == "Str" then
+        local prefix, captures, suffix = match_with_stripping(elem5.text, "([^/]+/[^/#]+)#(%d+)")
+        if captures then
+          local repo, number = captures[1], captures[2]
+          local uri = base_url .. "/" .. repo .. "/pull-requests/" .. number
+          local link = create_bitbucket_link("pull request " .. repo .. "#" .. number, uri, create_link_fn)
+          if link then
+            if prefix ~= "" then table.insert(result, pandoc.Str(prefix)) end
+            table.insert(result, link)
+            if suffix ~= "" then table.insert(result, pandoc.Str(suffix)) end
+            i = i + 5
+            matched = true
+          end
         end
       end
     end

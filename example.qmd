@@ -83,6 +83,18 @@ Reference issues and pull requests:
 - User mention: @mcanouil
 - GitHub-style issue: GH-1
 
+References with surrounding characters:
+
+- Parenthesised issue: (#1)
+- Parenthesised user: (@mcanouil)
+- Square brackets: [#1]
+- Curly braces: {#1}
+- Double quotes: "#1"
+- Trailing comma: #1,
+- Trailing period: #1.
+- Parenthesised commit: (cb0350d0316d1c420508338d02e56f5c8f907226)
+- Realistic changelog: fix: this is fixed (#1) (by @mcanouil)
+
 Full URL examples (automatically shortened):
 
 - Issue URL: <https://github.com/mcanouil/quarto-gitlink/issues/1>
