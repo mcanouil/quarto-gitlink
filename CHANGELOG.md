@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Refactoring
+
+- refactor: Synchronise shared modules (`logging.lua`, `git.lua`, `string.lua`) with canonical versions.
+
 ## 1.5.0 (2026-04-15)
 
 ### New Features
