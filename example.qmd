@@ -94,6 +94,15 @@ References with surrounding characters:
 - Trailing period: #1.
 - Parenthesised commit: (cb0350d0316d1c420508338d02e56f5c8f907226)
 - Realistic changelog: fix: this is fixed (#1) (by @mcanouil)
+- Bracket with trailing punctuation: (#1).
+- Bracket with leading punctuation: .(#1)
+- Bracket with both leading and trailing punctuation: .(#1).
+- Bracket with leading text: something(#1)
+- Bracket with trailing text: (#1)something
+- Bracket with leading and trailing text: something(#1)something
+- Bracket with cross-repository issue and trailing text: (mcanouil/quarto-gitlink#1)something
+- Bracket with GitHub-style issue and surrounding text: see(GH-1)now
+- Bracket with commit and trailing punctuation: see(cb0350d0316d1c420508338d02e56f5c8f907226).
 
 Full URL examples (automatically shortened):
 

@@ -595,25 +595,56 @@ local function process_gitlink(elem)
 
   -- Slow path: strip one layer of surrounding punctuation and retry
   local prefix, inner, suffix = str.strip_surrounding(elem.text)
-  if (prefix == "" and suffix == "") or inner == "" then
-    return elem
+  if prefix ~= "" or suffix ~= "" then
+    if inner ~= "" then
+      local inner_elem = pandoc.Str(inner)
+      link = process_issues_and_mrs(inner_elem, platform, base_url)
+        or process_commits(inner_elem, platform, base_url)
+        or process_users(inner_elem, platform)
+
+      if link then
+        local result = pandoc.List({})
+        if prefix ~= "" then
+          result:insert(pandoc.Str(prefix))
+        end
+        result:insert(link)
+        if suffix ~= "" then
+          result:insert(pandoc.Str(suffix))
+        end
+        return result
+      end
+    end
   end
 
-  local inner_elem = pandoc.Str(inner)
-  link = process_issues_and_mrs(inner_elem, platform, base_url)
-    or process_commits(inner_elem, platform, base_url)
-    or process_users(inner_elem, platform)
+  -- Embedded path: scan for a bracket pair anywhere inside the token and
+  -- retry the matchers on the bracket content. Handles cases where the
+  -- bracket is surrounded by additional text or punctuation, e.g.
+  -- "something(#1)", "(#1).", ".(#1).", "(#1)something".
+  local search_pos = 1
+  while true do
+    local b_prefix, b_content, b_suffix, open_pos = str.find_bracketed_content(elem.text, search_pos)
+    if not b_content then
+      break
+    end
 
-  if link then
-    local result = pandoc.List({})
-    if prefix ~= "" then
-      result:insert(pandoc.Str(prefix))
+    local content_elem = pandoc.Str(b_content)
+    local content_link = process_issues_and_mrs(content_elem, platform, base_url)
+      or process_commits(content_elem, platform, base_url)
+      or process_users(content_elem, platform)
+
+    if content_link then
+      local result = pandoc.List({})
+      if b_prefix ~= "" then
+        result:insert(pandoc.Str(b_prefix))
+      end
+      result:insert(content_link)
+      if b_suffix ~= "" then
+        result:insert(pandoc.Str(b_suffix))
+      end
+      return result
     end
-    result:insert(link)
-    if suffix ~= "" then
-      result:insert(pandoc.Str(suffix))
-    end
-    return result
+
+    search_pos = open_pos + 1
   end
 
   return elem
