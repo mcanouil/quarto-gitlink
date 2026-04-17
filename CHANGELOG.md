@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.5.2 (2026-04-17)
+
 ### Bug Fixes
 
 - fix: Recognise references inside bracket pairs surrounded by additional text or punctuation, e.g. `something(#1)`, `(#1).`, `.(#1).`, `(mcanouil/quarto-gitlink#1)something`.
