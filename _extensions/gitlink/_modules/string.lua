@@ -98,6 +98,55 @@ function M.strip_surrounding(text)
   return "", text, ""
 end
 
+--- Find a balanced bracket pair anywhere in the text and split around it.
+--- Walks the text from `start_pos` looking for an opening bracket whose matching
+--- closing bracket appears later in the string. Returns the text split into
+--- a prefix (up to and including the opening bracket), the inner content, and
+--- a suffix (closing bracket and everything after).
+--- Supports the same bracket pairs as `strip_surrounding`:
+--- () [] {} "" '' `` and the 2-byte UTF-8 guillemets «».
+--- @param text string The input text
+--- @param start_pos integer|nil Byte position to start searching from (default 1)
+--- @return string|nil prefix Text up to and including the opening bracket
+--- @return string|nil content Non-empty text between the brackets
+--- @return string|nil suffix Closing bracket and trailing text
+--- @return integer|nil open_pos Byte position of the opening bracket
+function M.find_bracketed_content(text, start_pos)
+  if not text or #text < 2 then
+    return nil, nil, nil, nil
+  end
+  start_pos = start_pos or 1
+
+  local balanced = {
+    ["("] = ")", ["["] = "]", ["{"] = "}",
+    ['"'] = '"', ["'"] = "'", ["`"] = "`",
+  }
+
+  local i = start_pos
+  while i <= #text do
+    -- UTF-8 guillemet «…»
+    if text:sub(i, i + 1) == "\xC2\xAB" then
+      local close_pos = text:find("\xC2\xBB", i + 2, true)
+      if close_pos and close_pos > i + 2 then
+        return text:sub(1, i + 1), text:sub(i + 2, close_pos - 1), text:sub(close_pos), i
+      end
+      i = i + 2
+    else
+      local c = text:sub(i, i)
+      local close_char = balanced[c]
+      if close_char then
+        local close_pos = text:find(close_char, i + 1, true)
+        if close_pos and close_pos > i + 1 then
+          return text:sub(1, i), text:sub(i + 1, close_pos - 1), text:sub(close_pos), i
+        end
+      end
+      i = i + 1
+    end
+  end
+
+  return nil, nil, nil, nil
+end
+
 --- Convert any value to a string, handling Pandoc objects and empty values.
 --- Returns nil for empty or nil values, otherwise returns a string representation.
 --- @param val any The value to convert

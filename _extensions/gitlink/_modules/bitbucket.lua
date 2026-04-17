@@ -32,14 +32,28 @@ local function match_with_stripping(elem_text, pattern)
   if #captures > 0 then
     return "", captures, ""
   end
+
   local prefix, inner, suffix = str.strip_surrounding(elem_text)
-  if (prefix == "" and suffix == "") or inner == "" then
-    return nil, nil, nil
+  if (prefix ~= "" or suffix ~= "") and inner ~= "" then
+    captures = { inner:match("^" .. pattern .. "$") }
+    if #captures > 0 then
+      return prefix, captures, suffix
+    end
   end
-  captures = { inner:match("^" .. pattern .. "$") }
-  if #captures > 0 then
-    return prefix, captures, suffix
+
+  local search_pos = 1
+  while true do
+    local b_prefix, b_content, b_suffix, open_pos = str.find_bracketed_content(elem_text, search_pos)
+    if not b_content then
+      break
+    end
+    captures = { b_content:match("^" .. pattern .. "$") }
+    if #captures > 0 then
+      return b_prefix, captures, b_suffix
+    end
+    search_pos = open_pos + 1
   end
+
   return nil, nil, nil
 end
 
