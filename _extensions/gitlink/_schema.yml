@@ -62,3 +62,20 @@ options:
       extensions:
         - .yml
         - .yaml
+  enabled:
+    type: boolean
+    default: true
+    description: "Whether the filter is enabled for this document. Set to false in drafts or templates to opt out of link rewriting."
+  normalize-links:
+    type: boolean
+    default: true
+    description: "Whether to shorten platform URLs used as autolink text (e.g. <https://github.com/owner/repo/issues/1> becomes #1)."
+  fetch-titles:
+    type: boolean
+    default: false
+    description: "Whether to fetch the page title for autolinked platform URLs and use it as the link text. Requires network access via curl."
+  mentions:
+    type: array
+    description: "List of citation IDs to force-treat as Git hosting mentions even when a bibliography reference with the same id exists."
+    arrayOf:
+      type: string

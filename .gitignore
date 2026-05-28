@@ -4,4 +4,5 @@
 *_files/
 /.luarc.json
 /.quarto/
+/.tmp-tests/
 **/*.quarto_ipynb
