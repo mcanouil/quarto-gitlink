@@ -56,8 +56,8 @@ local fetch_titles = false
 --- @type table<string, string> Cache of fetched titles by URL
 local title_cache = {}
 
---- @type table<string, table>|nil Cached platform configurations by name (per render)
-local platform_config_cache = nil
+--- @type table<string, table|false> Cached platform configurations by name (per render); false means "looked up and not found"
+local platform_config_cache = {}
 
 --- @type table<integer, string>|nil Cached list of all known platform names (per render)
 local all_platform_names_cache = nil
@@ -84,10 +84,7 @@ local function validate_colour(value, option_label)
     return nil
   end
   local s = value --[[@as string]]
-  if s:match(HEX_COLOUR_PATTERN) then
-    return s
-  end
-  if colour.is_named_colour(s) then
+  if s:match(HEX_COLOUR_PATTERN) or colour.is_named_colour(s) then
     return s
   end
   log.log_warning(
@@ -96,6 +93,34 @@ local function validate_colour(value, option_label)
     "': expected a hex colour (e.g. '#c3c3c3') or a CSS named colour."
   )
   return nil
+end
+
+--- Convert a validated colour value to its hex form for Typst rgb().
+--- Hex codes are returned unchanged; CSS named colours are resolved via
+--- the colour module. Assumes the value has already been validated.
+--- @param value string The colour value (hex code or CSS named colour)
+--- @return string The hex form
+local function colour_to_hex(value)
+  if value:match(HEX_COLOUR_PATTERN) then
+    return value
+  end
+  return colour.named_to_HTML(value)
+end
+
+--- Read a boolean metadata value with a default.
+--- `get_metadata_value()` returns nil for boolean `false` (its truthy guard
+--- treats false as missing), so this helper reads the raw value directly
+--- and coerces it via `tostring`.
+--- @param gitlink_meta table|nil The `extensions.gitlink` metadata sub-table
+--- @param key string The option key
+--- @param default boolean The default when the option is absent
+--- @return boolean The resolved boolean value
+local function read_boolean_meta(gitlink_meta, key, default)
+  local value = gitlink_meta and gitlink_meta[key]
+  if value == nil then
+    return default
+  end
+  return str.stringify(value):lower() ~= 'false'
 end
 
 --- Reset all module-level state to defaults.
@@ -115,7 +140,7 @@ local function reset_state()
   normalize_links = true
   fetch_titles = false
   title_cache = {}
-  platform_config_cache = nil
+  platform_config_cache = {}
   all_platform_names_cache = nil
   if platforms.clear_custom_platforms then
     platforms.clear_custom_platforms()
@@ -134,6 +159,8 @@ end
 --- Get platform configuration (cached per render).
 --- Memoises lookups against `platform_config_cache` to avoid repeated calls
 --- to the platforms module for every Str element in the document.
+--- The cache stores `false` for "looked up and not found" so repeated misses
+--- skip the underlying lookup.
 --- @param platform_name string The platform name
 --- @return table|nil The platform configuration or nil if not found
 local function get_platform_config(platform_name)
@@ -141,15 +168,9 @@ local function get_platform_config(platform_name)
     return nil
   end
   local key = platform_name:lower()
-  if not platform_config_cache then
-    platform_config_cache = {}
-  end
   local cached = platform_config_cache[key]
   if cached ~= nil then
-    if cached == false then
-      return nil
-    end
-    return cached
+    return cached or nil
   end
   local config = platforms.get_platform_config(key)
   platform_config_cache[key] = config or false
@@ -245,17 +266,10 @@ local function create_platform_link(text, uri, platform_name)
     if show_platform_badge then
       -- Typst rgb() only accepts hex strings, so convert any CSS-named colour
       -- (already validated at Meta time) to its hex equivalent.
-      local bg_hex = badge_background_colour
-      if bg_hex and not bg_hex:match(HEX_COLOUR_PATTERN) and colour.is_named_colour(bg_hex) then
-        bg_hex = colour.named_to_HTML(bg_hex)
-      end
+      local bg_hex = colour_to_hex(badge_background_colour)
       local text_colour_opt = ''
       if not str.is_empty(badge_text_colour) then
-        local text_hex = badge_text_colour --[[@as string]]
-        if not text_hex:match(HEX_COLOUR_PATTERN) and colour.is_named_colour(text_hex) then
-          text_hex = colour.named_to_HTML(text_hex)
-        end
-        text_colour_opt = ', fill: rgb("' .. text_hex .. '")'
+        text_colour_opt = ', fill: rgb("' .. colour_to_hex(badge_text_colour --[[@as string]]) .. '")'
       end
       local badge_raw = '#box(fill: rgb("' ..
           bg_hex ..
@@ -292,16 +306,10 @@ local function get_repository(meta)
   reset_state()
 
   -- Allow opt-out at the document level for drafts, templates, or any
-  -- document where automatic link rewriting is undesirable. Read directly
-  -- from metadata because get_metadata_value() returns nil for boolean
-  -- false (the truthy guard inside it treats false as missing).
+  -- document where automatic link rewriting is undesirable.
   local extensions_meta = meta and meta['extensions']
   local gitlink_meta = extensions_meta and extensions_meta['gitlink']
-  local enabled_meta = gitlink_meta and gitlink_meta['enabled']
-  if enabled_meta ~= nil then
-    local enabled_lower = str.stringify(enabled_meta):lower()
-    is_enabled = enabled_lower ~= 'false'
-  end
+  is_enabled = read_boolean_meta(gitlink_meta, 'enabled', true)
   if not is_enabled then
     return meta
   end
@@ -382,13 +390,7 @@ local function get_repository(meta)
     repository_name = git.get_repository()
   end
 
-  -- Read directly because get_metadata_value() returns nil for boolean
-  -- false (the truthy guard inside it treats false as missing).
-  local show_badge_meta = gitlink_meta and gitlink_meta['show-platform-badge']
-  if show_badge_meta ~= nil then
-    local show_badge_str = str.stringify(show_badge_meta):lower()
-    show_platform_badge = (show_badge_str ~= 'false')
-  end
+  show_platform_badge = read_boolean_meta(gitlink_meta, 'show-platform-badge', true)
 
   local badge_pos_meta = meta_mod.get_metadata_value(meta, 'gitlink', 'badge-position')
   if badge_pos_meta ~= nil then
@@ -411,13 +413,10 @@ local function get_repository(meta)
     end
   end
 
-  -- Read directly because get_metadata_value() returns nil for boolean
-  -- false (the truthy guard inside it treats false as missing).
-  local normalize_links_meta = gitlink_meta and gitlink_meta['normalize-links']
-  if normalize_links_meta ~= nil then
-    normalize_links = (str.stringify(normalize_links_meta):lower() ~= 'false')
-  end
+  normalize_links = read_boolean_meta(gitlink_meta, 'normalize-links', true)
 
+  -- Default-false flag: only literal 'true' enables it (matches YAML boolean
+  -- coercion). Anything else falls back to false.
   local fetch_titles_meta = gitlink_meta and gitlink_meta['fetch-titles']
   if fetch_titles_meta ~= nil then
     fetch_titles = (str.stringify(fetch_titles_meta):lower() == 'true')
@@ -470,9 +469,8 @@ local function process_mentions(cite)
   if not is_enabled then
     return cite
   end
-  local cite_id = cite.citations[1] and cite.citations[1].id or nil
-  local force_mention = cite_id and force_mentions_set[cite_id] or false
-  if not force_mention and cite_id and references_ids_set[cite_id] then
+  local cite_id = cite.citations[1] and cite.citations[1].id
+  if cite_id and not force_mentions_set[cite_id] and references_ids_set[cite_id] then
     return cite
   end
   local mention_text = str.stringify(cite.content)
@@ -866,12 +864,9 @@ local function fetch_title_for(uri)
   if not fetch_titles then
     return nil
   end
-  if title_cache[uri] ~= nil then
-    local cached = title_cache[uri]
-    if cached == false then
-      return nil
-    end
-    return cached
+  local cached = title_cache[uri]
+  if cached ~= nil then
+    return cached or nil
   end
   if uri:find('"', 1, true) or uri:find("'", 1, true) then
     title_cache[uri] = false
