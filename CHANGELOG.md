@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.6.0 (2026-05-31)
+
 ### New Features
 
 - feat: Add `gitlink.enabled` option so drafts and templates can opt out of link rewriting.
