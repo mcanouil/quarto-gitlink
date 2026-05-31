@@ -1,4 +1,4 @@
-# _schema.yml for "gitlink" filter extension
+# Schema for the gitlink extension
 # Describes options for IDE tooling and runtime validation.
 
 # Extension-level metadata options.
@@ -8,9 +8,13 @@
 #       platform: "github"
 #       repository-name: "owner/repo"
 
-$schema: https://m.canouil.dev/quarto-wizard/assets/schema/v1/extension-schema.json
+$schema: https://m.canouil.dev/quarto-wizard/assets/schema/v2/extension-schema.json
 
 options:
+  enabled:
+    type: boolean
+    default: true
+    description: "Whether the filter is enabled for the document, set to false in drafts or templates to opt out of link rewriting."
   platform:
     type: string
     default: "github"
@@ -21,13 +25,21 @@ options:
       - codeberg
       - gitea
       - bitbucket
-    enum-case-insensitive: true
+    enumCaseInsensitive: true
   repository-name:
     type: string
-    description: "Repository in 'owner/repo' format. Auto-detected from git remote if not set."
+    description: "Repository in 'owner/repo' format, auto-detected from the git remote when not set."
   base-url:
     type: string
-    description: "Base URL for the Git hosting platform. Defaults to the platform's standard URL."
+    description: "Base URL for the Git hosting platform, defaulting to the platform's standard URL."
+  custom-platforms-file:
+    type: string
+    description: "Path to a YAML file defining custom platform configurations."
+    completion:
+      type: file
+      extensions:
+        - .yml
+        - .yaml
   show-platform-badge:
     type: boolean
     default: true
@@ -42,23 +54,28 @@ options:
   badge-background-colour:
     type: string
     default: "#c3c3c3"
-    description: "Background colour for the platform badge."
+    description: "Background colour for the platform badge as a hex code or CSS named colour."
     aliases:
       - badge-background-color
     completion:
       type: color
   badge-text-colour:
     type: string
-    description: "Text colour for the platform badge."
+    description: "Text colour for the platform badge as a hex code or CSS named colour."
     aliases:
       - badge-text-color
     completion:
       type: color
-  custom-platforms-file:
-    type: string
-    description: "Path to a YAML file defining custom platform configurations."
-    completion:
-      type: file
-      extensions:
-        - .yml
-        - .yaml
+  normalize-links:
+    type: boolean
+    default: true
+    description: "Whether to shorten platform URLs used as autolink text, so <https://github.com/owner/repo/issues/1> becomes #1."
+  fetch-titles:
+    type: boolean
+    default: false
+    description: "Whether to fetch the page title for autolinked platform URLs and use it as the link text, requiring network access via curl."
+  mentions:
+    type: array
+    description: "List of citation IDs to force-treat as Git hosting mentions even when a bibliography reference with the same id exists."
+    items:
+      type: string

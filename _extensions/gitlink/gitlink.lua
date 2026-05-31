@@ -15,6 +15,7 @@ local paths = require(quarto.utils.resolve_path('_modules/paths.lua'):gsub('%.lu
 local git = require(quarto.utils.resolve_path('_modules/git.lua'):gsub('%.lua$', ''))
 local bitbucket = require(quarto.utils.resolve_path('_modules/bitbucket.lua'):gsub('%.lua$', ''))
 local platforms = require(quarto.utils.resolve_path('_modules/platforms.lua'):gsub('%.lua$', ''))
+local colour = require(quarto.utils.resolve_path('_modules/colour.lua'):gsub('%.lua$', ''))
 
 --- @type string The platform type (github, gitlab, codeberg, gitea, bitbucket)
 local platform = 'github'
@@ -28,6 +29,12 @@ local base_url = 'https://github.com'
 --- @type table<string, boolean> Set of reference IDs from the document
 local references_ids_set = {}
 
+--- @type table<string, boolean> Set of citation IDs forced to be treated as mentions
+local force_mentions_set = {}
+
+--- @type boolean Whether the filter is enabled for this document
+local is_enabled = true
+
 --- @type boolean Whether to show visible platform badges
 local show_platform_badge = true
 
@@ -37,8 +44,23 @@ local badge_position = 'after'
 --- @type string Badge background colour (hex or colour name)
 local badge_background_colour = '#c3c3c3'
 
---- @type string Badge text colour (hex or colour name)
+--- @type string|nil Badge text colour (hex or colour name)
 local badge_text_colour = nil
+
+--- @type boolean Whether to shorten link text matching platform URLs
+local normalize_links = true
+
+--- @type boolean Whether to fetch issue/PR/commit titles for link text
+local fetch_titles = false
+
+--- @type table<string, string> Cache of fetched titles by URL
+local title_cache = {}
+
+--- @type table<string, table|false> Cached platform configurations by name (per render); false means "looked up and not found"
+local platform_config_cache = {}
+
+--- @type table<integer, string>|nil Cached list of all known platform names (per render)
+local all_platform_names_cache = nil
 
 --- @type integer Full length of a git commit SHA
 local COMMIT_SHA_FULL_LENGTH = 40
@@ -49,11 +71,110 @@ local COMMIT_SHA_SHORT_LENGTH = 7
 --- @type integer Minimum length for a valid git commit SHA
 local COMMIT_SHA_MIN_LENGTH = 7
 
---- Get platform configuration
+--- @type string Lua pattern matching a 3-, 4-, 6-, or 8-character hex colour with leading #
+local HEX_COLOUR_PATTERN = '^#%x%x%x%x?%x?%x?%x?%x?$'
+
+--- Validate a colour value as a hex code or CSS named colour.
+--- Returns the original value if valid, or nil if invalid.
+--- @param value string|nil The candidate colour value
+--- @param option_label string The metadata option name (for warnings)
+--- @return string|nil The validated colour value, or nil if invalid
+local function validate_colour(value, option_label)
+  if str.is_empty(value) then
+    return nil
+  end
+  local s = value --[[@as string]]
+  if s:match(HEX_COLOUR_PATTERN) or colour.is_named_colour(s) then
+    return s
+  end
+  log.log_warning(
+    EXTENSION_NAME,
+    "Ignoring invalid '" .. option_label .. "' value '" .. s ..
+    "': expected a hex colour (e.g. '#c3c3c3') or a CSS named colour."
+  )
+  return nil
+end
+
+--- Convert a validated colour value to its hex form for Typst rgb().
+--- Hex codes are returned unchanged; CSS named colours are resolved via
+--- the colour module. Assumes the value has already been validated.
+--- @param value string The colour value (hex code or CSS named colour)
+--- @return string The hex form
+local function colour_to_hex(value)
+  if value:match(HEX_COLOUR_PATTERN) then
+    return value
+  end
+  return colour.named_to_HTML(value)
+end
+
+--- Read a boolean metadata value with a default.
+--- `get_metadata_value()` returns nil for boolean `false` (its truthy guard
+--- treats false as missing), so this helper reads the raw value directly
+--- and coerces it via `tostring`.
+--- @param gitlink_meta table|nil The `extensions.gitlink` metadata sub-table
+--- @param key string The option key
+--- @param default boolean The default when the option is absent
+--- @return boolean The resolved boolean value
+local function read_boolean_meta(gitlink_meta, key, default)
+  local value = gitlink_meta and gitlink_meta[key]
+  if value == nil then
+    return default
+  end
+  return str.stringify(value):lower() ~= 'false'
+end
+
+--- Reset all module-level state to defaults.
+--- Quarto can render multiple documents in one process, so module-level state
+--- from a previous document must be cleared at the start of each Meta pass.
+local function reset_state()
+  platform = 'github'
+  repository_name = nil
+  base_url = 'https://github.com'
+  references_ids_set = {}
+  force_mentions_set = {}
+  is_enabled = true
+  show_platform_badge = true
+  badge_position = 'after'
+  badge_background_colour = '#c3c3c3'
+  badge_text_colour = nil
+  normalize_links = true
+  fetch_titles = false
+  title_cache = {}
+  platform_config_cache = {}
+  all_platform_names_cache = nil
+  if platforms.clear_custom_platforms then
+    platforms.clear_custom_platforms()
+  end
+end
+
+--- Get the cached list of all known platform names.
+--- @return table<integer, string> List of platform names
+local function get_all_platform_names()
+  if not all_platform_names_cache then
+    all_platform_names_cache = platforms.get_all_platform_names()
+  end
+  return all_platform_names_cache
+end
+
+--- Get platform configuration (cached per render).
+--- Memoises lookups against `platform_config_cache` to avoid repeated calls
+--- to the platforms module for every Str element in the document.
+--- The cache stores `false` for "looked up and not found" so repeated misses
+--- skip the underlying lookup.
 --- @param platform_name string The platform name
 --- @return table|nil The platform configuration or nil if not found
 local function get_platform_config(platform_name)
-  return platforms.get_platform_config(platform_name:lower())
+  if not platform_name then
+    return nil
+  end
+  local key = platform_name:lower()
+  local cached = platform_config_cache[key]
+  if cached ~= nil then
+    return cached or nil
+  end
+  local config = platforms.get_platform_config(key)
+  platform_config_cache[key] = config or false
+  return config
 end
 
 --- Parse a full repository URL to extract platform, base-url, and owner/repo.
@@ -63,9 +184,9 @@ end
 --- @return string|nil matched_base_url The base URL portion
 --- @return string|nil repo_path The owner/repo portion
 local function parse_repo_url(url)
-  local all_names = platforms.get_all_platform_names()
+  local all_names = get_all_platform_names()
   for _, name in ipairs(all_names) do
-    local config = platforms.get_platform_config(name)
+    local config = get_platform_config(name)
     if config and config.base_url then
       local escaped = str.escape_pattern(config.base_url)
       local repo_path = url:match('^' .. escaped .. '/(.+)$')
@@ -143,13 +264,15 @@ local function create_platform_link(text, uri, platform_name)
     local link = pandoc.Link(link_content, uri --[[@as string]], '', link_attr)
 
     if show_platform_badge then
-      local bg_colour = badge_background_colour
+      -- Typst rgb() only accepts hex strings, so convert any CSS-named colour
+      -- (already validated at Meta time) to its hex equivalent.
+      local bg_hex = colour_to_hex(badge_background_colour)
       local text_colour_opt = ''
       if not str.is_empty(badge_text_colour) then
-        text_colour_opt = ', fill: rgb("' .. badge_text_colour .. '")'
+        text_colour_opt = ', fill: rgb("' .. colour_to_hex(badge_text_colour --[[@as string]]) .. '")'
       end
       local badge_raw = '#box(fill: rgb("' ..
-          bg_colour ..
+          bg_hex ..
           '"), inset: 2pt, outset: 0pt, radius: 3pt, baseline: -0.3em, text(size: 0.45em' ..
           text_colour_opt .. ', [' .. platform_label .. ']))'
       local badge = pandoc.RawInline('typst', ' ' .. badge_raw)
@@ -178,6 +301,19 @@ end
 --- @param meta table The document metadata table.
 --- @return table The metadata table (unchanged).
 local function get_repository(meta)
+  -- Reset module-level state at the start of every document so a previous
+  -- render in a batch does not bleed into this one.
+  reset_state()
+
+  -- Allow opt-out at the document level for drafts, templates, or any
+  -- document where automatic link rewriting is undesirable.
+  local extensions_meta = meta and meta['extensions']
+  local gitlink_meta = extensions_meta and extensions_meta['gitlink']
+  is_enabled = read_boolean_meta(gitlink_meta, 'enabled', true)
+  if not is_enabled then
+    return meta
+  end
+
   local meta_platform = meta_mod.get_metadata_value(meta, 'gitlink', 'platform')
   local meta_base_url = meta_mod.get_metadata_value(meta, 'gitlink', 'base-url')
   local meta_repository = meta_mod.get_metadata_value(meta, 'gitlink', 'repository-name')
@@ -227,7 +363,7 @@ local function get_repository(meta)
 
   local config = get_platform_config(platform)
   if not config then
-    local available_platforms = table.concat(platforms.get_all_platform_names(), ', ')
+    local available_platforms = table.concat(get_all_platform_names(), ', ')
     log.log_error(
       EXTENSION_NAME,
       "Unsupported platform: '" .. platform ..
@@ -254,10 +390,7 @@ local function get_repository(meta)
     repository_name = git.get_repository()
   end
 
-  local show_badge_meta = meta_mod.get_metadata_value(meta, 'gitlink', 'show-platform-badge')
-  if show_badge_meta ~= nil then
-    show_platform_badge = (show_badge_meta == "true" or show_badge_meta == true)
-  end
+  show_platform_badge = read_boolean_meta(gitlink_meta, 'show-platform-badge', true)
 
   local badge_pos_meta = meta_mod.get_metadata_value(meta, 'gitlink', 'badge-position')
   if badge_pos_meta ~= nil then
@@ -266,12 +399,46 @@ local function get_repository(meta)
 
   local badge_bg_colour_meta = meta_mod.get_metadata_value(meta, 'gitlink', 'badge-background-colour')
   if not str.is_empty(badge_bg_colour_meta) then
-    badge_background_colour = badge_bg_colour_meta --[[@as string]]
+    local validated_bg = validate_colour(badge_bg_colour_meta --[[@as string]], 'badge-background-colour')
+    if validated_bg then
+      badge_background_colour = validated_bg
+    end
   end
 
   local badge_text_colour_meta = meta_mod.get_metadata_value(meta, 'gitlink', 'badge-text-colour')
   if not str.is_empty(badge_text_colour_meta) then
-    badge_text_colour = badge_text_colour_meta --[[@as string]]
+    local validated_text = validate_colour(badge_text_colour_meta --[[@as string]], 'badge-text-colour')
+    if validated_text then
+      badge_text_colour = validated_text
+    end
+  end
+
+  normalize_links = read_boolean_meta(gitlink_meta, 'normalize-links', true)
+
+  -- Default-false flag: only literal 'true' enables it (matches YAML boolean
+  -- coercion). Anything else falls back to false.
+  local fetch_titles_meta = gitlink_meta and gitlink_meta['fetch-titles']
+  if fetch_titles_meta ~= nil then
+    fetch_titles = (str.stringify(fetch_titles_meta):lower() == 'true')
+  end
+
+  -- Read the optional `mentions` list (citation IDs to force-treat as mentions).
+  -- Direct table access because get_metadata_value flattens lists via stringify.
+  local mentions_meta = gitlink_meta and gitlink_meta['mentions']
+  if mentions_meta then
+    if type(mentions_meta) == 'table' then
+      for _, mention in ipairs(mentions_meta) do
+        local id = str.stringify(mention)
+        if not str.is_empty(id) then
+          force_mentions_set[id] = true
+        end
+      end
+    else
+      local id = str.stringify(mentions_meta)
+      if not str.is_empty(id) then
+        force_mentions_set[id] = true
+      end
+    end
   end
 
   return meta
@@ -292,27 +459,32 @@ local function get_references(doc)
   return doc
 end
 
---- Process Git hosting mentions in citations
---- Distinguishes between actual bibliography citations and Git hosting @mentions
+--- Process Git hosting mentions in citations.
+--- Distinguishes between actual bibliography citations and Git hosting @mentions.
+--- When the citation id appears in `gitlink.mentions`, the citation is forced
+--- to be treated as a mention even if a reference with that id exists.
 --- @param cite pandoc.Cite The citation element
 --- @return pandoc.Cite|pandoc.Link The original citation or a Git hosting mention link
 local function process_mentions(cite)
-  if references_ids_set[cite.citations[1].id] then
-    return cite
-  else
-    local mention_text = str.stringify(cite.content)
-    local config = get_platform_config(platform)
-    if config and config.patterns.user then
-      local username = mention_text:match(config.patterns.user)
-      if username then
-        local url_format = config.url_formats.user
-        local uri = base_url .. url_format:gsub("{username}", username)
-        local link = create_platform_link(mention_text, uri, platform)
-        return link or cite
-      end
-    end
+  if not is_enabled then
     return cite
   end
+  local cite_id = cite.citations[1] and cite.citations[1].id
+  if cite_id and not force_mentions_set[cite_id] and references_ids_set[cite_id] then
+    return cite
+  end
+  local mention_text = str.stringify(cite.content)
+  local config = get_platform_config(platform)
+  if config and config.patterns.user then
+    local username = mention_text:match(config.patterns.user)
+    if username then
+      local url_format = config.url_formats.user
+      local uri = base_url .. url_format:gsub("{username}", username)
+      local link = create_platform_link(mention_text, uri, platform)
+      return link or cite
+    end
+  end
+  return cite
 end
 
 
@@ -376,9 +548,9 @@ local function process_issues_and_mrs(elem, current_platform, current_base_url)
   end
 
   if not number then
-    local all_platform_names = platforms.get_all_platform_names()
+    local all_platform_names = get_all_platform_names()
     for _, platform_name in ipairs(all_platform_names) do
-      local platform_config = platforms.get_platform_config(platform_name)
+      local platform_config = get_platform_config(platform_name)
       if platform_config then
         local platform_base_url = platform_config.base_url
         local escaped_platform_url = str.escape_pattern(platform_base_url)
@@ -474,9 +646,9 @@ local function process_users(elem, current_platform)
   local text = elem.text
   local username = nil
 
-  local all_platform_names = platforms.get_all_platform_names()
+  local all_platform_names = get_all_platform_names()
   for _, platform_name in ipairs(all_platform_names) do
-    local platform_config = platforms.get_platform_config(platform_name)
+    local platform_config = get_platform_config(platform_name)
     if platform_config then
       local platform_base_url = platform_config.base_url
       local escaped_platform_url = str.escape_pattern(platform_base_url)
@@ -523,9 +695,13 @@ local function process_commits(elem, current_platform, current_base_url)
       short_link = commit_sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
       break
     elseif pattern == "([^/]+/[^/@]+)@(%x+)" and text:match("^([^/]+/[^/@]+)@(%x+)$") then
-      repo, commit_sha = text:match("^([^/]+/[^/@]+)@(%x+)$")
-      short_link = repo .. "@" .. commit_sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
-      break
+      local r, sha = text:match("^([^/]+/[^/@]+)@(%x+)$")
+      if sha:len() >= COMMIT_SHA_MIN_LENGTH and sha:len() <= COMMIT_SHA_FULL_LENGTH then
+        repo = r
+        commit_sha = sha
+        short_link = repo .. "@" .. commit_sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
+        break
+      end
     elseif pattern == "(%w+)@(%x+)" and text:match("^(%w+)@(%x+)$") then
       local user, sha = text:match("^(%w+)@(%x+)$")
       if repository_name and sha:len() >= COMMIT_SHA_MIN_LENGTH and sha:len() <= COMMIT_SHA_FULL_LENGTH then
@@ -541,16 +717,18 @@ local function process_commits(elem, current_platform, current_base_url)
   end
 
   if not commit_sha then
-    local all_platform_names = platforms.get_all_platform_names()
+    local all_platform_names = get_all_platform_names()
     for _, platform_name in ipairs(all_platform_names) do
-      local platform_config = platforms.get_platform_config(platform_name)
+      local platform_config = get_platform_config(platform_name)
       if platform_config then
         local platform_base_url = platform_config.base_url
         local escaped_platform_url = str.escape_pattern(platform_base_url)
-        local url_pattern = '^' .. escaped_platform_url .. '/([^/]+/[^/]+)/%-?/?commits?/(%x+)'
+        local url_pattern = '^' .. escaped_platform_url .. '/([^/]+/[^/]+)/%-?/?commits?/(%x+)$'
         if text:match(url_pattern) then
-          repo, commit_sha = text:match(url_pattern)
-          if commit_sha:len() >= COMMIT_SHA_MIN_LENGTH then
+          local r, sha = text:match(url_pattern)
+          if sha:len() >= COMMIT_SHA_MIN_LENGTH and sha:len() <= COMMIT_SHA_FULL_LENGTH then
+            repo = r
+            commit_sha = sha
             if repo == repository_name then
               short_link = commit_sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
             else
@@ -566,7 +744,9 @@ local function process_commits(elem, current_platform, current_base_url)
     end
   end
 
-  if commit_sha and repo and commit_sha:len() >= COMMIT_SHA_MIN_LENGTH then
+  if commit_sha and repo
+      and commit_sha:len() >= COMMIT_SHA_MIN_LENGTH
+      and commit_sha:len() <= COMMIT_SHA_FULL_LENGTH then
     local url_format = config.url_formats.commit
     local uri = matched_base_url .. url_format:gsub("{repo}", repo):gsub("{sha}", commit_sha)
     return create_platform_link(short_link, uri, matched_platform), matched_platform, matched_base_url
@@ -580,8 +760,20 @@ end
 --- @param elem pandoc.Str The string element to process
 --- @return pandoc.Str|pandoc.Link|pandoc.List The original element, a link, or a list of inlines
 local function process_gitlink(elem)
+  if not is_enabled then
+    return elem
+  end
   if not platform or not base_url or str.is_empty(platform) then
     return elem
+  end
+  -- When link normalisation is disabled, leave bare URL tokens alone.
+  -- Pandoc represents the visible text of an autolink as a Str inside the
+  -- Link element, so skipping URL-shaped tokens preserves the URL text.
+  if not normalize_links then
+    local t = elem.text
+    if t and (t:sub(1, 7) == 'http://' or t:sub(1, 8) == 'https://') then
+      return elem
+    end
   end
 
   -- Fast path: try matching the raw text directly
@@ -654,20 +846,87 @@ end
 --- @param elem table Block element containing inline content
 --- @return table The modified element
 local function process_inlines(elem)
+  if not is_enabled then
+    return elem
+  end
   if elem.content and platform == "bitbucket" then
     elem.content = bitbucket.process_inlines(elem.content, base_url, repository_name, create_platform_link)
   end
   return elem
 end
 
---- Process Link elements to shorten URLs that are used as link text
+--- Fetch the HTML <title> of a URL via curl (best-effort, cached per render).
+--- Returns nil when fetching is disabled, the URL cannot be reached, or curl
+--- is not available. Failures log a warning but never abort the render.
+--- @param uri string The URL to fetch
+--- @return string|nil The page title, or nil if unavailable
+local function fetch_title_for(uri)
+  if not fetch_titles then
+    return nil
+  end
+  local cached = title_cache[uri]
+  if cached ~= nil then
+    return cached or nil
+  end
+  if uri:find('"', 1, true) or uri:find("'", 1, true) then
+    title_cache[uri] = false
+    return nil
+  end
+  local handle = io.popen(
+    'curl -fsSL --max-time 5 -A "quarto-gitlink" "' .. uri .. '" 2>/dev/null', 'r'
+  )
+  if not handle then
+    log.log_warning(EXTENSION_NAME, "Title fetch unavailable (could not start curl).")
+    title_cache[uri] = false
+    return nil
+  end
+  local body = handle:read('*a') or ''
+  handle:close()
+  local raw_title = body:match('<title[^>]*>(.-)</title>')
+  if not raw_title or raw_title == '' then
+    title_cache[uri] = false
+    return nil
+  end
+  local decoded = raw_title
+      :gsub('&amp;', '&')
+      :gsub('&lt;', '<')
+      :gsub('&gt;', '>')
+      :gsub('&quot;', '"')
+      :gsub('&#39;', "'")
+  local trimmed = str.trim(decoded)
+  if trimmed == '' then
+    title_cache[uri] = false
+    return nil
+  end
+  title_cache[uri] = trimmed
+  return trimmed
+end
+
+--- Process Link elements to shorten platform URLs used as link text.
+--- When `gitlink.normalize-links` is true (the default), an autolink whose text
+--- equals its target (e.g. `<https://github.com/owner/repo/issues/1>`) is
+--- shortened to the platform-style form (e.g. `#1`).
+--- When `gitlink.fetch-titles` is true, an autolink whose target points at a
+--- known platform URL is given a title-derived link text (issue/PR/commit
+--- title) instead of the URL when the fetch succeeds.
 --- @param elem pandoc.Link The link element to process
 --- @return pandoc.Link The original or modified link
 local function process_link(elem)
+  if not is_enabled or not normalize_links then
+    return elem
+  end
+
   local link_text = str.stringify(elem.content)
   local link_target = elem.target
 
   if link_text == link_target then
+    if fetch_titles then
+      local title = fetch_title_for(link_target)
+      if title then
+        return pandoc.Link({ pandoc.Str(title) }, link_target, '', elem.attr)
+      end
+    end
+
     local temp_str = pandoc.Str(link_text)
     local result = process_gitlink(temp_str)
 

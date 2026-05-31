@@ -155,6 +155,45 @@ The extension automatically processes full URLs and converts them to short refer
 > [!TIP]
 > Wrap URLs in angle brackets (`<URL>`) for best results instead of bare URLs.
 
+You can opt out of URL shortening with `normalize-links: false`:
+
+```yaml
+extensions:
+  gitlink:
+    normalize-links: false   # leave autolinked URLs as-is (default: true)
+```
+
+You can also have the extension fetch the page title of an autolinked platform URL and use it as the link text (best-effort via `curl`):
+
+```yaml
+extensions:
+  gitlink:
+    fetch-titles: true   # default: false; requires network access
+```
+
+### Drafts and Templates
+
+To opt out of all link rewriting for a single document (for example, in a draft or template), set:
+
+```yaml
+extensions:
+  gitlink:
+    enabled: false
+```
+
+### Citations vs. Mentions
+
+When a Quarto bibliography contains an entry whose id matches a Git hosting username (for example, both `@mcanouil` the user and a `@mcanouil` citation), Pandoc treats the token as a citation and Gitlink leaves it alone.
+You can force-treat selected citation IDs as Git hosting mentions with:
+
+```yaml
+extensions:
+  gitlink:
+    mentions:
+      - mcanouil
+      - other-username
+```
+
 ### Repository Detection
 
 The extension resolves the repository URL using the following priority order:

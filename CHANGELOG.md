@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+### New Features
+
+- feat: Add `gitlink.enabled` option so drafts and templates can opt out of link rewriting.
+- feat: Add `gitlink.normalize-links` option to toggle URL shortening of autolinked platform URLs.
+- feat: Add `gitlink.fetch-titles` option to use the page title of an autolinked platform URL as the link text (best-effort via `curl`).
+- feat: Add `gitlink.mentions` list to force-treat specific citation IDs as Git hosting mentions even when a bibliography reference with the same id exists.
+
+### Bug Fixes
+
+- fix: Validate `badge-background-colour` and `badge-text-colour` against hex codes and CSS named colours; invalid values are now warned and ignored instead of producing broken inline styles or invalid Typst `rgb()` calls.
+- fix: Reject cross-repository commit references (`owner/repo@<sha>`) whose SHA is shorter than 7 or longer than 40 hexadecimal characters; previously over-length SHAs produced an incorrect link.
+- fix: Reset module-level state at the start of each document so batch renders no longer leak platform, repository, badge, or reference-set state across documents.
+- fix: Respect boolean `false` for `show-platform-badge`, `enabled`, and `normalize-links` (the previous metadata accessor treated `false` as missing).
+
+### Refactoring
+
+- refactor: Cache platform-config lookups per render to avoid repeated module calls on every Str element.
+- refactor: Add canonical `colour.lua` shared module for hex/named colour validation.
+
 ## 1.5.2 (2026-04-17)
 
 ### Bug Fixes

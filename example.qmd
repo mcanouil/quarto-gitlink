@@ -424,7 +424,57 @@ extensions:
 
 These colours will be applied to badges in both HTML and Typst output formats.
 
-**Contributing New Platforms**:
+Invalid colour values (anything that is neither a hex code nor a recognised CSS named colour) are rejected with a warning and the default colour is used.
+
+## Disabling the Filter
+
+Set `gitlink.enabled: false` to opt a single document out of link rewriting, for example in drafts or templates:
+
+```yaml
+extensions:
+  gitlink:
+    enabled: false
+```
+
+With `enabled: false`, references such as `#1`, `@mcanouil`, and full URLs are left untouched.
+
+## URL Normalisation
+
+By default, autolinked platform URLs (`<https://github.com/owner/repo/issues/1>`) are shortened to the platform-style form (`#1`).
+Set `normalize-links: false` to leave them as-is:
+
+```yaml
+extensions:
+  gitlink:
+    normalize-links: false
+```
+
+## Title Fetching
+
+Set `fetch-titles: true` to replace the link text of an autolinked platform URL with the fetched page title (best-effort via `curl`):
+
+```yaml
+extensions:
+  gitlink:
+    fetch-titles: true
+```
+
+The fetch is best-effort: if the network is unavailable or the page does not return a `<title>`, the original behaviour (URL shortening or unchanged URL text) is used.
+
+## Forcing Mentions Over Citations
+
+When a Quarto bibliography contains an entry whose id matches a Git hosting username, Pandoc treats `@name` as a citation.
+To force-treat selected citation IDs as Git hosting mentions, list them under `mentions`:
+
+```yaml
+extensions:
+  gitlink:
+    mentions:
+      - mcanouil
+      - other-username
+```
+
+## Contributing New Platforms
 
 To contribute a new platform to the built-in configuration:
 
