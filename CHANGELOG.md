@@ -5,6 +5,7 @@
 ### Bug Fixes
 
 - fix: Recognise groups of references separated by commas, both spaced (`(#2, #3)`, `(#1, #2, #3)`) and without spaces (`(#2,#3)`, `#2,#3`); a comma-separated group is linked only when every item is a valid reference.
+- fix: Shorten autolinked platform URLs (e.g. `<https://github.com/owner/repo/issues/1>`) to a single clean reference link instead of a malformed nested link; non-platform autolinks keep their original link.
 
 ## 1.6.0 (2026-05-31)
 
