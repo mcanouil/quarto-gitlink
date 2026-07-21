@@ -102,6 +102,12 @@ References with surrounding characters:
 - Bracket with leading and trailing text: something(#1)something
 - Bracket with cross-repository issue and trailing text: (mcanouil/quarto-gitlink#1)something
 - Bracket with GitHub-style issue and surrounding text: see(GH-1)now
+- Parenthesised group of two issues: (#2, #3)
+- Parenthesised group of three issues: (#1, #2, #3)
+- Parenthesised group of cross-repository issues: (mcanouil/quarto-gitlink#1, mcanouil/quarto-gitlink#2)
+- Parenthesised group without spaces: (#2,#3)
+- Parenthesised group of three without spaces: (#1,#2,#3)
+- Bare group without spaces: #2,#3
 - Bracket with commit and trailing punctuation: see(cb0350d0316d1c420508338d02e56f5c8f907226).
 
 Full URL examples (automatically shortened):

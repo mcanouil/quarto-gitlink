@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Bug Fixes
+
+- fix: Recognise groups of references separated by commas, both spaced (`(#2, #3)`, `(#1, #2, #3)`) and without spaces (`(#2,#3)`, `#2,#3`); a comma-separated group is linked only when every item is a valid reference.
+
 ## 1.6.0 (2026-05-31)
 
 ### New Features

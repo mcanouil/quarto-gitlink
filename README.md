@@ -171,6 +171,13 @@ extensions:
     fetch-titles: true   # default: false; requires network access
 ```
 
+### Surrounding Characters and Groups
+
+References are recognised even when wrapped in brackets or punctuation, for example `(#1)`, `[#1]`, `"#1"`, `#1.`, `something(#1)`, and `.(#1).`.
+
+Comma-separated groups of references inside a single bracket pair are also recognised, both with and without spaces, for example `(#2, #3)`, `(#1, #2, #3)`, `(#2,#3)`, and a bare `#2,#3`.
+A group is linked only when every item is a valid reference, so text such as `1,000` is left untouched.
+
 ### Drafts and Templates
 
 To opt out of all link rewriting for a single document (for example, in a draft or template), set:
