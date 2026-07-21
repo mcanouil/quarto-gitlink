@@ -962,12 +962,15 @@ end
 --- Process Link elements to shorten platform URLs used as link text.
 --- When `gitlink.normalize-links` is true (the default), an autolink whose text
 --- equals its target (e.g. `<https://github.com/owner/repo/issues/1>`) is
---- shortened to the platform-style form (e.g. `#1`).
+--- unwrapped so the later `Str` pass converts the bare URL to its platform-style
+--- form (e.g. `#1`). Unwrapping (rather than returning the converted link here)
+--- avoids a doubly nested link, because the `Str` pass also descends into link
+--- content and would re-process the shortened text.
 --- When `gitlink.fetch-titles` is true, an autolink whose target points at a
 --- known platform URL is given a title-derived link text (issue/PR/commit
 --- title) instead of the URL when the fetch succeeds.
 --- @param elem pandoc.Link The link element to process
---- @return pandoc.Link The original or modified link
+--- @return pandoc.Link|pandoc.Str The original link, a retitled link, or the unwrapped URL
 local function process_link(elem)
   if not is_enabled or not normalize_links then
     return elem
@@ -984,11 +987,14 @@ local function process_link(elem)
       end
     end
 
+    -- Only unwrap when the URL is a recognised platform reference; otherwise the
+    -- autolink is left untouched so ordinary URLs keep their link.
+    -- `process_gitlink` returns its argument unchanged when nothing matches, so
+    -- an identity check reliably detects a conversion. `pandoc.utils.type`
+    -- cannot be used here: it reports "Inline" for both `Str` and `Link`.
     local temp_str = pandoc.Str(link_text)
-    local result = process_gitlink(temp_str)
-
-    if pandoc.utils.type(result) == "Link" then
-      return result
+    if process_gitlink(temp_str) ~= temp_str then
+      return temp_str
     end
   end
 
