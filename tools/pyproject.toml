@@ -1,0 +1,6 @@
+[project]
+name = "gitlink-tools"
+version = "0.1.0"
+description = "Maintenance tools for the gitlink Quarto extension."
+requires-python = ">=3.13"
+dependencies = []

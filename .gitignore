@@ -9,3 +9,5 @@
 /test/widget-site/_site/
 /test/widget-site/.quarto/
 /test/widget-site/_extensions/
+__pycache__/
+/tools/.venv/
