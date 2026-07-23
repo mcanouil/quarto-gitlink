@@ -273,9 +273,6 @@ local function build_config(spec)
   end
 
   local config = {
-    platform = spec.platform,
-    platformName = spec.display_name,
-    repoUrl = repo_url,
     cacheKey = 'gitlink-widget-' .. spec.platform .. '-' .. spec.repository_name,
     menuLabel = spec.display_name .. ' repository menu',
     icon = icon,
