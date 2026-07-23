@@ -110,8 +110,10 @@ end
 --- @return string The HTML string
 local function meta_to_html(value)
   if pandoc.utils.type(value) == 'Inlines' then
-    local rendered = pandoc.write(pandoc.Pandoc({ pandoc.Plain(value) }), 'html')
-    return (rendered:gsub('%s+$', ''))
+    local ok, rendered = pcall(pandoc.write, pandoc.Pandoc({ pandoc.Plain(value) }), 'html')
+    if ok then
+      return (rendered:gsub('%s+$', ''))
+    end
   end
   return str.escape_html(str.stringify(value))
 end

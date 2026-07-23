@@ -207,7 +207,14 @@
       }
     });
 
-    fetch(config.api.endpoint, { headers: headers })
+    const options = { headers: headers };
+    // Bound the request so a slow API falls back to the stale cache instead
+    // of leaving the counts pending; older browsers just skip the timeout.
+    if (typeof AbortSignal !== "undefined" && AbortSignal.timeout) {
+      options.signal = AbortSignal.timeout(8000);
+    }
+
+    fetch(config.api.endpoint, options)
       .then((response) => (response.ok ? response.json() : Promise.reject(response.status)))
       .then((data) => {
         const stats = {

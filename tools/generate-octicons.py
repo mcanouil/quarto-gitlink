@@ -37,8 +37,11 @@ MARKETPLACE = (
 
 
 def main() -> None:
-    with urllib.request.urlopen(DATA_URL) as response:
-        data = json.load(response)
+    try:
+        with urllib.request.urlopen(DATA_URL, timeout=30) as response:
+            data = json.load(response)
+    except (OSError, json.JSONDecodeError) as error:
+        sys.exit(f"Failed to fetch or parse {DATA_URL}: {error}")
 
     icons: dict[str, str] = {}
     for name, spec in data.items():
