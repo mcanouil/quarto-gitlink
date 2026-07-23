@@ -1,0 +1,9 @@
+---
+title: "Widget test: GitHub defaults"
+---
+
+The navbar should show the gitlink widget with live star and fork counts for mcanouil/quarto-gitlink.
+
+Link rewriting is active on this page, so #1 and mcanouil/quarto-cli#2 should be links.
+
+Expected dropdown: Repository, Issues, Pull Requests, Releases, Discussions, divider, Add a Star, Create a Fork, divider, Q&A, Quarto, Sponsor.

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### New Features
+
+- feat: Add `gitlink.widget` navbar widget for HTML websites, replacing a navbar item with href `#gitlink-widget` by a button showing live star/fork counts (fetched from the platform API, cached for four hours) and a dropdown of repository links.
+- feat: Add per-platform `widget` sections to `platforms.yml` (menu paths, labels, stats API endpoint and fields) for GitHub, GitLab, Codeberg, Gitea, and Bitbucket; Bitbucket renders without counters as its API exposes no star count.
+- feat: Add `gitlink.widget.links` toggles, `gitlink.widget.extra-links` custom entries, `gitlink.widget.sponsor`, and `gitlink.widget.icon` options to customise the dropdown; `icon` takes Quarto's bundled Bootstrap icon names (as in navbar tools) or one of about sixty embedded octicons (16px bodies from primer/octicons), and shortcode output in an entry's `text` (e.g. iconify) is preserved when the filter runs at post-quarto.
+- feat: Size Quarto's navbar search button and colour-scheme toggle to match the widget, with consistent spacing across the navbar-right control group; the optional `gitlink.widget.style-navbar-tools` option additionally applies the widget's bordered pill style to both.
+- feat: Allow widget-only usage with `gitlink.enabled: false` and `gitlink.widget.enabled: true`.
+
 ## 1.7.0 (2026-07-21)
 
 ### Bug Fixes
