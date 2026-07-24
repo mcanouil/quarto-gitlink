@@ -1,0 +1,13 @@
+---
+title: "Widget test: Codeberg"
+extensions:
+  gitlink:
+    platform: codeberg
+    repository-name: forgejo/forgejo
+    widget:
+      enabled: true
+---
+
+The widget on this page should target Codeberg (forgejo/forgejo): git-branch trigger icon, counts from the Codeberg API, and no Discussions or Sponsor entries.
+
+Note: a page-level `extensions.gitlink` map replaces the project-level one in the document metadata (no deep merge), so the widget block is re-declared here.

@@ -267,6 +267,67 @@ extensions:
 - `badge-background-colour`: Set the background colour (hex code or colour name). Defaults to `#c3c3c3` (grey).
 - `badge-text-colour`: Set the text colour (hex code or colour name). If not specified, uses the default text colour.
 
+### Repository Navbar Widget
+
+For Quarto **websites** (HTML output), gitlink can replace a navbar item with a repository widget: a button showing live star and fork counts (fetched from the platform API, cached in `localStorage` for four hours) that opens a dropdown of repository links.
+
+Add a placeholder navbar item with href `#gitlink-widget` to `_quarto.yml`:
+
+```yaml
+website:
+  navbar:
+    right:
+      - text: "GitHub"
+        href: "#gitlink-widget"
+        aria-label: "GitHub"
+filters:
+  - path: gitlink
+    at: post-quarto
+extensions:
+  gitlink:
+    platform: github
+    repository-name: owner/repo
+    widget:
+      enabled: true
+```
+
+The default dropdown contains Repository, Issues, Pull Requests (Merge Requests on GitLab), Releases, Add a Star, and Create a Fork, based on what the platform supports. Customise it with:
+
+```yaml
+extensions:
+  gitlink:
+    widget:
+      enabled: true                # Inject the widget (default: false)
+      links:                       # Toggle default entries
+        discussions: true          # Discussions link (default: false)
+        releases: false            # Any default entry can be turned off
+      extra-links:                 # Appended after the default set
+        - text: "Q&A"
+          href: "/discussions/categories/q-a"  # '/...' resolves against the repository URL
+          icon: question           # Icon name (see below)
+      sponsor: username            # Sponsor entry (platforms with a sponsor URL, i.e. GitHub)
+      icon: mark-github            # Trigger icon override (defaults to the platform mark)
+      style-navbar-tools: true     # Bordered pill style for Quarto's search button and colour-scheme toggle (default: false)
+```
+
+`icon` works like Quarto's own `icon` fields (navbar tools, callouts): it takes a name from the Bootstrap Icons set that Quarto bundles with every HTML page, so the widget has no icon-extension dependency. The widget additionally embeds an octicon set (16px bodies from [primer/octicons](https://github.com/primer/octicons)), usable by name too; embedded names win over Bootstrap ones:
+
+`mark-github`, `git-branch`, `repo`, `issue`, `pull-request`, `release`, `discussion`, `question`, `star`, `fork`, `heart`, `heart-fill`, `marketplace`, `globe`, `book`, `bookmark`, `bug`, `calendar`, `checklist`, `clock`, `code`, `comment`, `database`, `download`, `eye`, `file-code`, `gear`, `gift`, `git-commit`, `git-merge`, `graph`, `history`, `home`, `info`, `key`, `law`, `light-bulb`, `link`, `link-external`, `lock`, `mail`, `megaphone`, `milestone`, `organization`, `package`, `people`, `person`, `play`, `plus`, `project`, `rocket`, `rss`, `search`, `shield-check`, `terminal`, `tools`, `verified`, `versions`, `workflow`, `zap`, `pencil`, `pin`.
+
+For any other icon, put a shortcode in the entry's `text` instead, for example with the [iconify extension](https://github.com/mcanouil/quarto-iconify); this requires running the filter `at: post-quarto` so the shortcode is resolved before the widget reads it:
+
+```yaml
+      extra-links:
+        - text: "{{< iconify simple-icons:typst >}} Typst Universe"
+          href: "https://typst.app/universe/package/gribouille"
+```
+
+The widget's appearance follows Bootstrap tokens by default and can be themed via CSS custom properties: `--gitlink-widget-border`, `--gitlink-widget-accent`, `--gitlink-widget-accent-soft`, `--gitlink-widget-pill-bg`, `--gitlink-widget-menu-bg`, and `--gitlink-widget-menu-fg`.
+
+The widget sizes Quarto's navbar search button and colour-scheme toggle to match its trigger, with consistent spacing across the navbar-right control group; `style-navbar-tools` additionally paints both with the widget's bordered pill style.
+
+The widget works independently of link rewriting: set `enabled: false` alongside `widget.enabled: true` to use only the widget. On Bitbucket the widget renders without counters, as its API exposes no star count.
+
 ## Custom Platforms
 
 You can add support for additional Git hosting platforms by creating a custom YAML configuration file.
@@ -491,3 +552,8 @@ Here is the source code for a comprehensive example: [example.qmd](example.qmd).
 Output of `example.qmd`:
 
 - [HTML](https://m.canouil.dev/quarto-gitlink/)
+
+---
+
+The repository navbar widget is inspired by and derived from the GitHub button in [posit-dev/great-docs](https://github.com/posit-dev/great-docs) by [Rich Iannone](https://github.com/rich-iannone).
+Embedded icons are 16px bodies from [primer/octicons](https://github.com/primer/octicons) (MIT License, GitHub Inc.).

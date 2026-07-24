@@ -1,0 +1,10 @@
+---
+title: "Widget test: widget only"
+extensions:
+  gitlink:
+    enabled: false
+    widget:
+      enabled: true
+---
+
+Link rewriting is disabled on this page, so #123 must stay plain text, while the navbar widget must still be present.
