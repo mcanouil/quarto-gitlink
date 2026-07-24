@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.8.0 (2026-07-24)
+
 ### New Features
 
 - feat: Add `gitlink.widget` navbar widget for HTML websites, replacing a navbar item with href `#gitlink-widget` by a button showing live star/fork counts (fetched from the platform API, cached for four hours) and a dropdown of repository links.
