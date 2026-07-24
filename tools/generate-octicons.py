@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # Gitlink - Octicon Registry Generator
 # Builds _extensions/gitlink/octicons.json from the @primer/octicons npm
-# package: every 16px icon body, plus the widget's friendly aliases and its
-# custom marketplace icon. The Lua filter embeds only the icons a page's menu
-# actually uses into the widget configuration.
+# package: every 16px icon as a list of path attribute objects ({"d": ...,
+# optional "fill-rule"}), plus the widget's friendly aliases and its custom
+# marketplace icon. The Lua filter embeds only the icons a page's menu
+# actually uses into the widget configuration, and widget.js rebuilds them
+# with createElementNS so no HTML string is ever parsed.
 #
 # @license MIT
 # @copyright 2026 Mickaël Canouil
@@ -11,6 +13,7 @@
 
 import json
 import pathlib
+import re
 import sys
 import urllib.request
 
@@ -36,6 +39,20 @@ MARKETPLACE = (
 )
 
 
+def svg_body_to_paths(body: str) -> list[dict[str, str]]:
+    """Extract path attribute objects from an SVG body string."""
+    paths = []
+    for element in re.findall(r"<path\b([^>]*?)/?>", body):
+        attrs = dict(re.findall(r'([a-zA-Z-]+)="([^"]*)"', element))
+        path = {"d": attrs["d"]}
+        if "fill-rule" in attrs:
+            path["fill-rule"] = attrs["fill-rule"]
+        paths.append(path)
+    if not paths:
+        raise ValueError(f"No <path> elements found in: {body[:80]}")
+    return paths
+
+
 def main() -> None:
     try:
         with urllib.request.urlopen(DATA_URL, timeout=30) as response:
@@ -43,11 +60,11 @@ def main() -> None:
     except (OSError, json.JSONDecodeError) as error:
         sys.exit(f"Failed to fetch or parse {DATA_URL}: {error}")
 
-    icons: dict[str, str] = {}
+    icons: dict[str, list[dict[str, str]]] = {}
     for name, spec in data.items():
         height = spec.get("heights", {}).get("16")
         if height and height.get("path"):
-            icons[name] = height["path"]
+            icons[name] = svg_body_to_paths(height["path"])
 
     if not icons:
         sys.exit("No 16px icons found in data.json: check the package layout.")
@@ -57,7 +74,7 @@ def main() -> None:
             sys.exit(f"Alias target '{target}' missing from the octicon set.")
         icons[alias] = icons[target]
 
-    icons["marketplace"] = MARKETPLACE
+    icons["marketplace"] = svg_body_to_paths(MARKETPLACE)
 
     out = pathlib.Path(__file__).resolve().parent.parent / "_extensions" / "gitlink" / "octicons.json"
     out.write_text(json.dumps(icons, sort_keys=True, separators=(",", ":")) + "\n")
