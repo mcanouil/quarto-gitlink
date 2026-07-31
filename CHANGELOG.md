@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.9.0 (2026-07-31)
+
 ### New Features
 
 - feat: Support the repository widget in the sidebar, so book-like sites with `navbar: false` can use it; the `#gitlink-widget` placeholder goes in `sidebar.tools` or `sidebar.contents`, and both may be used on the same site.
