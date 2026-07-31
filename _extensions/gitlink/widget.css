@@ -188,10 +188,10 @@
   background: var(--gitlink-widget-border, var(--bs-border-color-translucent, rgba(128, 128, 128, 0.3)));
 }
 
-/* Sidebar placements (`sidebar.tools` and `sidebar.contents`). Quarto's
-   sidebar is an `overflow-auto` scroll container, which would clip an
-   absolutely positioned menu, so the menu expands inline below the trigger
-   instead, like a sidebar section. */
+/* Sidebar navigation item (`sidebar.contents`). Quarto's sidebar is an
+   `overflow-auto` scroll container, which would clip an absolutely positioned
+   menu, so the menu expands inline below the trigger, like a sidebar section.
+   `display` is not animatable, hence no transition. */
 .gitlink-widget-sidebar {
   display: flex;
   flex-direction: column;
@@ -212,6 +212,7 @@
   margin-top: 0.35rem;
   box-shadow: none;
   transform: none;
+  transition: none;
 }
 
 .gitlink-widget-sidebar.gitlink-widget-open .gitlink-widget-dropdown {
@@ -221,9 +222,10 @@
 /* A tools row holding the widget stacks vertically: the widget trigger is a
    counted pill, not an icon, so it takes its own line above the remaining
    tools (colour-scheme toggle, reader toggle, overlay search). The marker
-   class is set by widget.js on whichever tools container the placeholder
-   was in. */
-.gitlink-widget-tools {
+   class is set by widget.js on whichever tools container the placeholder was
+   in; the id keeps this ahead of Quarto's own `.sidebar-tools-main` rather
+   than relying on stylesheet order. */
+#quarto-sidebar .gitlink-widget-tools {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -249,28 +251,15 @@
 }
 
 /* A tool sits in a strip of icon-sized controls, where an inline menu would
-   be laid out as another flex item beside them. Keep the overlay menu there,
-   anchored to the trigger's left edge so it stays inside the sidebar width
-   (this is what Quarto's own sidebar tool dropdowns do). */
-.gitlink-widget-tools .gitlink-widget-sidebar {
-  display: inline-flex;
-  width: auto;
-}
-
-.gitlink-widget-tools .gitlink-widget-sidebar .gitlink-widget-trigger {
-  width: auto;
-}
-
-/* The menu keeps its content width (no 14rem floor) so it stays inside the
-   sidebar, which clips overflow rather than scrolling sideways. */
-.gitlink-widget-tools .gitlink-widget-sidebar .gitlink-widget-dropdown {
-  position: absolute;
-  display: block;
+   be laid out as another flex item beside them, so it keeps the overlay menu.
+   The menu is anchored to the trigger's left edge and takes its content width
+   (no 14rem floor) so it stays inside the sidebar, which clips overflow
+   rather than scrolling sideways. */
+.gitlink-widget-tools .gitlink-widget-dropdown {
   left: 0;
   right: auto;
+  min-width: 0;
   width: max-content;
-  margin-top: 0;
-  box-shadow: 0 12px 30px -16px rgba(0, 0, 0, 0.55);
 }
 
 /* The collapsed navbar-nav is a Bootstrap `.navbar-nav-scroll` region
