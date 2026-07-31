@@ -262,9 +262,10 @@
     }
   };
 
-  // In-flight requests by cache key, so several placeholders on one page share
-  // a single API call instead of racing each other before the cache is written.
-  const statsRequests = new Map();
+  // The in-flight request, shared by every widget on the page (they all read
+  // the same configuration) so several placeholders make one API call instead
+  // of racing each other before the cache is written.
+  let pendingStats = null;
 
   const fetchStats = (config) => {
     // Read + parse the cache once; branch on freshness so the stale-fallback
@@ -273,8 +274,7 @@
     if (cached && Date.now() - cached.timestamp <= CACHE_DURATION) {
       return Promise.resolve(cached);
     }
-    const pending = statsRequests.get(config.cacheKey);
-    if (pending) return pending;
+    if (pendingStats) return pendingStats;
 
     const options = { headers: config.api.headers || {} };
     // Bound the request so a slow API falls back to the stale cache instead
@@ -295,7 +295,7 @@
         return stats;
       })
       .catch(() => cached || { stars: "?", forks: "?" });
-    statsRequests.set(config.cacheKey, request);
+    pendingStats = request;
     return request;
   };
 
@@ -336,34 +336,26 @@
     });
   };
 
-  // Replace one placeholder anchor with a widget. Navbar and sidebar contents
-  // items sit in an `<li>`, which is replaced whole so the surrounding list
-  // markup is preserved; a sidebar tool is a bare anchor in
-  // `div.sidebar-tools-main`, so the anchor itself is replaced.
+  // Replace one placeholder anchor with a widget. Only the anchor goes, so
+  // whatever Quarto wrapped it in (`li.nav-item`, `li.sidebar-item >
+  // div.sidebar-item-container`, `div.sidebar-tools-main`) is preserved, and
+  // the widget inherits the spacing and colours of its neighbours.
   const mountWidget = (anchor, index, config) => {
-    const slot = anchor.closest("li") || anchor;
     const root = buildWidget(config, index);
-    if (anchor.closest("#quarto-sidebar")) {
-      root.classList.add("gitlink-widget-sidebar");
-    }
+
     // The tools row is a horizontal strip of icon-sized controls; flag it so
     // the CSS can stack the widget above the search and colour-scheme
     // controls instead of squeezing the counts in beside them.
     const tools = anchor.closest(".sidebar-tools-main, .sidebar-tools-collapse");
     if (tools) {
       tools.classList.add("gitlink-widget-tools");
+    } else if (anchor.closest("#quarto-sidebar")) {
+      // A sidebar navigation item is as wide as the sidebar and sits in its
+      // scroll container, so its menu expands inline rather than overlaying.
+      root.classList.add("gitlink-widget-sidebar");
     }
 
-    let replacement = root;
-    if (slot.tagName === "LI") {
-      // Keep the list item's own classes (`nav-item` in a navbar,
-      // `sidebar-item` in a sidebar) so the widget inherits the spacing of
-      // the items around it.
-      replacement = document.createElement("li");
-      replacement.className = slot.className;
-      replacement.appendChild(root);
-    }
-    slot.replaceWith(replacement);
+    anchor.replaceWith(root);
 
     loadStats(root, config);
     setupDropdown(root);
