@@ -1,0 +1,13 @@
+---
+title: "Sidebar widget test: home"
+---
+
+This site has no navbar, so both gitlink widgets live in the docked sidebar.
+
+Under the sidebar title, the widget should sit below the colour-scheme toggle and above the search field, centred, showing live star and fork counts for mcanouil/quarto-gitlink; the "Repository" entry at the bottom of the sidebar contents should show a second, full-width widget.
+
+The tools widget opens an overlay menu, the contents widget expands its menu inline; both must stay inside the sidebar width (no horizontal clipping) and read correctly in light and dark themes.
+
+Link rewriting is active on this page, so #1 and mcanouil/quarto-cli#2 should be links.
+
+Expected dropdown: Repository, Issues, Pull Requests, Releases, Discussions, divider, Add a Star, Create a Fork, divider, Q&A, Quarto, Sponsor.

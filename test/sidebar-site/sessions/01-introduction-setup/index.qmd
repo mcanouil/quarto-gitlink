@@ -1,0 +1,7 @@
+---
+title: "Session 1: Introduction and setup"
+---
+
+A page two levels deep, inside a collapsible sidebar section.
+
+Both widgets must mount, and the section collapse must keep working around the "Repository" widget below it.

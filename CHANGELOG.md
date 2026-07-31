@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### New Features
+
+- feat: Support the repository widget in the sidebar of book-like sites (`navbar: false`), as a `sidebar.tools` entry or a `sidebar.contents` item; a tool widget sits below the colour-scheme and reader toggles and above search on its own centred line with an overlay menu, while a contents widget spans the sidebar width and expands its menu inline so the sidebar scroll area never clips it.
+- feat: Replace every `#gitlink-widget` placeholder on a page instead of only the first, with unique element ids per widget and a single shared stats request.
+
 ## 1.8.0 (2026-07-24)
 
 ### New Features

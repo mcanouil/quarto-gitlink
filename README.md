@@ -267,9 +267,9 @@ extensions:
 - `badge-background-colour`: Set the background colour (hex code or colour name). Defaults to `#c3c3c3` (grey).
 - `badge-text-colour`: Set the text colour (hex code or colour name). If not specified, uses the default text colour.
 
-### Repository Navbar Widget
+### Repository Widget
 
-For Quarto **websites** (HTML output), gitlink can replace a navbar item with a repository widget: a button showing live star and fork counts (fetched from the platform API, cached in `localStorage` for four hours) that opens a dropdown of repository links.
+For Quarto **websites** (HTML output), gitlink can replace a navigation item with a repository widget: a button showing live star and fork counts (fetched from the platform API, cached in `localStorage` for four hours) that opens a dropdown of repository links.
 
 Add a placeholder navbar item with href `#gitlink-widget` to `_quarto.yml`:
 
@@ -290,6 +290,27 @@ extensions:
     widget:
       enabled: true
 ```
+
+Book-like sites without a navbar work the same way: put the placeholder in the sidebar, either as a tool or as a contents item (both may be used at once, and every placeholder on a page becomes a widget):
+
+```yaml
+website:
+  navbar: false
+  sidebar:
+    style: docked
+    search: true
+    tools:
+      - text: "GitHub"
+        icon: github
+        href: "#gitlink-widget"
+    contents:
+      - text: Home
+        href: index.qmd
+      - text: "Repository"
+        href: "#gitlink-widget"
+```
+
+In the sidebar, a tool widget sits below the colour-scheme and reader toggles and above the search field, on its own centred line, and opens an overlay menu; a contents widget spans the sidebar width and expands its menu inline, so the sidebar scroll area never clips it.
 
 The default dropdown contains Repository, Issues, Pull Requests (Merge Requests on GitLab), Releases, Add a Star, and Create a Fork, based on what the platform supports. Customise it with:
 
@@ -324,7 +345,7 @@ For any other icon, put a shortcode in the entry's `text` instead, for example w
 
 The widget's appearance follows Bootstrap tokens by default and can be themed via CSS custom properties: `--gitlink-widget-border`, `--gitlink-widget-accent`, `--gitlink-widget-accent-soft`, `--gitlink-widget-pill-bg`, `--gitlink-widget-menu-bg`, and `--gitlink-widget-menu-fg`.
 
-The widget sizes Quarto's navbar search button and colour-scheme toggle to match its trigger, with consistent spacing across the navbar-right control group; `style-navbar-tools` additionally paints both with the widget's bordered pill style.
+The widget sizes Quarto's navbar search button and colour-scheme toggle to match its trigger, with consistent spacing across the navbar-right control group; `style-navbar-tools` additionally paints both with the widget's bordered pill style. Both options apply to the navbar only; sidebar tools keep Quarto's own styling.
 
 The widget works independently of link rewriting: set `enabled: false` alongside `widget.enabled: true` to use only the widget. On Bitbucket the widget renders without counters, as its API exposes no star count.
 
@@ -555,5 +576,5 @@ Output of `example.qmd`:
 
 ---
 
-The repository navbar widget is inspired by and derived from the GitHub button in [posit-dev/great-docs](https://github.com/posit-dev/great-docs) by [Rich Iannone](https://github.com/rich-iannone).
+The repository widget is inspired by and derived from the GitHub button in [posit-dev/great-docs](https://github.com/posit-dev/great-docs) by [Rich Iannone](https://github.com/rich-iannone).
 Embedded icons are 16px bodies from [primer/octicons](https://github.com/primer/octicons) (MIT License, GitHub Inc.).
