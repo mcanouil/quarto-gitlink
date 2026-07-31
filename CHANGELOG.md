@@ -4,8 +4,9 @@
 
 ### New Features
 
-- feat: Support the repository widget in the sidebar of book-like sites (`navbar: false`), as a `sidebar.tools` entry or a `sidebar.contents` item; a tool widget sits below the colour-scheme and reader toggles and above search on its own centred line with an overlay menu, while a contents widget spans the sidebar width and expands its menu inline so the sidebar scroll area never clips it.
-- feat: Replace every `#gitlink-widget` placeholder on a page instead of only the first, with unique element ids per widget and a single shared stats request.
+- feat: Support the repository widget in the sidebar, so book-like sites with `navbar: false` can use it; the `#gitlink-widget` placeholder goes in `sidebar.tools` or `sidebar.contents`, and both may be used on the same site.
+- feat: Fit the widget to Quarto's sidebar navigation: a tools widget takes its own centred line below the colour-scheme and reader toggles and above search, with an overlay menu, while a contents widget spans the sidebar width and expands its menu inline so the sidebar scroll area never clips it.
+- feat: Replace every `#gitlink-widget` placeholder on a page instead of only the first; each widget gets unique element ids, and they share a single stats request.
 
 ## 1.8.0 (2026-07-24)
 
