@@ -356,8 +356,11 @@
 
     let replacement = root;
     if (slot.tagName === "LI") {
+      // Keep the list item's own classes (`nav-item` in a navbar,
+      // `sidebar-item` in a sidebar) so the widget inherits the spacing of
+      // the items around it.
       replacement = document.createElement("li");
-      replacement.className = "nav-item";
+      replacement.className = slot.className;
       replacement.appendChild(root);
     }
     slot.replaceWith(replacement);
