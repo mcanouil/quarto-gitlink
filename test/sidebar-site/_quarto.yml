@@ -1,0 +1,64 @@
+project:
+  type: website
+  # Transient copy of the extension so the filter resolves like a real
+  # installation; removed again after render. Entries run without a shell,
+  # so one command per line, and the copy is an idempotent overlay so no
+  # destructive command runs before the render.
+  pre-render:
+    - mkdir -p _extensions/gitlink
+    - cp -R ../../_extensions/gitlink/. _extensions/gitlink/
+  post-render:
+    - rm -rf _extensions
+
+website:
+  title: "Gitlink Sidebar Test"
+  navbar: false
+  sidebar:
+    title: "Gitlink Sidebar Test"
+    style: docked
+    search: true
+    pinned: true
+    collapse-level: 2
+    tools:
+      - text: "GitHub"
+        icon: github
+        href: "#gitlink-widget"
+    contents:
+      - text: Home
+        href: index.qmd
+      - text: Program
+        href: program/index.qmd
+      - text: "---"
+      - section: "Part 1"
+        contents:
+          - href: sessions/01-introduction-setup/index.qmd
+          - href: sessions/02-authoring-essentials/index.qmd
+      - text: "---"
+      - text: "Repository"
+        href: "#gitlink-widget"
+
+format:
+  html:
+    theme:
+      light: flatly
+      dark: darkly
+
+filters:
+  - gitlink
+
+extensions:
+  gitlink:
+    platform: github
+    repository-name: mcanouil/quarto-gitlink
+    widget:
+      enabled: true
+      links:
+        discussions: true
+      extra-links:
+        - text: "Q&A"
+          href: "/discussions/categories/q-a"
+          icon: question
+        - text: "Quarto"
+          href: "https://quarto.org"
+          icon: globe
+      sponsor: mcanouil

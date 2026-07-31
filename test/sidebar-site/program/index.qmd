@@ -1,0 +1,7 @@
+---
+title: "Program"
+---
+
+A page one level deep: Quarto rewrites the placeholder href to `../#gitlink-widget`, so both widgets must still mount here.
+
+Link rewriting is active, so #42 should be a link.

@@ -1,0 +1,10 @@
+---
+title: "Session 2: Authoring essentials"
+extensions:
+  gitlink:
+    enabled: false
+    widget:
+      enabled: true
+---
+
+Link rewriting is disabled on this page, so #123 must stay plain text, while both sidebar widgets must still be present.

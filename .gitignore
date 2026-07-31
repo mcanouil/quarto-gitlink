@@ -9,5 +9,8 @@
 /test/widget-site/_site/
 /test/widget-site/.quarto/
 /test/widget-site/_extensions/
+/test/sidebar-site/_site/
+/test/sidebar-site/.quarto/
+/test/sidebar-site/_extensions/
 __pycache__/
 /tools/.venv/
