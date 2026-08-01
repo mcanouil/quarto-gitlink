@@ -8,14 +8,10 @@ description: "The complete gitlink configuration: the platforms, the reference f
 
 ```yaml
 filters:
-  - path: gitlink
-    at: post-quarto
+  - gitlink
 ```
 
-::: {.callout-important}
-`post-quarto` is required.
-Quarto's own cross-references, `@fig-something` among them, have to be resolved before this filter reads the text.
-:::
+The extension registers the filter at `post-quarto`, so Quarto's own cross-references, `@fig-something` among them, are resolved before it reads the text.
 
 ## Options
 
