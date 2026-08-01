@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Bug Fixes
+
+- fix: Register the filter at `post-quarto` in the extension manifest, so listing `gitlink` under `filters` is enough and the entry point no longer has to be named in project or document YAML. The long form `path`/`at` overrides the entry point of every filter an extension contributes, so it is best avoided.
+- fix: Raise `quarto-required` to `>=1.9.38`, the first version whose `_extension.yml` schema accepts a filter entry point.
+
 ## 1.9.2 (2026-08-01)
 
 ### Documentation

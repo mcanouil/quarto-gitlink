@@ -11,8 +11,7 @@ format:
     toc: true
 # Extension configuration
 filters:
-  - path: gitlink
-    at: post-quarto
+  - gitlink
 extensions:
   gitlink:
     platform: github
@@ -40,8 +39,7 @@ Add the extension to your document's YAML front matter:
 ---
 title: "My Document"
 filters:
-  - path: gitlink
-    at: post-quarto
+  - gitlink
 extensions:
   gitlink:
     platform: github               # Platform: github, gitlab, codeberg, gitea, bitbucket

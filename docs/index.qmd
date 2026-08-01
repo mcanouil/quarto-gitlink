@@ -37,8 +37,7 @@ Or install it from your editor with [Quarto Wizard](https://m.canouil.dev/quarto
 
 ```yaml
 filters:
-  - path: gitlink
-    at: post-quarto
+  - gitlink
 extensions:
   gitlink:
     platform: github
@@ -53,9 +52,7 @@ Fixed in #1, see also mcanouil/quarto-gitlink#1.
 
 The repository is detected from the git remote when it is not given.
 
-::: {.callout-important}
-`post-quarto` is required, so Quarto resolves its own cross-references before this filter looks at the text.
-:::
+The extension registers the filter at `post-quarto`, so Quarto resolves its own cross-references before it looks at the text.
 
 See the [Reference](reference.qmd) for every option, and the [Examples](examples.qmd) for the reference forms rendered.
 
