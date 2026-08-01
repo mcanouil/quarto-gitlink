@@ -30,13 +30,13 @@ extensions:
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `enabled` | `true` | Whether the filter runs. Set `false` in a draft or a template. |
+| `enabled` | `true` | Whether in-text rewriting runs. Set `false` in a draft or a template. The widget has its own switch and is unaffected. |
 | `platform` | `github` | The hosting platform: `github`, `gitlab`, `codeberg`, `gitea`, `bitbucket`, or a custom name. |
 | `repository-name` | detected | The repository as `owner/repo`. Taken from the git remote when unset. |
 | `base-url` | platform default | For a self-hosted instance. |
 | `custom-platforms-file` | | A YAML file defining further platforms. |
 | `show-platform-badge` | `true` | Show a badge beside a generated link. |
-| `badge-position` | `after` | Where the badge sits relative to the link. |
+| `badge-position` | `after` | Where the badge sits relative to the link: `after` or `before`. |
 | `badge-background-colour` | `#c3c3c3` | Badge background, as hex or a CSS colour name. |
 | `badge-text-colour` | | Badge text colour. |
 | `normalize-links` | `true` | Shorten a platform URL used as autolink text. |
@@ -48,14 +48,39 @@ extensions:
 
 ## Platforms
 
-| Platform | Recognises |
-| --- | --- |
-| GitHub, GitLab, Codeberg, Gitea, Bitbucket | Issue and pull or merge request numbers, commit hashes, `@mentions`, and full URLs to any of them. |
+Five are built in, each with its own base URL, its own reference forms, and its own words for the same things.
 
-: The supported platforms. {.striped .hover tbl-colwidths="[38,62]"}
+| Platform | Base URL | Issue | Pull or merge request |
+| --- | --- | --- | --- |
+| GitHub | `https://github.com` | `#1`, `owner/repo#1`, `GH-1` | `#1`, `owner/repo#1` |
+| GitLab | `https://gitlab.com` | `#1`, `owner/repo#1` | `!1`, `owner/repo!1` |
+| Codeberg | `https://codeberg.org` | `#1`, `owner/repo#1` | `#1`, `owner/repo#1` |
+| Gitea | `https://gitea.com` | `#1`, `owner/repo#1` | `#1`, `owner/repo#1` |
+| Bitbucket | `https://bitbucket.org` | `#1`, `owner/repo#1` | `#1`, `owner/repo#1` |
 
-Each has its own URL shapes and its own words for the same things, and the filter uses the right ones for the platform in force.
-`custom-platforms-file` adds more.
+: The built-in platforms and the reference forms each recognises. {.striped .hover tbl-colwidths="[16,26,29,29]"}
+
+GitLab is the one that separates the two: an issue is `#1` and a merge request is `!1`.
+Everywhere else both are `#1`, and the filter resolves them to that platform's issue URL.
+
+Commits and mentions take the same forms on every platform.
+
+| Form | Links to | Shown as |
+| --- | --- | --- |
+| `1a2b3c4` | A commit in the configured repository. | The first seven characters. |
+| `owner/repo@1a2b3c4` | A commit in the named repository. | `owner/repo@1a2b3c4`. |
+| `name@1a2b3c4` | A commit in `name`'s fork of the configured repository. | `name@1a2b3c4`. |
+| `@name` | A profile on the platform. | `@name`. |
+
+: Commit and mention forms. {.striped .hover tbl-colwidths="[26,44,30]"}
+
+A bare hash is recognised only between 7 and 40 hexadecimal characters, which is what keeps ordinary words out.
+An eight-letter word made only of the letters `a` to `f` still matches, so wrap such a word in a code span to leave it alone.
+
+A reference is matched against a whole word.
+Text inside a code span, and a hash that sits in the middle of a longer token, are both left as they are.
+
+`base-url` points any of these at a self-hosted instance, and `custom-platforms-file` adds a platform of your own.
 
 ## URL processing
 
@@ -82,19 +107,36 @@ extensions:
           icon: question
 ```
 
-| Option | Description |
-| --- | --- |
-| `enabled` | Whether the widget is drawn. |
-| `links` | Which built-in links it offers. |
-| `extra-links` | Further links, each with `text`, `href`, and `icon`. |
-| `sponsor` | A GitHub Sponsors account to link. |
-| `icon` | The widget's own icon. |
+| Option | Default | Description |
+| --- | --- | --- |
+| `enabled` | `false` | Whether the widget is drawn. Independent of the top-level `enabled`, so a site can run the widget with in-text rewriting off. |
+| `links` | | Which built-in entries it offers. See below. |
+| `extra-links` | | Further entries, each with `text`, `href`, and `icon`. An `href` beginning with `/` is resolved against the repository URL. |
+| `sponsor` | | A username for a Sponsor entry, on platforms that define a sponsor URL. GitHub is the only built-in one that does. |
+| `icon` | platform mark | The trigger icon: a Bootstrap icon name as bundled with Quarto, or one of the widget's embedded icons. |
+| `style-navbar-tools` | `false` | Whether to give Quarto's navbar search button and colour-scheme toggle the widget's bordered pill style. Sizing and spacing always match. |
 
-: The widget options. {.striped .hover tbl-colwidths="[20,80]"}
+: The widget options. {.striped .hover tbl-colwidths="[20,14,66]"}
+
+### Built-in entries
+
+| Entry | Default | Available on |
+| --- | --- | --- |
+| `issues` | `true` | Every platform. |
+| `pull-requests` | `true` | Every platform. Labelled `Merge Requests` on GitLab. |
+| `releases` | `true` | Every platform except Bitbucket. |
+| `discussions` | `false` | GitHub. |
+| `star` | `true` | Every platform. |
+| `fork` | `true` | Every platform except Bitbucket. |
+
+: The widget's default menu entries. {.striped .hover tbl-colwidths="[24,14,62]"}
+
+An entry a platform defines no path for is left out, whatever it is set to.
 
 It replaces any navbar item, sidebar tool, or sidebar entry whose `href` is `#gitlink-widget`, which is how it reaches the sidebar of this site.
 
 Star and fork counts are fetched by the browser, so the widget is HTML only.
+Bitbucket exposes no star count through its API, so the widget renders there without the counters.
 
 ## Limitations
 
