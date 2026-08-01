@@ -1,0 +1,105 @@
+---
+title: "Examples"
+subtitle: "References, linked."
+description: "Each Git hosting reference form linked by the extension, with the widget and the badge options."
+---
+
+Every reference below is linked by the filter as this page renders, against this repository:
+
+```yaml
+extensions:
+  gitlink:
+    enabled: true
+    platform: github
+    repository-name: mcanouil/quarto-gitlink
+```
+
+Unlike the other sites in this family, which run the widget alone, this one has in-text rewriting on.
+
+## Issues and pull requests
+
+| Source | Renders as |
+| --- | --- |
+| `#1` | #1 |
+| `mcanouil/quarto-gitlink#1` | mcanouil/quarto-gitlink#1 |
+
+: Issue and pull request forms. {.striped .hover tbl-colwidths="[50,50]"}
+
+The first uses the configured repository; the second names its own.
+
+## Commits
+
+| Source | Renders as |
+| --- | --- |
+| `1a2b3c4d5e6f` | 1a2b3c4d5e6f |
+| `mcanouil/quarto-gitlink@1a2b3c4d5e6f` | mcanouil/quarto-gitlink@1a2b3c4d5e6f |
+
+: Commit hashes, shortened to seven characters in the link text. {.striped .hover tbl-colwidths="[50,50]"}
+
+A bare hash counts as one between 7 and 40 hexadecimal characters.
+A word that happens to be spelled in those letters is caught by the same rule, so put it in a code span to keep it as text.
+
+## Mentions
+
+A mention becomes a link to the profile: @mcanouil .
+
+An `@name` that matches a bibliography entry is left to Pandoc as a citation.
+The `mentions` option forces the ones that should be links regardless.
+
+## Full URLs
+
+A bare URL to a platform page is shortened, because `normalize-links` is on:
+
+<https://github.com/mcanouil/quarto-gitlink/issues/1>
+
+Turn it off to leave the URL as written, or set `fetch-titles` to use the page title instead, which needs network access while rendering.
+
+## Badges
+
+A generated link carries a platform badge, positioned and coloured by:
+
+```yaml
+extensions:
+  gitlink:
+    show-platform-badge: true
+    badge-position: after
+    badge-background-colour: "#c3c3c3"
+```
+
+Set `show-platform-badge: false` for links alone.
+
+## The widget
+
+The widget in this site's sidebar is drawn by this extension:
+
+```yaml
+extensions:
+  gitlink:
+    widget:
+      enabled: true
+      sponsor: mcanouil
+      extra-links:
+        - text: "Ideas / Feature Requests"
+          href: "/discussions/categories/ideas"
+          icon: discussion
+```
+
+It replaces any navbar item, sidebar tool, or sidebar entry whose `href` is `#gitlink-widget`, which is how it reaches the sidebar rather than the navbar here.
+
+Star and fork counts are fetched by the browser as the page loads.
+
+## Other platforms
+
+```yaml
+extensions:
+  gitlink:
+    platform: codeberg
+    repository-name: owner/repo
+```
+
+GitLab, Codeberg, Gitea, and Bitbucket each have their own URL shapes and their own words for the same things, and the filter uses the right ones.
+`custom-platforms-file` points at a YAML file describing another.
+
+## Source
+
+The repository ships a short, standalone starting point you can copy: [`example.qmd`](https://github.com/mcanouil/quarto-gitlink/blob/main/example.qmd).

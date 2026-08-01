@@ -1,0 +1,145 @@
+---
+title: "Reference"
+subtitle: "Every option the gitlink extension accepts."
+description: "The complete gitlink configuration: the platforms, the reference forms, URL processing, badges, the repository widget, and custom platforms."
+---
+
+## Enabling the filter
+
+```yaml
+filters:
+  - path: gitlink
+    at: post-quarto
+```
+
+::: {.callout-important}
+`post-quarto` is required.
+Quarto's own cross-references, `@fig-something` among them, have to be resolved before this filter reads the text.
+:::
+
+## Options
+
+```yaml
+extensions:
+  gitlink:
+    platform: github
+    repository-name: owner/repo
+    show-platform-badge: true
+    normalize-links: true
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `enabled` | `true` | Whether in-text rewriting runs. Set `false` in a draft or a template. The widget has its own switch and is unaffected. |
+| `platform` | `github` | The hosting platform: `github`, `gitlab`, `codeberg`, `gitea`, `bitbucket`, or a custom name. |
+| `repository-name` | detected | The repository as `owner/repo`. Taken from the git remote when unset. |
+| `base-url` | platform default | For a self-hosted instance. |
+| `custom-platforms-file` | | A YAML file defining further platforms. |
+| `show-platform-badge` | `true` | Show a badge beside a generated link. |
+| `badge-position` | `after` | Where the badge sits relative to the link: `after` or `before`. |
+| `badge-background-colour` | `#c3c3c3` | Badge background, as hex or a CSS colour name. |
+| `badge-text-colour` | | Badge text colour. |
+| `normalize-links` | `true` | Shorten a platform URL used as autolink text. |
+| `fetch-titles` | `false` | Fetch the page title of an autolinked URL and use it as the link text. Needs network access at render time. |
+| `mentions` | | Citation identifiers to treat as mentions even when a bibliography entry exists. |
+| `widget` | `false` | The repository widget. See below. |
+
+: Document and project options. {.striped .hover tbl-colwidths="[26,16,58]"}
+
+## Platforms
+
+Five are built in, each with its own base URL, its own reference forms, and its own words for the same things.
+
+| Platform | Base URL | Issue | Pull or merge request |
+| --- | --- | --- | --- |
+| GitHub | `https://github.com` | `#1`, `owner/repo#1`, `GH-1` | `#1`, `owner/repo#1` |
+| GitLab | `https://gitlab.com` | `#1`, `owner/repo#1` | `!1`, `owner/repo!1` |
+| Codeberg | `https://codeberg.org` | `#1`, `owner/repo#1` | `#1`, `owner/repo#1` |
+| Gitea | `https://gitea.com` | `#1`, `owner/repo#1` | `#1`, `owner/repo#1` |
+| Bitbucket | `https://bitbucket.org` | `#1`, `owner/repo#1` | `#1`, `owner/repo#1` |
+
+: The built-in platforms and the reference forms each recognises. {.striped .hover tbl-colwidths="[16,26,29,29]"}
+
+GitLab is the one that separates the two: an issue is `#1` and a merge request is `!1`.
+Everywhere else both are `#1`, and the filter resolves them to that platform's issue URL.
+
+Commits and mentions take the same forms on every platform.
+
+| Form | Links to | Shown as |
+| --- | --- | --- |
+| `1a2b3c4` | A commit in the configured repository. | The first seven characters. |
+| `owner/repo@1a2b3c4` | A commit in the named repository. | `owner/repo@1a2b3c4`. |
+| `name@1a2b3c4` | A commit in `name`'s fork of the configured repository. | `name@1a2b3c4`. |
+| `@name` | A profile on the platform. | `@name`. |
+
+: Commit and mention forms. {.striped .hover tbl-colwidths="[26,44,30]"}
+
+A bare hash is recognised only between 7 and 40 hexadecimal characters, which is what keeps ordinary words out.
+An eight-letter word made only of the letters `a` to `f` still matches, so wrap such a word in a code span to leave it alone.
+
+A reference is matched against a whole word.
+Text inside a code span, and a hash that sits in the middle of a longer token, are both left as they are.
+
+`base-url` points any of these at a self-hosted instance, and `custom-platforms-file` adds a platform of your own.
+
+## URL processing
+
+`normalize-links` shortens a platform URL used as its own link text, so a bare autolink to an issue reads as `#26` rather than as the whole URL.
+
+`fetch-titles` goes further and uses the page title instead, which needs network access while rendering and is off by default for that reason.
+
+## Citations and mentions
+
+An `@name` is ambiguous: it may be a mention or a citation.
+A name that matches a bibliography entry is left to Pandoc as a citation; `mentions` forces the ones that should be links instead.
+
+## The repository widget
+
+```yaml
+extensions:
+  gitlink:
+    widget:
+      enabled: true
+      sponsor: mcanouil
+      extra-links:
+        - text: "Q&A"
+          href: "/discussions/categories/q-a"
+          icon: question
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `enabled` | `false` | Whether the widget is drawn. Independent of the top-level `enabled`, so a site can run the widget with in-text rewriting off. |
+| `links` | | Which built-in entries it offers. See below. |
+| `extra-links` | | Further entries, each with `text`, `href`, and `icon`. An `href` beginning with `/` is resolved against the repository URL. |
+| `sponsor` | | A username for a Sponsor entry, on platforms that define a sponsor URL. GitHub is the only built-in one that does. |
+| `icon` | platform mark | The trigger icon: a Bootstrap icon name as bundled with Quarto, or one of the widget's embedded icons. |
+| `style-navbar-tools` | `false` | Whether to give Quarto's navbar search button and colour-scheme toggle the widget's bordered pill style. Sizing and spacing always match. |
+
+: The widget options. {.striped .hover tbl-colwidths="[20,14,66]"}
+
+### Built-in entries
+
+| Entry | Default | Available on |
+| --- | --- | --- |
+| `issues` | `true` | Every platform. |
+| `pull-requests` | `true` | Every platform. Labelled `Merge Requests` on GitLab. |
+| `releases` | `true` | Every platform except Bitbucket. |
+| `discussions` | `false` | GitHub. |
+| `star` | `true` | Every platform. |
+| `fork` | `true` | Every platform except Bitbucket. |
+
+: The widget's default menu entries. {.striped .hover tbl-colwidths="[24,14,62]"}
+
+An entry a platform defines no path for is left out, whatever it is set to.
+
+It replaces any navbar item, sidebar tool, or sidebar entry whose `href` is `#gitlink-widget`, which is how it reaches the sidebar of this site.
+
+Star and fork counts are fetched by the browser, so the widget is HTML only.
+Bitbucket exposes no star count through its API, so the widget renders there without the counters.
+
+## Limitations
+
+- The widget is HTML, since it fetches counts at page load.
+- `fetch-titles` needs network access during the render.
+- A reference has to be recognisable as one; prose that merely looks like a hash is left alone.

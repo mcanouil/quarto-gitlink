@@ -1,0 +1,72 @@
+---
+title: "Gitlink"
+subtitle: "Git hosting references, turned into links."
+description: "What the gitlink extension does, how to enable it, and the references it recognises across five hosting platforms."
+authors:
+  - name: "Mickaël CANOUIL, _Ph.D._"
+    orcid: "0000-0002-3396-4549"
+    url: "https://mickael.canouil.fr"
+---
+
+Issue numbers, commit hashes, and `@mentions` are links on GitHub, GitLab, and every other forge, and plain text everywhere else.
+Writing a Quarto document about a project means either losing them or writing every URL by hand.
+
+`gitlink` recognises the same forms the platforms do and turns them into links, across GitHub, GitLab, Codeberg, Gitea, and Bitbucket.
+It also draws a repository widget, with live star and fork counts, which is the one in the sidebar of this site.
+
+## Installation
+
+```bash
+quarto add {{< var extension.reference >}}
+```
+
+This will install the extension under the `_extensions` subdirectory.
+If you are using version control, you will want to check in this directory.
+
+Or install it from your editor with [Quarto Wizard](https://m.canouil.dev/quarto-wizard):
+
+::: {.btn-group role="group" aria-label="Quarto Wizard installer options"}
+
+[Visual Studio Code](vscode://mcanouil.quarto-wizard/install?repo={{< var extension.wizard-reference >}}){.btn .btn-outline-primary title="Install {{< var extension.reference >}} in Visual Studio Code using the Quarto Wizard extension."}
+[Positron](positron://mcanouil.quarto-wizard/install?repo={{< var extension.wizard-reference >}}){.btn .btn-outline-primary title="Install {{< var extension.reference >}} in Positron using the Quarto Wizard extension."}
+[VSCodium](vscodium://mcanouil.quarto-wizard/install?repo={{< var extension.wizard-reference >}}){.btn .btn-outline-primary title="Install {{< var extension.reference >}} in VSCodium using the Quarto Wizard extension."}
+
+:::
+
+## Quick start
+
+```yaml
+filters:
+  - path: gitlink
+    at: post-quarto
+extensions:
+  gitlink:
+    platform: github
+    repository-name: mcanouil/quarto-gitlink
+```
+
+Then write references as you would in an issue comment:
+
+```markdown
+Fixed in #1, see also mcanouil/quarto-gitlink#1.
+```
+
+The repository is detected from the git remote when it is not given.
+
+::: {.callout-important}
+`post-quarto` is required, so Quarto resolves its own cross-references before this filter looks at the text.
+:::
+
+See the [Reference](reference.qmd) for every option, and the [Examples](examples.qmd) for the reference forms rendered.
+
+## Where it works
+
+Every output format for the links themselves.
+The widget is HTML, since it fetches counts as the page loads.
+
+## Links
+
+- [Reference](reference.qmd) for every option and platform.
+- [Examples](examples.qmd) for rendered references.
+- [Changelog](changelog.qmd) for what each release changed.
+- [Source and issues](https://github.com/mcanouil/quarto-gitlink) on GitHub.
