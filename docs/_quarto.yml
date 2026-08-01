@@ -88,13 +88,11 @@ format:
         - assets/theme.scss
 
 filters:
-  - at: pre-quarto
-    path: code-window
+  - code-window
   # Resolved from the copy sync-extension.sh takes from the repository root,
   # not from a committed dependency: this repository publishes gitlink, so the
   # site runs the version being released.
-  - at: post-quarto
-    path: gitlink
+  - gitlink
 
 extensions:
   # Quarto keeps the `website` block out of the metadata it hands to Lua
