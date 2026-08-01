@@ -9,6 +9,12 @@
 - docs: Add the Pages workflow, which renders `docs/` on pull requests and deploys it from the release tag.
 - docs: Add the Quarto Extensions Updates workflow, scanning `docs` for the website's own dependencies.
 
+## 1.9.1 (2026-08-01)
+
+### Bug Fixes
+
+- fix: Keep a sidebar tools widget's menu inside the sidebar, so a docked sidebar carrying the widget no longer has a permanent horizontal scrollbar. Quarto's sidebar sets `overflow-y: auto` and leaves `overflow-x` at `visible`, which computes to `auto`, so a menu wider than the column scrolled it sideways instead of being clipped; the menu was anchored to the centred trigger and sized to its content, so it ran past the right edge, and because it is hidden with `visibility` rather than `display` it did so even while shut. The menu is now stretched between both edges of the tools row, which spans the column. The navbar and `sidebar.contents` placements are unaffected.
+
 ## 1.9.0 (2026-07-31)
 
 ### New Features
