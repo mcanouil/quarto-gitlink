@@ -1,0 +1,103 @@
+---
+title: "Reference"
+subtitle: "Every option the gitlink extension accepts."
+description: "The complete gitlink configuration: the platforms, the reference forms, URL processing, badges, the repository widget, and custom platforms."
+---
+
+## Enabling the filter
+
+```yaml
+filters:
+  - path: gitlink
+    at: post-quarto
+```
+
+::: {.callout-important}
+`post-quarto` is required.
+Quarto's own cross-references, `@fig-something` among them, have to be resolved before this filter reads the text.
+:::
+
+## Options
+
+```yaml
+extensions:
+  gitlink:
+    platform: github
+    repository-name: owner/repo
+    show-platform-badge: true
+    normalize-links: true
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `enabled` | `true` | Whether the filter runs. Set `false` in a draft or a template. |
+| `platform` | `github` | The hosting platform: `github`, `gitlab`, `codeberg`, `gitea`, `bitbucket`, or a custom name. |
+| `repository-name` | detected | The repository as `owner/repo`. Taken from the git remote when unset. |
+| `base-url` | platform default | For a self-hosted instance. |
+| `custom-platforms-file` | | A YAML file defining further platforms. |
+| `show-platform-badge` | `true` | Show a badge beside a generated link. |
+| `badge-position` | `after` | Where the badge sits relative to the link. |
+| `badge-background-colour` | `#c3c3c3` | Badge background, as hex or a CSS colour name. |
+| `badge-text-colour` | | Badge text colour. |
+| `normalize-links` | `true` | Shorten a platform URL used as autolink text. |
+| `fetch-titles` | `false` | Fetch the page title of an autolinked URL and use it as the link text. Needs network access at render time. |
+| `mentions` | | Citation identifiers to treat as mentions even when a bibliography entry exists. |
+| `widget` | `false` | The repository widget. See below. |
+
+: Document and project options. {.striped .hover tbl-colwidths="[26,16,58]"}
+
+## Platforms
+
+| Platform | Recognises |
+| --- | --- |
+| GitHub, GitLab, Codeberg, Gitea, Bitbucket | Issue and pull or merge request numbers, commit hashes, `@mentions`, and full URLs to any of them. |
+
+: The supported platforms. {.striped .hover tbl-colwidths="[38,62]"}
+
+Each has its own URL shapes and its own words for the same things, and the filter uses the right ones for the platform in force.
+`custom-platforms-file` adds more.
+
+## URL processing
+
+`normalize-links` shortens a platform URL used as its own link text, so a bare autolink to an issue reads as `#26` rather than as the whole URL.
+
+`fetch-titles` goes further and uses the page title instead, which needs network access while rendering and is off by default for that reason.
+
+## Citations and mentions
+
+An `@name` is ambiguous: it may be a mention or a citation.
+A name that matches a bibliography entry is left to Pandoc as a citation; `mentions` forces the ones that should be links instead.
+
+## The repository widget
+
+```yaml
+extensions:
+  gitlink:
+    widget:
+      enabled: true
+      sponsor: mcanouil
+      extra-links:
+        - text: "Q&A"
+          href: "/discussions/categories/q-a"
+          icon: question
+```
+
+| Option | Description |
+| --- | --- |
+| `enabled` | Whether the widget is drawn. |
+| `links` | Which built-in links it offers. |
+| `extra-links` | Further links, each with `text`, `href`, and `icon`. |
+| `sponsor` | A GitHub Sponsors account to link. |
+| `icon` | The widget's own icon. |
+
+: The widget options. {.striped .hover tbl-colwidths="[20,80]"}
+
+It replaces any navbar item, sidebar tool, or sidebar entry whose `href` is `#gitlink-widget`, which is how it reaches the sidebar of this site.
+
+Star and fork counts are fetched by the browser, so the widget is HTML only.
+
+## Limitations
+
+- The widget is HTML, since it fetches counts at page load.
+- `fetch-titles` needs network access during the render.
+- A reference has to be recognisable as one; prose that merely looks like a hash is left alone.
