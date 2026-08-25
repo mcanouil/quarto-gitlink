@@ -1,4 +1,4 @@
---- @module gitlink
+--- @module "gitlink"
 --- @license MIT
 --- @copyright 2026 Mickaël Canouil
 --- @author Mickaël Canouil

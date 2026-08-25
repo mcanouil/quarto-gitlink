@@ -1,5 +1,5 @@
 --- Platform Configuration Module
---- @module platforms
+--- @module "platforms"
 --- @license MIT
 --- @copyright 2026 Mickaël Canouil
 --- @author Mickaël Canouil

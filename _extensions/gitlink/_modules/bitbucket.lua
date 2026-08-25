@@ -1,5 +1,5 @@
 --- MC Bitbucket - Bitbucket-specific functionality for gitlink extension
---- @module bitbucket
+--- @module "bitbucket"
 --- @license MIT
 --- @copyright 2026 Mickaël Canouil
 --- @author Mickaël Canouil
