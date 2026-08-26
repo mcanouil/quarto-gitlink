@@ -4,11 +4,11 @@
 
 ### Bug Fixes
 
-- fix: Load the `string` module by its own path in the Bitbucket module, so another extension's module cannot be used instead.
+- fix: Load the `string` module by its own path in the Bitbucket module, so another extension's module cannot be used instead. (#57)
 
 ### Refactoring
 
-- refactor: Rename the platform validation module to `platform-schema`, freeing the shared `schema` module name.
+- refactor: Rename the platform validation module to `platform-schema`, freeing the shared `schema` module name. (#57)
 
 ## 1.10.0 (2026-08-01)
 
