@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Refactoring
+
+- refactor: Rename the platform validation module to `platform-schema`, freeing the shared `schema` module name.
+
 ## 1.10.0 (2026-08-01)
 
 ### Bug Fixes
