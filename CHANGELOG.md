@@ -5,7 +5,7 @@
 ### Bug Fixes
 
 - fix: Load the `string` module by its own path in the Bitbucket module, so another extension's module cannot be used instead. (#57)
-- fix: Keep the target of a navigation link unchanged when it holds a platform URL, and keep a reference in the social metadata as plain text. A reference in a navbar title, a sidebar title, a navigation entry text, an `about` link text, or a next or previous page title stays plain text, because Quarto puts those values in the same markdown-pipeline entry. (#58)
+- fix: Keep a platform URL in a navigation link target, and a reference in the social metadata, as plain text. A reference in a navigation title or entry text stays plain text as well. (#58)
 
 ### Refactoring
 
