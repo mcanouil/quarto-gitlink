@@ -23,10 +23,13 @@ website:
       # Two path segments and a query, so no pattern matches it.
       - text: "Sponsor"
         href: "https://github.com/sponsors/mcanouil?o=esb"
+      - text: About
+        href: about.qmd
     tools:
       - icon: github
         href: "https://github.com/mcanouil"
         text: "GitHub"
+  open-graph: true
   page-footer:
     center: |
       Footer references still convert: #1 and mcanouil/quarto-cli#2.
