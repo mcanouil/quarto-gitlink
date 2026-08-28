@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.10.1 (2026-08-28)
+
 ### Bug Fixes
 
 - fix: Load the `string` module by its own path in the Bitbucket module, so another extension's module cannot be used instead. (#57)
