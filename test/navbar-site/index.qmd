@@ -11,6 +11,9 @@ Before the fix, each one took the link text and the platform badge text joined t
 The "Sponsor" item points at `https://github.com/sponsors/mcanouil?o=esb`.
 It has two path segments and a query, so no pattern matches it, and it is a control for the other two.
 
+The "Issue #1" item shows the cost of the fix.
+A navigation entry registers its text and its href under one identifier prefix, so the text keeps its reference as plain text.
+
 Body text must still convert.
 The following are links: #1, mcanouil/quarto-cli#2, and <https://github.com/mcanouil>.
 

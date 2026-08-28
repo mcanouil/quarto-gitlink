@@ -1028,9 +1028,14 @@ end
 --- hidden inline snippets in such a span, then reads the rendered fragment back
 --- with `innerText` and puts the result in an attribute. A converted reference
 --- would add its badge text to that value.
+--- The same envelope also carries values that Quarto inserts with `innerHTML`,
+--- such as a navbar or sidebar title, a navigation entry text, and a next or
+--- previous page title. A reference in those no longer converts. The two kinds
+--- cannot be told apart, because a navigation entry registers its text and its
+--- href under one identifier prefix, so the whole envelope is skipped.
 --- A `Div` with the same class is a block entry (page footer, margin and body
---- header and footer, announcement). Quarto inserts those with `innerHTML`, so
---- references there are wanted and only spans are skipped.
+--- header and footer, announcement). Quarto inserts those with `innerHTML` as
+--- well, and they are a separate envelope, so only spans are skipped.
 --- @param span pandoc.Span The span element to inspect
 --- @return pandoc.Span span The unchanged span
 --- @return boolean|nil descend False to stop traversal of the subtree

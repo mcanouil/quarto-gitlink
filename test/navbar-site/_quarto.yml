@@ -25,6 +25,10 @@ website:
         href: "https://github.com/sponsors/mcanouil?o=esb"
       - text: About
         href: about.qmd
+      # Known loss: a nav entry text and a nav entry href share one envelope,
+      # so this reference stays plain text instead of becoming a link.
+      - text: "Issue #1"
+        href: index.qmd
     tools:
       - icon: github
         href: "https://github.com/mcanouil"
