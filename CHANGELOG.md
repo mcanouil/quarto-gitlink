@@ -5,6 +5,7 @@
 ### Bug Fixes
 
 - fix: Load the `string` module by its own path in the Bitbucket module, so another extension's module cannot be used instead. (#57)
+- fix: Keep a platform URL in a navigation link target, and a reference in the social metadata, as plain text. A reference in a navigation title or entry text stays plain text as well. (#58)
 
 ### Refactoring
 

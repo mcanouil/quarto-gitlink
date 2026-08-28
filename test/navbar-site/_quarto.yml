@@ -1,0 +1,53 @@
+project:
+  type: website
+  # Transient copy of the extension so the filter resolves like a real
+  # installation; removed again after render. Entries run without a shell,
+  # so one command per line, and the copy is an idempotent overlay so no
+  # destructive command runs before the render.
+  pre-render:
+    - mkdir -p _extensions/gitlink
+    - cp -R ../../_extensions/gitlink/. _extensions/gitlink/
+  post-render:
+    - rm -rf _extensions
+
+website:
+  title: "Gitlink Navbar Test"
+  navbar:
+    search: true
+    left:
+      - text: Home
+        href: index.qmd
+      # Bare platform user URL: the href must survive the filter unchanged.
+      - text: "Profile"
+        href: "https://github.com/mcanouil"
+      # Two path segments and a query, so no pattern matches it.
+      - text: "Sponsor"
+        href: "https://github.com/sponsors/mcanouil?o=esb"
+      - text: About
+        href: about.qmd
+      # Known loss: a nav entry text and a nav entry href share one envelope,
+      # so this reference stays plain text instead of becoming a link.
+      - text: "Issue #1"
+        href: index.qmd
+    tools:
+      - icon: github
+        href: "https://github.com/mcanouil"
+        text: "GitHub"
+  open-graph: true
+  page-footer:
+    center: |
+      Footer references still convert: #1 and mcanouil/quarto-cli#2.
+
+format:
+  html:
+    theme:
+      light: flatly
+      dark: darkly
+
+filters:
+  - gitlink
+
+extensions:
+  gitlink:
+    platform: github
+    repository-name: mcanouil/quarto-gitlink
