@@ -37,7 +37,7 @@ expect_absent() {
 
 expect_count() {
 	local label="${1}" file="${2}" text="${3}" wanted="${4}" found
-	found="$(grep -coF -- "${text}" "${file}" || true)"
+	found="$({ grep -oF -- "${text}" "${file}" || true; } | wc -l | tr -d ' ')"
 	if [[ "${found}" -ge "${wanted}" ]]; then
 		report "ok" "${label}"
 	else
