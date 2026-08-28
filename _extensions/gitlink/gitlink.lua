@@ -75,6 +75,9 @@ local COMMIT_SHA_MIN_LENGTH = 7
 --- @type string Lua pattern matching a 3-, 4-, 6-, or 8-character hex colour with leading #
 local HEX_COLOUR_PATTERN = '^#%x%x%x%x?%x?%x?%x?%x?$'
 
+--- @type string Class Quarto puts on the markdown-pipeline envelope elements
+local MARKDOWN_ENVELOPE_CLASS = 'quarto-markdown-envelope-contents'
+
 --- Validate a colour value as a hex code or CSS named colour.
 --- Returns the original value if valid, or nil if invalid.
 --- @param value string|nil The candidate colour value
@@ -1020,6 +1023,36 @@ local function process_link(elem)
   return elem
 end
 
+--- Skip the content of an inline markdown-pipeline entry.
+--- Quarto renders navigation hrefs, `about` links, and `<meta>` values as
+--- hidden inline snippets in a `Span` with the `quarto-markdown-envelope-contents`
+--- class, then reads the rendered fragment back with `innerText` and puts the
+--- result in an attribute. A converted reference would contribute its badge text
+--- to that value, so the whole subtree is left alone.
+--- Block entries (a `Div` with the same class: page footer, margin and body
+--- header and footer, announcement) are not skipped, because Quarto inserts
+--- those with `innerHTML` and references inside them are wanted.
+--- @param span pandoc.Span The span element to inspect
+--- @return pandoc.Span span The unchanged span
+--- @return boolean|nil descend False to stop traversal of the subtree
+local function skip_markdown_envelope(span)
+  if span.classes:includes(MARKDOWN_ENVELOPE_CLASS) then
+    return span, false
+  end
+  return span
+end
+
+--- Convert a string element and stop traversal of the result.
+--- The `Str` pass runs top-down so that `skip_markdown_envelope` can drop a
+--- subtree. Top-down traversal also descends into a returned element, so a
+--- created link would have its own text converted a second time.
+--- @param elem pandoc.Str The string element to process
+--- @return pandoc.Str|pandoc.Link|pandoc.List The result of `process_gitlink`
+--- @return boolean descend Always false
+local function process_gitlink_topdown(elem)
+  return process_gitlink(elem), false
+end
+
 --- Pandoc filter configuration
 --- Defines the order of filter execution:
 --- 1. Extract references from the document
@@ -1028,11 +1061,14 @@ end
 --- 4. Process link elements to shorten URLs used as link text
 --- 5. Process string elements for Git hosting patterns
 --- 6. Process citations for Git hosting mentions
+--- The three passes that create links run top-down, so that
+--- `skip_markdown_envelope` can drop an inline markdown-pipeline subtree before
+--- its content is visited.
 return {
   { Pandoc = get_references },
   { Meta = get_repository },
   { Plain = process_inlines, Para = process_inlines },
-  { Link = process_link },
-  { Str = process_gitlink },
-  { Cite = process_mentions }
+  { traverse = 'topdown', Span = skip_markdown_envelope, Link = process_link },
+  { traverse = 'topdown', Span = skip_markdown_envelope, Str = process_gitlink_topdown },
+  { traverse = 'topdown', Span = skip_markdown_envelope, Cite = process_mentions }
 }

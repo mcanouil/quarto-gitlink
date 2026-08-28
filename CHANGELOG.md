@@ -5,6 +5,7 @@
 ### Bug Fixes
 
 - fix: Load the `string` module by its own path in the Bitbucket module, so another extension's module cannot be used instead. (#57)
+- fix: Keep the target of a navigation link, an `about` link, and a page `<meta>` value unchanged when it holds a platform URL. The filter no longer converts references inside a Quarto inline markdown-pipeline entry.
 
 ### Refactoring
 

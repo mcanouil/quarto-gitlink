@@ -1,0 +1,17 @@
+---
+title: "Navbar href test: home"
+---
+
+This site checks that the filter does not rewrite the `href` of a navigation entry.
+
+The navbar has a "Profile" item and a `tools` entry whose `href` is `https://github.com/mcanouil`.
+Both must keep that URL.
+Before the fix, each one took the link text and the platform badge text joined together as its target, because Quarto reads the rendered snippet back with `innerText`.
+
+The "Sponsor" item points at `https://github.com/sponsors/mcanouil?o=esb`.
+It has two path segments and a query, so no pattern matches it, and it is a control for the other two.
+
+Body text must still convert.
+The following are links: #1, mcanouil/quarto-cli#2, and <https://github.com/mcanouil>.
+
+The page footer holds references as well, and those must still convert, because Quarto inserts block entries with `innerHTML`.

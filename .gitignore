@@ -12,5 +12,8 @@
 /test/sidebar-site/_site/
 /test/sidebar-site/.quarto/
 /test/sidebar-site/_extensions/
+/test/navbar-site/_site/
+/test/navbar-site/.quarto/
+/test/navbar-site/_extensions/
 __pycache__/
 /tools/.venv/
