@@ -11,8 +11,10 @@ about:
 
 The `about` links and the social metadata go through the same inline snippets as a navigation entry.
 
-The link under the title must keep `https://github.com/mcanouil` as its target.
 The `<meta property="og:description">` content must keep the plain text `#1`, without a platform badge.
+
+The link under the title must keep `https://github.com/mcanouil` as its target.
+Quarto never substitutes an `about` link target, because it registers the target under one key and reads it back under another, so this one guards against a future change rather than a past defect.
 
 The `<meta name="description">` tag is a separate case that this test does not cover.
 Pandoc builds it from the document metadata, not from an inline snippet, so it still takes the badge text.
