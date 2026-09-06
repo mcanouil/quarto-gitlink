@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Refactoring
+
+- build: Declare the vendored Lua modules in `_extensions/gitlink/_dependencies.yml` and move them to `_extensions/gitlink/_vendor/`, so each one names the release it came from and can be checked against it.
+
 ## 1.10.1 (2026-08-28)
 
 ### Bug Fixes
