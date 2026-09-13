@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Bug Fixes
+
+- fix: Read the boolean options through the schema, so `enabled: no` turns the filter off and `fetch-titles: yes` turns title fetching on. Each was read from the document text and accepted one spelling only. (#67)
+
 ### Documentation
 
 - docs: Serve the extension's social card as the Open Graph image, so a shared link shows the card rather than the first image on the page. (#65)
@@ -9,6 +13,7 @@
 ### Refactoring
 
 - build: Update the vendored Lua modules to 2.3.0. A module no longer carries a version line in its header, so its checksum changes only when its code changes. (#66)
+- build: Update the vendored Lua modules to 2.5.0, which adds the accessor that reads what the schema resolves an option to. The schema validator moves to 3.6.3, whose vendored file is unchanged. (#67)
 
 ## 1.11.0 (2026-09-06)
 
