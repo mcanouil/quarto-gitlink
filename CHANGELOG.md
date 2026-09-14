@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### New Features
+
+- feat: Report a key nested inside an option that the schema does not declare, such as a typo in a nested setting. Only top-level keys were checked before. (#67)
+
 ### Bug Fixes
 
 - fix: Read the boolean options through the schema, so `enabled: no` turns the filter off and `fetch-titles: yes` turns title fetching on. Each was read from the document text and accepted one spelling only. (#67)
