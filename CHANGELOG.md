@@ -8,7 +8,7 @@
 
 ### Bug Fixes
 
-- fix: Read the boolean options through the schema, so `enabled: no` turns the filter off and `fetch-titles: yes` turns title fetching on. Each was read from the document text and accepted one spelling only. (#67)
+- fix: Read the boolean options through the schema, so a value that is not a boolean is reported rather than guessed at. Each was read from the document text and accepted one spelling, with `enabled` treating everything but `false` as true and `fetch-titles` treating everything but `true` as false. (#67)
 
 ### Documentation
 
