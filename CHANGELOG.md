@@ -17,7 +17,7 @@
 ### Refactoring
 
 - build: Update the vendored Lua modules to 2.3.0. A module no longer carries a version line in its header, so its checksum changes only when its code changes. (#66)
-- build: Update the vendored Lua modules to 2.5.0, which adds the accessor that reads what the schema resolves an option to. The schema validator moves to 3.6.3, whose vendored file is unchanged. (#67)
+- build: Update the vendored Lua modules to 2.5.0, which adds the accessor that reads what the schema resolves an option to. The schema validator moves to its own release train and is pinned at `schema-v2.1.0`, which accepts only `true` and `false` as a boolean. (#67)
 
 ## 1.11.0 (2026-09-06)
 
