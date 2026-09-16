@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### New Features
+
+- feat: Report a key nested inside an option that the schema does not declare, such as a typo in a nested setting. Only top-level keys were checked before. (#67)
+
+### Bug Fixes
+
+- fix: Read the boolean options through the schema, so a value that is not a boolean is reported rather than guessed at. Each was read from the document text and accepted one spelling, with `enabled` treating everything but `false` as true and `fetch-titles` treating everything but `true` as false. (#67)
+
 ### Documentation
 
 - docs: Serve the extension's social card as the Open Graph image, so a shared link shows the card rather than the first image on the page. (#65)
@@ -9,6 +17,7 @@
 ### Refactoring
 
 - build: Update the vendored Lua modules to 2.3.0. A module no longer carries a version line in its header, so its checksum changes only when its code changes. (#66)
+- build: Update the vendored Lua modules to 2.5.0, which adds the accessor that reads what the schema resolves an option to. The schema validator moves to its own release train and is pinned at `schema-v2.1.0`, which accepts only `true` and `false` as a boolean. (#67)
 
 ## 1.11.0 (2026-09-06)
 
