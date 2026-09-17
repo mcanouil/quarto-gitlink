@@ -9,6 +9,7 @@
 ### Bug Fixes
 
 - fix: Read the boolean options through the schema, so a value that is not a boolean is reported rather than guessed at. Each was read from the document text and accepted one spelling, with `enabled` treating everything but `false` as true and `fetch-titles` treating everything but `true` as false. (#67)
+- fix: Report that nested key as a warning rather than an error, so the typo does not invalidate the whole configuration. (#67)
 
 ### Documentation
 
@@ -17,7 +18,7 @@
 ### Refactoring
 
 - build: Update the vendored Lua modules to 2.3.0. A module no longer carries a version line in its header, so its checksum changes only when its code changes. (#66)
-- build: Update the vendored Lua modules to 2.5.0, which adds the accessor that reads what the schema resolves an option to. The schema validator moves to its own release train and is pinned at `schema-v2.1.0`, which accepts only `true` and `false` as a boolean. (#67)
+- build: Update the vendored Lua modules to 2.5.0, which adds the accessor that reads what the schema resolves an option to. The schema validator moves to its own release train and is pinned at `schema-v2.2.0`, which accepts only `true` and `false` as a boolean. (#67)
 
 ## 1.11.0 (2026-09-06)
 
