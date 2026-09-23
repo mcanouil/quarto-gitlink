@@ -5,7 +5,7 @@
 ## Installation
 
 ```bash
-quarto add mcanouil/quarto-gitlink@1.11.0
+quarto add mcanouil/quarto-gitlink@1.11.1
 ```
 
 This will install the extension under the `_extensions` subdirectory.
