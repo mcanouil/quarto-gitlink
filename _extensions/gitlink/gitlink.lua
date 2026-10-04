@@ -56,7 +56,7 @@ local badge_position = 'after'
 --- @type string Badge background colour (hex or colour name)
 local badge_background_colour = '#c3c3c3'
 
---- @type string|nil Badge text colour (hex or colour name)
+--- @type string|nil Badge text colour (hex or colour name), resolved in the Meta pass
 local badge_text_colour = nil
 
 --- @type boolean Whether to shorten link text matching platform URLs
@@ -154,15 +154,6 @@ local function contrasting_text_colour(background)
     return '#000000'
   end
   return '#ffffff'
-end
-
---- Resolve the badge text colour: the configured value, or black or white for contrast.
---- @return string The text colour (hex code or CSS named colour)
-local function resolve_badge_text_colour()
-  if not str.is_empty(badge_text_colour) then
-    return badge_text_colour --[[@as string]]
-  end
-  return contrasting_text_colour(badge_background_colour)
 end
 
 --- Reset all module-level state to defaults.
@@ -281,7 +272,7 @@ local function create_platform_link(text, uri, platform_name)
           title = platform_label,
           ['aria-label'] = platform_label .. ' platform',
           style = 'background-color: ' .. badge_background_colour ..
-              '; color: ' .. resolve_badge_text_colour() .. ';'
+              '; color: ' .. badge_text_colour .. ';'
         }
       )
       local badge = pandoc.Span({ pandoc.Str(platform_label) }, badge_attr)
@@ -304,7 +295,7 @@ local function create_platform_link(text, uri, platform_name)
       -- Typst rgb() only accepts hex strings, so convert any CSS-named colour
       -- (already validated at Meta time) to its hex equivalent.
       local bg_hex = colour_to_hex(badge_background_colour)
-      local text_hex = colour_to_hex(resolve_badge_text_colour())
+      local text_hex = colour_to_hex(badge_text_colour --[[@as string]])
       local badge_raw = '#box(fill: rgb("' ..
           bg_hex ..
           '"), inset: 2pt, outset: 0pt, radius: 3pt, baseline: -0.3em, text(size: 0.45em, fill: rgb("' ..
@@ -456,6 +447,9 @@ local function get_repository(meta)
     if validated_text then
       badge_text_colour = validated_text
     end
+  end
+  if str.is_empty(badge_text_colour) then
+    badge_text_colour = contrasting_text_colour(badge_background_colour)
   end
 
   normalize_links = checker:option('normalize-links') ~= false
