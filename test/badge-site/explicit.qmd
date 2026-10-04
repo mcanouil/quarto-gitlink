@@ -1,0 +1,9 @@
+---
+title: "Explicit text colour"
+extensions:
+  gitlink:
+    badge-background-colour: "#003366"
+    badge-text-colour: "#ffcc00"
+---
+
+An explicit text colour wins over the computed one: #1.

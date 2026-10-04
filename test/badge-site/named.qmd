@@ -1,0 +1,8 @@
+---
+title: "Named colour badge"
+extensions:
+  gitlink:
+    badge-background-colour: navy
+---
+
+A named dark background takes white text: #1.

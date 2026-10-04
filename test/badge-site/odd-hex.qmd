@@ -1,0 +1,8 @@
+---
+title: "Five-digit hex"
+extensions:
+  gitlink:
+    badge-background-colour: "#ffffa"
+---
+
+A hex code that is not 3, 4, 6, or 8 digits long is ignored: #1.

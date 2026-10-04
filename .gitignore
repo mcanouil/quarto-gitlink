@@ -15,5 +15,8 @@
 /test/navbar-site/_site/
 /test/navbar-site/.quarto/
 /test/navbar-site/_extensions/
+/test/badge-site/_site/
+/test/badge-site/.quarto/
+/test/badge-site/_extensions/
 __pycache__/
 /tools/.venv/

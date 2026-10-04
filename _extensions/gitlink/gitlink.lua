@@ -56,8 +56,8 @@ local badge_position = 'after'
 --- @type string Badge background colour (hex or colour name)
 local badge_background_colour = '#c3c3c3'
 
---- @type string|nil Badge text colour (hex or colour name), resolved in the Meta pass
-local badge_text_colour = nil
+--- @type string Badge text colour (hex or colour name), black on the default background
+local badge_text_colour = '#000000'
 
 --- @type boolean Whether to shorten link text matching platform URLs
 local normalize_links = true
@@ -83,11 +83,18 @@ local COMMIT_SHA_SHORT_LENGTH = 7
 --- @type integer Minimum length for a valid git commit SHA
 local COMMIT_SHA_MIN_LENGTH = 7
 
---- @type string Lua pattern matching a 3-, 4-, 6-, or 8-character hex colour with leading #
-local HEX_COLOUR_PATTERN = '^#%x%x%x%x?%x?%x?%x?%x?$'
-
 --- @type string Class Quarto puts on the markdown-pipeline envelope elements
 local MARKDOWN_ENVELOPE_CLASS = 'quarto-markdown-envelope-contents'
+
+--- @type table<integer, boolean> Digit counts of a valid hex colour: #rgb, #rgba, #rrggbb, #rrggbbaa
+local HEX_COLOUR_DIGIT_COUNTS = { [3] = true, [4] = true, [6] = true, [8] = true }
+
+--- Check whether a value is a hex colour with 3, 4, 6, or 8 digits after the #.
+--- @param value string The candidate colour value
+--- @return boolean True if the value is a hex colour
+local function is_hex_colour(value)
+  return value:match('^#%x+$') ~= nil and HEX_COLOUR_DIGIT_COUNTS[#value - 1] == true
+end
 
 --- Validate a colour value as a hex code or CSS named colour.
 --- Returns the original value if valid, or nil if invalid.
@@ -99,7 +106,7 @@ local function validate_colour(value, option_label)
     return nil
   end
   local s = value --[[@as string]]
-  if s:match(HEX_COLOUR_PATTERN) or colour.is_named_colour(s) then
+  if is_hex_colour(s) or colour.is_named_colour(s) then
     return s
   end
   log.log_warning(
@@ -116,7 +123,7 @@ end
 --- @param value string The colour value (hex code or CSS named colour)
 --- @return string The hex form
 local function colour_to_hex(value)
-  if value:match(HEX_COLOUR_PATTERN) then
+  if is_hex_colour(value) then
     return value
   end
   return colour.named_to_HTML(value)
@@ -169,7 +176,7 @@ local function reset_state()
   show_platform_badge = true
   badge_position = 'after'
   badge_background_colour = '#c3c3c3'
-  badge_text_colour = nil
+  badge_text_colour = contrasting_text_colour(badge_background_colour)
   normalize_links = true
   fetch_titles = false
   title_cache = {}
@@ -295,7 +302,7 @@ local function create_platform_link(text, uri, platform_name)
       -- Typst rgb() only accepts hex strings, so convert any CSS-named colour
       -- (already validated at Meta time) to its hex equivalent.
       local bg_hex = colour_to_hex(badge_background_colour)
-      local text_hex = colour_to_hex(badge_text_colour --[[@as string]])
+      local text_hex = colour_to_hex(badge_text_colour)
       local badge_raw = '#box(fill: rgb("' ..
           bg_hex ..
           '"), inset: 2pt, outset: 0pt, radius: 3pt, baseline: -0.3em, text(size: 0.45em, fill: rgb("' ..
@@ -442,15 +449,8 @@ local function get_repository(meta)
   end
 
   local badge_text_colour_meta = meta_mod.get_metadata_value(meta, 'gitlink', 'badge-text-colour')
-  if not str.is_empty(badge_text_colour_meta) then
-    local validated_text = validate_colour(badge_text_colour_meta --[[@as string]], 'badge-text-colour')
-    if validated_text then
-      badge_text_colour = validated_text
-    end
-  end
-  if str.is_empty(badge_text_colour) then
-    badge_text_colour = contrasting_text_colour(badge_background_colour)
-  end
+  badge_text_colour = validate_colour(badge_text_colour_meta --[[@as string|nil]], 'badge-text-colour')
+      or contrasting_text_colour(badge_background_colour)
 
   normalize_links = checker:option('normalize-links') ~= false
 

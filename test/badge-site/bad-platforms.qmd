@@ -1,0 +1,8 @@
+---
+title: "Invalid custom platforms"
+extensions:
+  gitlink:
+    custom-platforms-file: bad-platforms.yml
+---
+
+The built-in platforms still draw a badge: @mcanouil and <https://github.com/mcanouil/quarto-gitlink/issues/1>.

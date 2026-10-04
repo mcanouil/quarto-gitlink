@@ -5,6 +5,7 @@
 ### Bug Fixes
 
 - fix: Draw the platform badge in the configured colours, with black or white text by default, whichever contrasts more with the background. In HTML, the Bootstrap secondary colour used to override both colour options, and a 70% opacity fade lowered the text contrast below WCAG AA.
+- fix: Ignore a badge colour written as a hex code of 5 or 7 digits, with a warning. Only 3, 4, 6, and 8 digits are valid hex colours.
 
 ## 1.11.1 (2026-09-23)
 

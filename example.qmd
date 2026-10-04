@@ -413,7 +413,7 @@ extensions:
 **Colour Options:**
 
 - `badge-background-colour`: Set the background colour using hex codes (e.g. `#e8f4f8`) or colour names.
-- `badge-text-colour`: Set the text colour (optional). If not specified, the default text colour is used.
+- `badge-text-colour`: Set the text colour (optional). If not specified, the badge uses black or white, whichever has more contrast with the background.
 
 **Example with Custom Colours:**
 
