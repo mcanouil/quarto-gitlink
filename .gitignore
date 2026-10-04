@@ -18,9 +18,7 @@
 /test/badge-site/_site/
 /test/badge-site/.quarto/
 /test/badge-site/_extensions/
-/test/badge-site/typst.typ
-/test/badge-site/typst-computed.typ
-/test/badge-site/typst-faint.typ
+/test/badge-site/*.typ
 /test/badge-site/site_libs/
 __pycache__/
 /tools/.venv/

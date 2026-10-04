@@ -99,7 +99,12 @@ expect_log "five-digit hex warns" "Ignoring invalid 'badge-background-colour' va
 expect_log "unknown colour name warns" "Ignoring invalid 'badge-background-colour' value 'teel'"
 expect_log_absent "translucent background does not warn" "'#003366cc' is too transparent"
 expect_log_absent "no warning when the badge is off" "'#ff000040' is too transparent"
-expect_absent "no Bootstrap colour class on the badge" 'text-bg-secondary'
+expect_badge "three-digit hex takes white text" "short-hex" \
+	'background-color: #036; color: #ffffff;'
+expect_badge "four-digit hex takes white text" "short-hex-alpha" \
+	'background-color: #036c; color: #ffffff;'
+expect_log_absent "four-digit hex does not warn" "'#036c' is too transparent"
+expect_absent "no Bootstrap colour class on the badge" 'gitlink-badge badge text-bg-secondary'
 
 expect_typst() {
 	local label="${1}" page="${2}" background="${3}" text="${4}"

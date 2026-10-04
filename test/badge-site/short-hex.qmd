@@ -1,0 +1,8 @@
+---
+title: "Short hex badge"
+extensions:
+  gitlink:
+    badge-background-colour: "#036"
+---
+
+A three-digit hex code expands to six digits: #1.
