@@ -54,7 +54,17 @@ expect_badge "named text colour is used as given" "named-text" \
 	'background-color: #003366; color: white;'
 expect_badge "US spelling of both options" "us-spelling" \
 	'background-color: #003366; color: #ffcc00;'
+expect_badge "colour that is not a string falls back" "boolean-colour" \
+	'background-color: #c3c3c3; color: #000000;'
 expect_absent "no Bootstrap colour class on the badge" 'text-bg-secondary'
+
+typst_file="${site_dir}/typst.typ"
+if [[ -f "${typst_file}" ]] && grep -qF -- 'fill: rgb("#003366")' "${typst_file}" &&
+	grep -qF -- 'fill: rgb("#FFFFFF")' "${typst_file}"; then
+	report "ok" "Typst badge converts a named text colour to hex"
+else
+	report "FAIL" "Typst badge converts a named text colour to hex"
+fi
 
 if [[ "${failures}" -gt 0 ]]; then
 	printf '\n%d check(s) failed.\n' "${failures}" >&2

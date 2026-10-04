@@ -1,0 +1,12 @@
+---
+title: "Typst badge"
+format:
+  typst:
+    keep-typ: true
+extensions:
+  gitlink:
+    badge-background-colour: "#003366"
+    badge-text-colour: white
+---
+
+Typst draws the badge in the same colours: #1.

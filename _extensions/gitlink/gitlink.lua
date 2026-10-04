@@ -98,11 +98,13 @@ end
 
 --- Validate a colour value as a hex code or CSS named colour.
 --- Returns the original value if valid, or nil if invalid.
---- @param value string|nil The candidate colour value
+--- A value that is not a string returns nil without a warning, because the
+--- schema check has already reported its type.
+--- @param value any The candidate colour value
 --- @param option_label string The metadata option name (for warnings)
 --- @return string|nil The validated colour value, or nil if invalid
 local function validate_colour(value, option_label)
-  if str.is_empty(value) then
+  if type(value) ~= 'string' or str.is_empty(value) then
     return nil
   end
   local s = value --[[@as string]]
@@ -435,12 +437,9 @@ local function get_repository(meta)
 
   show_platform_badge = checker:option('show-platform-badge') ~= false
 
-  local badge_pos_meta = meta_mod.get_metadata_value(meta, 'gitlink', 'badge-position')
-  if badge_pos_meta ~= nil then
-    badge_position = badge_pos_meta --[[@as string]]
-  end
-
-  -- Read through the schema, which resolves the `-color` spelling aliases.
+  -- Read through the schema, which applies the defaults and resolves the
+  -- `-color` spelling aliases.
+  badge_position = checker:option('badge-position') or badge_position
   badge_background_colour = validate_colour(checker:option('badge-background-colour'), 'badge-background-colour')
       or badge_background_colour
   badge_text_colour = validate_colour(checker:option('badge-text-colour'), 'badge-text-colour')
