@@ -56,8 +56,8 @@ local badge_position = 'after'
 --- @type string Badge background colour (hex or colour name)
 local badge_background_colour = '#c3c3c3'
 
---- @type string Badge text colour (hex or colour name), black on the default background
-local badge_text_colour = '#000000'
+--- @type string Badge text colour (hex or colour name), set by reset_state
+local badge_text_colour
 
 --- @type boolean Whether to shorten link text matching platform URLs
 local normalize_links = true
@@ -440,16 +440,10 @@ local function get_repository(meta)
     badge_position = badge_pos_meta --[[@as string]]
   end
 
-  local badge_bg_colour_meta = meta_mod.get_metadata_value(meta, 'gitlink', 'badge-background-colour')
-  if not str.is_empty(badge_bg_colour_meta) then
-    local validated_bg = validate_colour(badge_bg_colour_meta --[[@as string]], 'badge-background-colour')
-    if validated_bg then
-      badge_background_colour = validated_bg
-    end
-  end
-
-  local badge_text_colour_meta = meta_mod.get_metadata_value(meta, 'gitlink', 'badge-text-colour')
-  badge_text_colour = validate_colour(badge_text_colour_meta --[[@as string|nil]], 'badge-text-colour')
+  -- Read through the schema, which resolves the `-color` spelling aliases.
+  badge_background_colour = validate_colour(checker:option('badge-background-colour'), 'badge-background-colour')
+      or badge_background_colour
+  badge_text_colour = validate_colour(checker:option('badge-text-colour'), 'badge-text-colour')
       or contrasting_text_colour(badge_background_colour)
 
   normalize_links = checker:option('normalize-links') ~= false

@@ -1,0 +1,9 @@
+---
+title: "Named text colour"
+extensions:
+  gitlink:
+    badge-background-colour: "#003366"
+    badge-text-colour: white
+---
+
+A named text colour is used as given: #1.

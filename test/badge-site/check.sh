@@ -46,6 +46,14 @@ expect_badge "five-digit hex falls back to the default" "odd-hex" \
 	'background-color: #c3c3c3; color: #000000;'
 expect_badge "invalid custom platforms keep the default colours" "bad-platforms" \
 	'background-color: #c3c3c3; color: #000000;'
+expect_badge "background below the boundary takes white text" "boundary-white" \
+	'background-color: #757575; color: #ffffff;'
+expect_badge "background above the boundary takes black text" "boundary-black" \
+	'background-color: #767676; color: #000000;'
+expect_badge "named text colour is used as given" "named-text" \
+	'background-color: #003366; color: white;'
+expect_badge "US spelling of both options" "us-spelling" \
+	'background-color: #003366; color: #ffcc00;'
 expect_absent "no Bootstrap colour class on the badge" 'text-bg-secondary'
 
 if [[ "${failures}" -gt 0 ]]; then
