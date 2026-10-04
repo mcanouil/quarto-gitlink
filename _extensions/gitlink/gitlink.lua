@@ -56,8 +56,11 @@ local badge_position = 'after'
 --- @type string Badge background colour (hex or colour name)
 local badge_background_colour = '#c3c3c3'
 
---- @type string Badge text colour (hex or colour name), set by reset_state
-local badge_text_colour
+--- @type string|nil Badge text colour (hex or colour name), nil to pick black or white
+local badge_text_colour = nil
+
+--- @type boolean Whether this document has already warned about a faint badge background
+local badge_contrast_warned = false
 
 --- @type boolean Whether to shorten link text matching platform URLs
 local normalize_links = true
@@ -91,6 +94,12 @@ local HEX_COLOUR_DIGIT_COUNTS = { [3] = true, [4] = true, [6] = true, [8] = true
 
 --- @type number WCAG AA minimum contrast ratio for normal text
 local WCAG_AA_CONTRAST = 4.5
+
+--- @type number[] Page colours behind an HTML badge: white for a light theme, black for a dark one
+local HTML_PAGES = { 1, 0 }
+
+--- @type number[] Page colour behind a Typst badge: white
+local TYPST_PAGES = { 1 }
 
 --- Check whether a value is a hex colour with 3, 4, 6, or 8 digits after the #.
 --- @param value string The candidate colour value
@@ -178,16 +187,16 @@ local function contrast_ratio(a, b)
 end
 
 --- Pick black or white text for a background colour.
---- A translucent background is blended over a white page and over a black page,
---- which stand for the light and dark ends of any theme.
+--- A translucent background is blended over each page colour it can sit on.
 --- The text colour with the higher worst-case contrast wins.
 --- @param background string The background colour (hex code or CSS named colour)
+--- @param pages number[] The grey levels of the possible pages, from 0 (black) to 1 (white)
 --- @return string '#000000' or '#ffffff'
 --- @return number The worst-case contrast ratio of that text colour
-local function contrasting_text_colour(background)
+local function contrasting_text_colour(background, pages)
   local channels, alpha = colour_channels(background)
   local worst_black, worst_white = math.huge, math.huge
-  for _, page in ipairs({ 1, 0 }) do
+  for _, page in ipairs(pages) do
     local blended = {}
     for i, channel in ipairs(channels) do
       blended[i] = channel * alpha + page * (1 - alpha)
@@ -203,6 +212,29 @@ local function contrasting_text_colour(background)
   return text, worst
 end
 
+--- Resolve the badge text colour for the pages of the current output format.
+--- Returns the configured text colour when there is one.
+--- Otherwise picks black or white, and warns once per document when neither
+--- reaches WCAG AA on every page.
+--- @param pages number[] The grey levels of the possible pages, from 0 (black) to 1 (white)
+--- @return string The text colour (hex code or CSS named colour)
+local function resolve_badge_text_colour(pages)
+  if badge_text_colour then
+    return badge_text_colour
+  end
+  local text, worst = contrasting_text_colour(badge_background_colour, pages)
+  if worst < WCAG_AA_CONTRAST and not badge_contrast_warned then
+    badge_contrast_warned = true
+    log.log_warning(
+      EXTENSION_NAME,
+      "'badge-background-colour' value '" .. badge_background_colour .. "' is too transparent for readable text " ..
+      "(" .. string.format('%.1f', worst) .. ':1 at worst, below ' .. WCAG_AA_CONTRAST .. ':1). ' ..
+      "Use a more opaque colour or a valid 'badge-text-colour'."
+    )
+  end
+  return text
+end
+
 --- Reset all module-level state to defaults.
 --- Quarto can render multiple documents in one process, so module-level state
 --- from a previous document must be cleared at the start of each Meta pass.
@@ -216,7 +248,8 @@ local function reset_state()
   show_platform_badge = true
   badge_position = 'after'
   badge_background_colour = '#c3c3c3'
-  badge_text_colour = contrasting_text_colour(badge_background_colour)
+  badge_text_colour = nil
+  badge_contrast_warned = false
   normalize_links = true
   fetch_titles = false
   title_cache = {}
@@ -319,7 +352,7 @@ local function create_platform_link(text, uri, platform_name)
           title = platform_label,
           ['aria-label'] = platform_label .. ' platform',
           style = 'background-color: ' .. badge_background_colour ..
-              '; color: ' .. badge_text_colour .. ';'
+              '; color: ' .. resolve_badge_text_colour(HTML_PAGES) .. ';'
         }
       )
       local badge = pandoc.Span({ pandoc.Str(platform_label) }, badge_attr)
@@ -342,7 +375,7 @@ local function create_platform_link(text, uri, platform_name)
       -- Typst rgb() only accepts hex strings, so convert any CSS-named colour
       -- (already validated at Meta time) to its hex equivalent.
       local bg_hex = colour_to_hex(badge_background_colour)
-      local text_hex = colour_to_hex(badge_text_colour)
+      local text_hex = colour_to_hex(resolve_badge_text_colour(TYPST_PAGES))
       local badge_raw = '#box(fill: rgb("' ..
           bg_hex ..
           '"), inset: 2pt, outset: 0pt, radius: 3pt, baseline: -0.3em, text(size: 0.45em, fill: rgb("' ..
@@ -480,21 +513,7 @@ local function get_repository(meta)
   badge_position = checker:option('badge-position') or badge_position
   badge_background_colour = validate_colour(checker:option('badge-background-colour'), 'badge-background-colour')
       or badge_background_colour
-  local configured_text_colour = validate_colour(checker:option('badge-text-colour'), 'badge-text-colour')
-  if configured_text_colour then
-    badge_text_colour = configured_text_colour
-  else
-    local worst
-    badge_text_colour, worst = contrasting_text_colour(badge_background_colour)
-    if show_platform_badge and worst < WCAG_AA_CONTRAST then
-      log.log_warning(
-        EXTENSION_NAME,
-        "'badge-background-colour' value '" .. badge_background_colour .. "' is too transparent for readable text " ..
-        "on both light and dark pages (" .. string.format('%.1f', worst) .. ':1, below ' ..
-        WCAG_AA_CONTRAST .. ":1). Use a more opaque colour or a valid 'badge-text-colour'."
-      )
-    end
-  end
+  badge_text_colour = validate_colour(checker:option('badge-text-colour'), 'badge-text-colour')
 
   normalize_links = checker:option('normalize-links') ~= false
 

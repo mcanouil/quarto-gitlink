@@ -55,6 +55,16 @@ expect_log_absent() {
 	fi
 }
 
+expect_log_count() {
+	local label="${1}" text="${2}" wanted="${3}" found
+	found="$({ grep -oF -- "${text}" <<<"${render_log}" || true; } | wc -l | tr -d ' ')"
+	if [[ "${found}" -eq "${wanted}" ]]; then
+		report "ok" "${label}"
+	else
+		report "FAIL" "${label} (found ${found}, wanted ${wanted})"
+	fi
+}
+
 expect_badge "default background takes black text" "index" \
 	'background-color: #c3c3c3; color: #000000;'
 expect_badge "dark background takes white text" "dark" \
@@ -81,7 +91,12 @@ expect_badge "translucent dark background takes white text" "translucent" \
 	'background-color: #003366cc; color: #ffffff;'
 expect_badge "faint background takes the better text colour" "faint" \
 	'background-color: #00000040; color: #ffffff;'
-expect_log "faint background warns" "'#00000040' is too transparent"
+expect_log_count "faint background warns once per document" "'#00000040' is too transparent" 1
+expect_log_absent "no warning on a page without a badge" "'#0000ff40' is too transparent"
+expect_badge "unknown colour name falls back to the default" "unknown-name" \
+	'background-color: #c3c3c3; color: #000000;'
+expect_log "five-digit hex warns" "Ignoring invalid 'badge-background-colour' value '#ffffa'"
+expect_log "unknown colour name warns" "Ignoring invalid 'badge-background-colour' value 'teel'"
 expect_log_absent "translucent background does not warn" "'#003366cc' is too transparent"
 expect_log_absent "no warning when the badge is off" "'#ff000040' is too transparent"
 expect_absent "no Bootstrap colour class on the badge" 'text-bg-secondary'
@@ -99,6 +114,7 @@ expect_typst() {
 
 expect_typst "Typst badge converts a named text colour to hex" "typst" '#003366' '#FFFFFF'
 expect_typst "Typst badge takes the computed text colour" "typst-computed" '#003366cc' '#ffffff'
+expect_typst "Typst faint badge picks text for the white page" "typst-faint" '#00000040' '#000000'
 
 if [[ "${failures}" -gt 0 ]]; then
 	printf '\n%d check(s) failed.\n' "${failures}" >&2
