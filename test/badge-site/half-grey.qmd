@@ -1,0 +1,8 @@
+---
+title: "Half grey badge"
+extensions:
+  gitlink:
+    badge-background-colour: "#78787880"
+---
+
+A half-transparent grey takes the text colour with the better worst case: #1.

@@ -3,7 +3,7 @@
 set -euo pipefail
 
 site_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-quarto render "${site_dir}" >/dev/null
+render_log="$(quarto render "${site_dir}" 2>&1)"
 
 failures=0
 
@@ -34,6 +34,24 @@ expect_absent() {
 	fi
 }
 
+expect_log() {
+	local label="${1}" text="${2}"
+	if grep -qF -- "${text}" <<<"${render_log}"; then
+		report "ok" "${label}"
+	else
+		report "FAIL" "${label}"
+	fi
+}
+
+expect_log_absent() {
+	local label="${1}" text="${2}"
+	if grep -qF -- "${text}" <<<"${render_log}"; then
+		report "FAIL" "${label}"
+	else
+		report "ok" "${label}"
+	fi
+}
+
 expect_badge "default background takes black text" "index" \
 	'background-color: #c3c3c3; color: #000000;'
 expect_badge "dark background takes white text" "dark" \
@@ -56,6 +74,14 @@ expect_badge "US spelling of both options" "us-spelling" \
 	'background-color: #003366; color: #ffcc00;'
 expect_badge "colour that is not a string falls back" "boolean-colour" \
 	'background-color: #c3c3c3; color: #000000;'
+expect_badge "translucent dark background takes white text" "translucent" \
+	'background-color: #003366cc; color: #ffffff;'
+expect_badge "faint background takes the better text colour" "faint" \
+	'background-color: #00000040; color: #ffffff;'
+expect_badge "half-transparent grey takes the better worst case" "half-grey" \
+	'background-color: #78787880; color: #ffffff;'
+expect_log "faint background warns" "'#00000040' is too transparent"
+expect_log_absent "translucent background does not warn" "'#003366cc' is too transparent"
 expect_absent "no Bootstrap colour class on the badge" 'text-bg-secondary'
 
 typst_file="${site_dir}/typst.typ"

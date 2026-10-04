@@ -89,6 +89,9 @@ local MARKDOWN_ENVELOPE_CLASS = 'quarto-markdown-envelope-contents'
 --- @type table<integer, boolean> Digit counts of a valid hex colour: #rgb, #rgba, #rrggbb, #rrggbbaa
 local HEX_COLOUR_DIGIT_COUNTS = { [3] = true, [4] = true, [6] = true, [8] = true }
 
+--- @type number WCAG AA minimum contrast ratio for normal text
+local WCAG_AA_CONTRAST = 4.5
+
 --- Check whether a value is a hex colour with 3, 4, 6, or 8 digits after the #.
 --- @param value string The candidate colour value
 --- @return boolean True if the value is a hex colour
@@ -131,19 +134,31 @@ local function colour_to_hex(value)
   return colour.named_to_HTML(value)
 end
 
---- Compute the WCAG relative luminance of a validated colour value.
---- Any alpha digits in the hex code are ignored.
+--- Split a validated colour value into its channels, each from 0 to 1.
 --- @param value string The colour value (hex code or CSS named colour)
---- @return number The relative luminance, from 0 (black) to 1 (white)
-local function relative_luminance(value)
+--- @return number[] The red, green, and blue channels
+--- @return number The alpha channel, 1 when the colour has no alpha digits
+local function colour_channels(value)
   local digits = colour_to_hex(value):sub(2)
   if #digits <= 4 then
     digits = digits:gsub('%x', '%0%0')
   end
+  local channels = {}
+  for i = 1, 3 do
+    channels[i] = tonumber(digits:sub(2 * i - 1, 2 * i), 16) / 255
+  end
+  local alpha = #digits == 8 and tonumber(digits:sub(7, 8), 16) / 255 or 1
+  return channels, alpha
+end
+
+--- Compute the WCAG relative luminance of sRGB channels.
+--- @param channels number[] The red, green, and blue channels, each from 0 to 1
+--- @return number The relative luminance, from 0 (black) to 1 (white)
+local function relative_luminance(channels)
   local luminance = 0
   local weights = { 0.2126, 0.7152, 0.0722 }
   for i, weight in ipairs(weights) do
-    local channel = tonumber(digits:sub(2 * i - 1, 2 * i), 16) / 255
+    local channel = channels[i]
     if channel <= 0.04045 then
       channel = channel / 12.92
     else
@@ -154,15 +169,46 @@ local function relative_luminance(value)
   return luminance
 end
 
---- Pick black or white, whichever has the higher contrast ratio on a background.
+--- Compute the WCAG contrast ratio between two relative luminances.
+--- @param a number A relative luminance
+--- @param b number Another relative luminance
+--- @return number The contrast ratio, from 1 to 21
+local function contrast_ratio(a, b)
+  return (math.max(a, b) + 0.05) / (math.min(a, b) + 0.05)
+end
+
+--- Pick black or white text for a background colour.
+--- A translucent background is blended over a white page and over a black page,
+--- which stand for the light and dark ends of any theme.
+--- The text colour with the higher worst-case contrast wins, and a warning is
+--- logged when that worst case is still below WCAG AA.
 --- @param background string The background colour (hex code or CSS named colour)
 --- @return string '#000000' or '#ffffff'
 local function contrasting_text_colour(background)
-  local luminance = relative_luminance(background)
-  if (luminance + 0.05) / 0.05 >= 1.05 / (luminance + 0.05) then
-    return '#000000'
+  local channels, alpha = colour_channels(background)
+  local worst_black, worst_white = math.huge, math.huge
+  for _, page in ipairs({ 1, 0 }) do
+    local blended = {}
+    for i, channel in ipairs(channels) do
+      blended[i] = channel * alpha + page * (1 - alpha)
+    end
+    local luminance = relative_luminance(blended)
+    worst_black = math.min(worst_black, contrast_ratio(luminance, 0))
+    worst_white = math.min(worst_white, contrast_ratio(luminance, 1))
   end
-  return '#ffffff'
+  local text, worst = '#000000', worst_black
+  if worst_white > worst_black then
+    text, worst = '#ffffff', worst_white
+  end
+  if worst < WCAG_AA_CONTRAST then
+    log.log_warning(
+      EXTENSION_NAME,
+      "'badge-background-colour' value '" .. background .. "' is too transparent for readable text " ..
+      "on both light and dark pages (" .. string.format('%.1f', worst) .. ':1, below ' ..
+      WCAG_AA_CONTRAST .. ":1). Use a more opaque colour or set 'badge-text-colour'."
+    )
+  end
+  return text
 end
 
 --- Reset all module-level state to defaults.

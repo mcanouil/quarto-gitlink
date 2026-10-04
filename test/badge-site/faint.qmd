@@ -1,0 +1,8 @@
+---
+title: "Faint badge"
+extensions:
+  gitlink:
+    badge-background-colour: "#00000040"
+---
+
+A faint background cannot reach 4.5:1 on both light and dark pages: #1.

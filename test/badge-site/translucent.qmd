@@ -1,0 +1,8 @@
+---
+title: "Translucent badge"
+extensions:
+  gitlink:
+    badge-background-colour: "#003366cc"
+---
+
+A mostly opaque dark background takes white text: #1.

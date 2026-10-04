@@ -8,6 +8,7 @@
 - fix: Ignore a badge colour written as a hex code of 5 or 7 digits, with a warning. Only 3, 4, 6, and 8 digits are valid hex colours. (#70)
 - fix: Read `badge-background-color` and `badge-text-color`, the US spellings of the badge colour options. Both were ignored before. (#70)
 - fix: Fall back to the default badge colour when a colour option is not a string, such as `true`, instead of stopping the render. (#70)
+- fix: Take the alpha of a translucent badge background into account when picking the text colour, and warn when no text colour is readable on both light and dark pages. (#70)
 
 ## 1.11.1 (2026-09-23)
 
