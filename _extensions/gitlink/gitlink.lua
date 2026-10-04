@@ -486,12 +486,12 @@ local function get_repository(meta)
   else
     local worst
     badge_text_colour, worst = contrasting_text_colour(badge_background_colour)
-    if worst < WCAG_AA_CONTRAST then
+    if show_platform_badge and worst < WCAG_AA_CONTRAST then
       log.log_warning(
         EXTENSION_NAME,
         "'badge-background-colour' value '" .. badge_background_colour .. "' is too transparent for readable text " ..
         "on both light and dark pages (" .. string.format('%.1f', worst) .. ':1, below ' ..
-        WCAG_AA_CONTRAST .. ":1). Use a more opaque colour or set 'badge-text-colour'."
+        WCAG_AA_CONTRAST .. ":1). Use a more opaque colour or a valid 'badge-text-colour'."
       )
     end
   end

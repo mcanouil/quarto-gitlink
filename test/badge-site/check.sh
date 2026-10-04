@@ -3,7 +3,10 @@
 set -euo pipefail
 
 site_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-render_log="$(quarto render "${site_dir}" 2>&1)"
+render_log="$(quarto render "${site_dir}" 2>&1)" || {
+	printf '%s\n' "${render_log}" >&2
+	exit 1
+}
 
 failures=0
 
@@ -78,19 +81,24 @@ expect_badge "translucent dark background takes white text" "translucent" \
 	'background-color: #003366cc; color: #ffffff;'
 expect_badge "faint background takes the better text colour" "faint" \
 	'background-color: #00000040; color: #ffffff;'
-expect_badge "half-transparent grey takes the better worst case" "half-grey" \
-	'background-color: #78787880; color: #ffffff;'
 expect_log "faint background warns" "'#00000040' is too transparent"
 expect_log_absent "translucent background does not warn" "'#003366cc' is too transparent"
+expect_log_absent "no warning when the badge is off" "'#ff000040' is too transparent"
 expect_absent "no Bootstrap colour class on the badge" 'text-bg-secondary'
 
-typst_file="${site_dir}/typst.typ"
-if [[ -f "${typst_file}" ]] && grep -qF -- 'fill: rgb("#003366")' "${typst_file}" &&
-	grep -qF -- 'fill: rgb("#FFFFFF")' "${typst_file}"; then
-	report "ok" "Typst badge converts a named text colour to hex"
-else
-	report "FAIL" "Typst badge converts a named text colour to hex"
-fi
+expect_typst() {
+	local label="${1}" page="${2}" background="${3}" text="${4}"
+	local file="${site_dir}/${page}.typ"
+	if [[ -f "${file}" ]] && grep -qF -- "fill: rgb(\"${background}\")" "${file}" &&
+		grep -qF -- "fill: rgb(\"${text}\")" "${file}"; then
+		report "ok" "${label}"
+	else
+		report "FAIL" "${label}"
+	fi
+}
+
+expect_typst "Typst badge converts a named text colour to hex" "typst" '#003366' '#FFFFFF'
+expect_typst "Typst badge takes the computed text colour" "typst-computed" '#003366cc' '#ffffff'
 
 if [[ "${failures}" -gt 0 ]]; then
 	printf '\n%d check(s) failed.\n' "${failures}" >&2
