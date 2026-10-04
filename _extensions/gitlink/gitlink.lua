@@ -180,10 +180,10 @@ end
 --- Pick black or white text for a background colour.
 --- A translucent background is blended over a white page and over a black page,
 --- which stand for the light and dark ends of any theme.
---- The text colour with the higher worst-case contrast wins, and a warning is
---- logged when that worst case is still below WCAG AA.
+--- The text colour with the higher worst-case contrast wins.
 --- @param background string The background colour (hex code or CSS named colour)
 --- @return string '#000000' or '#ffffff'
+--- @return number The worst-case contrast ratio of that text colour
 local function contrasting_text_colour(background)
   local channels, alpha = colour_channels(background)
   local worst_black, worst_white = math.huge, math.huge
@@ -200,15 +200,7 @@ local function contrasting_text_colour(background)
   if worst_white > worst_black then
     text, worst = '#ffffff', worst_white
   end
-  if worst < WCAG_AA_CONTRAST then
-    log.log_warning(
-      EXTENSION_NAME,
-      "'badge-background-colour' value '" .. background .. "' is too transparent for readable text " ..
-      "on both light and dark pages (" .. string.format('%.1f', worst) .. ':1, below ' ..
-      WCAG_AA_CONTRAST .. ":1). Use a more opaque colour or set 'badge-text-colour'."
-    )
-  end
-  return text
+  return text, worst
 end
 
 --- Reset all module-level state to defaults.
@@ -488,8 +480,21 @@ local function get_repository(meta)
   badge_position = checker:option('badge-position') or badge_position
   badge_background_colour = validate_colour(checker:option('badge-background-colour'), 'badge-background-colour')
       or badge_background_colour
-  badge_text_colour = validate_colour(checker:option('badge-text-colour'), 'badge-text-colour')
-      or contrasting_text_colour(badge_background_colour)
+  local configured_text_colour = validate_colour(checker:option('badge-text-colour'), 'badge-text-colour')
+  if configured_text_colour then
+    badge_text_colour = configured_text_colour
+  else
+    local worst
+    badge_text_colour, worst = contrasting_text_colour(badge_background_colour)
+    if worst < WCAG_AA_CONTRAST then
+      log.log_warning(
+        EXTENSION_NAME,
+        "'badge-background-colour' value '" .. badge_background_colour .. "' is too transparent for readable text " ..
+        "on both light and dark pages (" .. string.format('%.1f', worst) .. ':1, below ' ..
+        WCAG_AA_CONTRAST .. ":1). Use a more opaque colour or set 'badge-text-colour'."
+      )
+    end
+  end
 
   normalize_links = checker:option('normalize-links') ~= false
 
