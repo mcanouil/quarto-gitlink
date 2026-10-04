@@ -122,6 +122,49 @@ local function colour_to_hex(value)
   return colour.named_to_HTML(value)
 end
 
+--- Compute the WCAG relative luminance of a validated colour value.
+--- Any alpha digits in the hex code are ignored.
+--- @param value string The colour value (hex code or CSS named colour)
+--- @return number The relative luminance, from 0 (black) to 1 (white)
+local function relative_luminance(value)
+  local digits = colour_to_hex(value):sub(2)
+  if #digits <= 4 then
+    digits = digits:gsub('%x', '%0%0')
+  end
+  local luminance = 0
+  local weights = { 0.2126, 0.7152, 0.0722 }
+  for i, weight in ipairs(weights) do
+    local channel = tonumber(digits:sub(2 * i - 1, 2 * i), 16) / 255
+    if channel <= 0.04045 then
+      channel = channel / 12.92
+    else
+      channel = ((channel + 0.055) / 1.055) ^ 2.4
+    end
+    luminance = luminance + weight * channel
+  end
+  return luminance
+end
+
+--- Pick black or white, whichever has the higher contrast ratio on a background.
+--- @param background string The background colour (hex code or CSS named colour)
+--- @return string '#000000' or '#ffffff'
+local function contrasting_text_colour(background)
+  local luminance = relative_luminance(background)
+  if (luminance + 0.05) / 0.05 >= 1.05 / (luminance + 0.05) then
+    return '#000000'
+  end
+  return '#ffffff'
+end
+
+--- Resolve the badge text colour: the configured value, or black or white for contrast.
+--- @return string The text colour (hex code or CSS named colour)
+local function resolve_badge_text_colour()
+  if not str.is_empty(badge_text_colour) then
+    return badge_text_colour --[[@as string]]
+  end
+  return contrasting_text_colour(badge_background_colour)
+end
+
 --- Reset all module-level state to defaults.
 --- Quarto can render multiple documents in one process, so module-level state
 --- from a previous document must be cleared at the start of each Meta pass.
@@ -231,22 +274,14 @@ local function create_platform_link(text, uri, platform_name)
         stylesheets = { css_path }
       })
 
-      local badge_classes = { 'gitlink-badge', 'badge', 'text-bg-secondary' }
-      local badge_style = {}
-      if not str.is_empty(badge_background_colour) then
-        table.insert(badge_style, 'background-color: ' .. badge_background_colour .. ';')
-      end
-      if not str.is_empty(badge_text_colour) then
-        table.insert(badge_style, 'color: ' .. badge_text_colour .. ';')
-      end
-
       local badge_attr = pandoc.Attr(
         '',
-        badge_classes,
+        { 'gitlink-badge', 'badge' },
         {
           title = platform_label,
           ['aria-label'] = platform_label .. ' platform',
-          style = table.concat(badge_style, ' ')
+          style = 'background-color: ' .. badge_background_colour ..
+              '; color: ' .. resolve_badge_text_colour() .. ';'
         }
       )
       local badge = pandoc.Span({ pandoc.Str(platform_label) }, badge_attr)
@@ -269,14 +304,11 @@ local function create_platform_link(text, uri, platform_name)
       -- Typst rgb() only accepts hex strings, so convert any CSS-named colour
       -- (already validated at Meta time) to its hex equivalent.
       local bg_hex = colour_to_hex(badge_background_colour)
-      local text_colour_opt = ''
-      if not str.is_empty(badge_text_colour) then
-        text_colour_opt = ', fill: rgb("' .. colour_to_hex(badge_text_colour --[[@as string]]) .. '")'
-      end
+      local text_hex = colour_to_hex(resolve_badge_text_colour())
       local badge_raw = '#box(fill: rgb("' ..
           bg_hex ..
-          '"), inset: 2pt, outset: 0pt, radius: 3pt, baseline: -0.3em, text(size: 0.45em' ..
-          text_colour_opt .. ', [' .. platform_label .. ']))'
+          '"), inset: 2pt, outset: 0pt, radius: 3pt, baseline: -0.3em, text(size: 0.45em, fill: rgb("' ..
+          text_hex .. '"), [' .. platform_label .. ']))'
       local badge = pandoc.RawInline('typst', ' ' .. badge_raw)
 
       local inlines = {}

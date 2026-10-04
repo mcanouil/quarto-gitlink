@@ -34,7 +34,7 @@ extensions:
 | `show-platform-badge` | `true` | Show a badge beside a generated link. |
 | `badge-position` | `after` | Where the badge sits relative to the link: `after` or `before`. |
 | `badge-background-colour` | `#c3c3c3` | Badge background, as hex or a CSS colour name. |
-| `badge-text-colour` | | Badge text colour. |
+| `badge-text-colour` | | Badge text colour. If not set, black or white, whichever has more contrast with the background. |
 | `normalize-links` | `true` | Shorten a platform URL used as autolink text. |
 | `fetch-titles` | `false` | Fetch the page title of an autolinked URL and use it as the link text. Needs network access at render time. |
 | `mentions` | | Citation identifiers to treat as mentions even when a bibliography entry exists. |
