@@ -2,8 +2,6 @@
 
 ## Unreleased
 
-## 1.11.2 (2026-10-05)
-
 ### Bug Fixes
 
 - fix: Draw the platform badge in the configured colours at full opacity, with black or white text by default, whichever contrasts more. In HTML, Bootstrap's secondary colour overrode both options and a 70% fade pushed the text below WCAG AA. (#70)
