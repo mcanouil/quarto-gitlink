@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Bug Fixes
+
+- fix: Draw the platform badge in the configured colours at full opacity, with black or white text by default, whichever contrasts more. In HTML, Bootstrap's secondary colour overrode both options and a 70% fade pushed the text below WCAG AA. (#70)
+- fix: Ignore a badge colour written as a hex code of 5 or 7 digits, with a warning. Only 3, 4, 6, and 8 digits are valid hex colours. (#70)
+- fix: Read `badge-background-color` and `badge-text-color`, the US spellings of the badge colour options. Both were ignored before. (#70)
+- fix: Fall back to the default badge colour when a colour option is not a string, such as `true`, instead of stopping the render. (#70)
+- fix: Take the alpha of a translucent badge background into account when picking the text colour, and warn when neither black nor white text is readable on the pages the badge can sit on. (#70)
+
 ## 1.11.1 (2026-09-23)
 
 ### New Features

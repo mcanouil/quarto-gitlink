@@ -413,7 +413,7 @@ extensions:
 **Colour Options:**
 
 - `badge-background-colour`: Set the background colour using hex codes (e.g. `#e8f4f8`) or colour names.
-- `badge-text-colour`: Set the text colour (optional). If not specified, the default text colour is used.
+- `badge-text-colour`: Set the text colour (optional). If not specified, the badge uses black or white, whichever has more contrast with the background. A translucent background is checked against light and dark pages in HTML, and a white page in Typst, with a warning when neither colour is readable.
 
 **Example with Custom Colours:**
 

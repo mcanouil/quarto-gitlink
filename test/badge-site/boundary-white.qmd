@@ -1,0 +1,8 @@
+---
+title: "boundary-white"
+extensions:
+  gitlink:
+    badge-background-colour: "#757575"
+---
+
+Just below the contrast boundary, the badge takes white text: #1.

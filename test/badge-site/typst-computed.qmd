@@ -1,0 +1,11 @@
+---
+title: "Typst computed badge"
+format:
+  typst:
+    keep-typ: true
+extensions:
+  gitlink:
+    badge-background-colour: "#003366cc"
+---
+
+Typst takes the computed text colour on a translucent background: #1.

@@ -1,0 +1,9 @@
+---
+title: "No badge"
+extensions:
+  gitlink:
+    show-platform-badge: false
+    badge-background-colour: "#ff000040"
+---
+
+Without a badge, a faint background does not warn: #1.

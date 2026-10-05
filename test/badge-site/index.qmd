@@ -1,0 +1,5 @@
+---
+title: "Default badge"
+---
+
+The default grey background takes black text: #1.

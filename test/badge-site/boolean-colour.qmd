@@ -1,0 +1,8 @@
+---
+title: "Boolean colour"
+extensions:
+  gitlink:
+    badge-text-colour: true
+---
+
+A colour that is not a string falls back to the computed colour: #1.

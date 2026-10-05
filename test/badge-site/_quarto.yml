@@ -1,0 +1,26 @@
+project:
+  type: website
+  # Transient copy of the extension so the filter resolves like a real
+  # installation; removed again after render.
+  pre-render:
+    - mkdir -p _extensions/gitlink
+    - cp -R ../../_extensions/gitlink/. _extensions/gitlink/
+  post-render:
+    - rm -rf _extensions
+
+website:
+  title: "Gitlink Badge Test"
+
+format:
+  html:
+    theme:
+      light: flatly
+      dark: darkly
+
+filters:
+  - gitlink
+
+extensions:
+  gitlink:
+    platform: github
+    repository-name: mcanouil/quarto-gitlink

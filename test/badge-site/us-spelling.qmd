@@ -1,0 +1,9 @@
+---
+title: "US spelling"
+extensions:
+  gitlink:
+    badge-background-color: "#003366"
+    badge-text-color: "#ffcc00"
+---
+
+The US spelling of both colour options works: #1.

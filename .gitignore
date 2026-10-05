@@ -15,5 +15,10 @@
 /test/navbar-site/_site/
 /test/navbar-site/.quarto/
 /test/navbar-site/_extensions/
+/test/badge-site/_site/
+/test/badge-site/.quarto/
+/test/badge-site/_extensions/
+/test/badge-site/*.typ
+/test/badge-site/site_libs/
 __pycache__/
 /tools/.venv/

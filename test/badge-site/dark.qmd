@@ -1,0 +1,8 @@
+---
+title: "Dark badge"
+extensions:
+  gitlink:
+    badge-background-colour: "#003366"
+---
+
+A dark background takes white text: #1.

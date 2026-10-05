@@ -1,0 +1,8 @@
+---
+title: "Unknown colour name"
+extensions:
+  gitlink:
+    badge-background-colour: teel
+---
+
+An unknown colour name falls back to the default: #1.
