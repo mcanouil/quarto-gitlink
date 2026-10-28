@@ -680,19 +680,16 @@ local function process_mentions(cite)
   if not config then
     return cite
   end
-  local usernames = {}
-  for i, citation in ipairs(cite.citations) do
-    usernames[i] = mention_username(config, citation.id)
-    if not usernames[i] then
-      return cite
-    end
-  end
   local inlines = pandoc.Inlines({})
   for i, citation in ipairs(cite.citations) do
+    local username = mention_username(config, citation.id)
+    if not username then
+      return cite
+    end
     if i > 1 then
       inlines:extend({ pandoc.Str(';'), pandoc.Space() })
     end
-    inlines:extend(mention_inlines(config, citation, usernames[i]))
+    inlines:extend(mention_inlines(config, citation, username))
   end
   return inlines
 end
