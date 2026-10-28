@@ -600,8 +600,8 @@ local function get_references(doc)
   return doc
 end
 
---- Remove the anchors a custom `user` pattern may already carry.
---- @param pattern string The `user` pattern of a platform
+--- Remove the anchors a custom pattern may already carry.
+--- @param pattern string A `user`, `issue`, `merge-request` or `commit` pattern of a platform
 --- @return string The pattern without a leading `^` or a trailing unescaped `$`
 local function strip_anchors(pattern)
   local stripped = pattern:gsub('^%^', '')

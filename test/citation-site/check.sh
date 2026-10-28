@@ -91,6 +91,7 @@ custom="custom.html"
 expect_in "Custom: anchored pattern still links" "${custom}" 'href="https://forge.example.org/alice"'
 expect_not_in "Custom: anchored pattern rejects a partial id" "${custom}" 'href="https://forge.example.org/alice_x"'
 expect_in "Custom: custom issue pattern links" "${custom}" 'href="https://forge.example.org/owner/repo/issues/42"'
+expect_in "Custom: capture made only of escapes links" "${custom}" 'href="https://forge.example.org/owner/repo/issues/12"'
 expect_in "Custom: custom commit pattern links" "${custom}" 'href="https://forge.example.org/owner/repo/commit/1a2b3c4d"'
 expect_in "Custom: built-in issue form still links" "${custom}" 'href="https://forge.example.org/owner/repo/issues/7"'
 expect_in "Custom: built-in merge request form still links" "${custom}" 'href="https://forge.example.org/owner/repo/merge_requests/8"'
