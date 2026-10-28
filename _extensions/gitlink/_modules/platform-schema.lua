@@ -185,8 +185,11 @@ local function validate_patterns(patterns, pattern_type, result)
       add_error(result, string.format('Invalid Lua regex in user: %s (e.g., "@([%%w%%-%%%%]+)")', err))
     elseif not patterns:match('^%^?@') then
       add_error(result, 'User pattern must start with "@" (e.g., "@([%w%-]+)")')
-    elseif not patterns:find('(', 1, true) then
-      add_error(result, 'User pattern must capture the username in parentheses (e.g., "@([%w%-]+)")')
+    else
+      local _, capture_count = patterns:gsub('%%.', ''):gsub('%(', '')
+      if capture_count ~= 1 then
+        add_error(result, 'User pattern must have exactly one capture group, for the username (e.g., "@([%w%-]+)")')
+      end
     end
     return
   end

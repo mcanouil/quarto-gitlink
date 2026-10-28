@@ -1,0 +1,11 @@
+---
+title: "Invalid custom user patterns"
+format: html
+extensions:
+  gitlink:
+    custom-platforms-file: bad-user-platforms.yml
+    platform: listuser
+    repository-name: owner/repo
+---
+
+Hello @alice.

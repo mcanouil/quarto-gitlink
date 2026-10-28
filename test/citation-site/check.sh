@@ -55,6 +55,7 @@ expect_in "HTML: suppress-author mention is a link" "${html}" 'href="https://git
 expect_not_in "HTML: id ending with a hyphen is not a link" "${html}" 'href="https://github.com/endhyphen'
 expect_in "HTML: in-text locator is separated from the link" "${html}" '</span> p.&nbsp;3'
 expect_in "HTML: in-text note in brackets is separated from the link" "${html}" '</span> (see above)'
+expect_in "HTML: closing bracket in a suffix follows the link" "${html}" '</span>).</p>'
 expect_in "HTML: first of several mentions is a link" "${html}" 'href="https://github.com/multia"'
 expect_in "HTML: second of several mentions is a link" "${html}" 'href="https://github.com/multib"'
 expect_in "HTML: several mentions are joined with a semicolon" "${html}" '</span>; <span>'
@@ -87,6 +88,24 @@ expect_not_in "GitLab: id ending with an underscore is not a link" "${gitlab}" '
 custom="custom.html"
 expect_in "Custom: anchored pattern still links" "${custom}" 'href="https://forge.example.org/alice"'
 expect_not_in "Custom: anchored pattern rejects a partial id" "${custom}" 'href="https://forge.example.org/alice_x"'
+
+expect_log() {
+	local label="${1}" text="${2}"
+	if grep -qF -- "${text}" <<<"${render_log}"; then
+		report "ok" "${label}"
+	else
+		report "FAIL" "${label}"
+	fi
+}
+
+expect_log "Schema: user pattern given as a list is rejected" 'User pattern must be a single string'
+expect_log "Schema: user pattern without @ is rejected" 'User pattern must start with "@"'
+if [[ "$(grep -cF -- 'User pattern must have exactly one capture group' <<<"${render_log}")" -eq 2 ]]; then
+	report "ok" "Schema: user patterns with no capture or two captures are rejected"
+else
+	report "FAIL" "Schema: user patterns with no capture or two captures are rejected"
+fi
+expect_not_in "Schema: invalid user patterns give no mention link" "bad-user.html" 'href="https://forge.example.org/alice"'
 
 typ_root="typst-root.typ"
 expect_in "Typst, path from the project root: citation stays a citation" "${typ_root}" "@canouil_nacho_2020"

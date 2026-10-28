@@ -656,8 +656,8 @@ local function mention_inlines(config, citation, username)
   local suffix = citation.suffix
   if #suffix > 0 then
     local first = suffix[1]
-    local starts_with_separator = first.t == 'Str' and first.text:match('^[,;:.]') ~= nil
-    if first.t ~= 'Space' and not starts_with_separator then
+    local starts_with_word = first.t == 'Str' and first.text:match('^[%w(%[]') ~= nil
+    if starts_with_word then
       inlines:insert(pandoc.Space())
     end
     inlines:extend(suffix)

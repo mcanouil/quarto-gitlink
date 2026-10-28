@@ -33,6 +33,8 @@ In-text locator @pageuser [p. 3].
 
 In-text note @noteuser [(see above)].
 
+Parenthesised [(see @parenuser)].
+
 Several [@multia; @multib].
 
 Mixed [@mixeduser; @canouil_nacho_2020].

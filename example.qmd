@@ -382,7 +382,7 @@ platforms:
       user: '/{username}'
 ```
 
-The `user` pattern must start with `@`, and its capture is the username.
+The `user` pattern is a single string that starts with `@` and has exactly one capture group, for the username.
 A mention becomes a link only when the pattern matches the full name and the name ends with a letter or a digit.
 
 **Using Custom Platforms**:
