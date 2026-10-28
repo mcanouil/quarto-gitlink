@@ -117,9 +117,10 @@ expect_not_log() {
 
 expect_not_log "Schema: a custom platform name is accepted" "platform: must be one of"
 expect_log "Schema: issue pattern with three captures is rejected" 'Issue pattern must have one or two capture groups'
+expect_log "Schema: issue pattern with a position capture is rejected" 'Issue pattern must have one or two capture groups: ()#(%d+)'
 expect_log "Schema: user pattern given as a list is rejected" 'User pattern must be a single string'
 expect_log "Schema: user pattern without @ is rejected" 'User pattern must start with "@"'
-if [[ "$(grep -cF -- 'User pattern must have exactly one capture group' <<<"${render_log}")" -eq 3 ]]; then
+if [[ "$(grep -cF -- 'User pattern must have exactly one capture group' <<<"${render_log}")" -eq 4 ]]; then
 	report "ok" "Schema: user patterns with no capture, a position capture, or two captures are rejected"
 else
 	report "FAIL" "Schema: user patterns with no capture, a position capture, or two captures are rejected"
