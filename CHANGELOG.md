@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.11.3 (2026-10-28)
+
 ### Bug Fixes
 
 - fix: Use the `issue`, `merge-request` and `commit` patterns of a custom platform. The filter only knew the built-in patterns and ignored any other, such as `PROJ%-(%d+)`. A pattern must now have one or two capture groups, and a file with a pattern that does not is rejected. (#80)
