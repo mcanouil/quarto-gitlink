@@ -59,6 +59,7 @@ expect_in "Typst: id listed in mentions becomes a link" "${typ}" '"https://githu
 
 typ_root="typst-root.typ"
 expect_in "Typst, path from the project root: citation stays a citation" "${typ_root}" "@canouil_nacho_2020"
+expect_not_in "Typst, path from the project root: citation is not turned into a user link" "${typ_root}" '"https://github.com/canouil"'
 expect_in "Typst, path from the project root: user mention becomes a link" "${typ_root}" '"https://github.com/mcanouil"'
 
 if [[ "${failures}" -gt 0 ]]; then
