@@ -1,0 +1,43 @@
+platforms:
+  forge:
+    display-name: Forge
+    base-url: https://forge.example.org
+    patterns:
+      issue:
+        - "#(%d+)"
+        - "([^/]+/[^/#]+)#(%d+)"
+      merge-request:
+        - "!(%d+)"
+        - "([^/]+/[^/#]+)!(%d+)"
+      commit:
+        - "^(%x+)$"
+        - "([^/]+/[^/@]+)@(%x+)"
+        - "(%w+)@(%x+)"
+      user: "^@([%w]+)$"
+    url-formats:
+      issue: "/{repo}/issues/{number}"
+      merge-request: "/{repo}/merge_requests/{number}"
+      pull: "/{repo}/merge_requests/{number}"
+      commit: "/{repo}/commit/{sha}"
+      user: "/{username}"
+  classparen:
+    display-name: Forge
+    base-url: https://classparen.example.org
+    patterns:
+      issue:
+        - "#(%d+)"
+        - "([^/]+/[^/#]+)#(%d+)"
+      merge-request:
+        - "!(%d+)"
+        - "([^/]+/[^/#]+)!(%d+)"
+      commit:
+        - "^(%x+)$"
+        - "([^/]+/[^/@]+)@(%x+)"
+        - "(%w+)@(%x+)"
+      user: "@([%w()]+)"
+    url-formats:
+      issue: "/{repo}/issues/{number}"
+      merge-request: "/{repo}/merge_requests/{number}"
+      pull: "/{repo}/merge_requests/{number}"
+      commit: "/{repo}/commit/{sha}"
+      user: "/{username}"

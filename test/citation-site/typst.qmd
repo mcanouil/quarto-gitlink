@@ -15,3 +15,7 @@ Published in 2020 [@canouil_nacho_2020].
 Thanks to @mcanouil for the review.
 
 Forced mention @jdoe.
+
+Prefixed [see @prefixuser].
+
+Several [@multia; @multib].

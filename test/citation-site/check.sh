@@ -44,18 +44,71 @@ expect_not_in "HTML: citation is not turned into a user link" "${html}" 'href="h
 expect_in "HTML: user mention becomes a link" "${html}" 'href="https://github.com/mcanouil"'
 expect_in "HTML: id listed in mentions becomes a link" "${html}" 'href="https://github.com/jdoe"'
 expect_not_in "HTML: id listed in mentions is not in the reference list" "${html}" 'id="ref-jdoe"'
+expect_not_in "HTML: unknown key with an underscore is not a partial user link" "${html}" 'href="https://github.com/smith"'
+expect_in "HTML: bracketed mention is a link" "${html}" 'href="https://github.com/bracketuser"'
+expect_not_in "HTML: bracketed mention has no brackets in the link text" "${html}" '[@bracketuser]'
+expect_in "HTML: prefixed mention is a link" "${html}" 'href="https://github.com/prefixuser"'
+expect_in "HTML: prefix stays as text" "${html}" 'Prefixed see '
+expect_in "HTML: locator mention is a link" "${html}" 'href="https://github.com/locatoruser"'
+expect_in "HTML: locator stays as text" "${html}" '</span>, p.&nbsp;3'
+expect_in "HTML: suppress-author mention is a link" "${html}" 'href="https://github.com/suppressuser"'
+expect_not_in "HTML: id ending with a hyphen is not a link" "${html}" 'href="https://github.com/endhyphen'
+expect_in "HTML: in-text locator is separated from the link" "${html}" '</span> p.&nbsp;3'
+expect_in "HTML: in-text note in brackets is separated from the link" "${html}" '</span> (see above)'
+expect_in "HTML: closing bracket in a suffix follows the link" "${html}" '</span>).</p>'
+expect_in "HTML: emphasised suffix is separated from the link" "${html}" '</span> <em>see also</em>'
+expect_in "HTML: first of several mentions is a link" "${html}" 'href="https://github.com/multia"'
+expect_in "HTML: second of several mentions is a link" "${html}" 'href="https://github.com/multib"'
+expect_in "HTML: several mentions are joined with a semicolon" "${html}" '</span>; <span>'
+expect_not_in "HTML: mixed citation is not a link" "${html}" 'href="https://github.com/mixeduser"'
+expect_in "HTML: mixed citation stays a citation" "${html}" 'mixeduser?'
 
 tex="sub/index.tex"
 expect_in "LaTeX: citation with an underscore stays a citation" "${tex}" "Canouil et al., 2020"
 expect_not_in "LaTeX: citation is not turned into a user link" "${tex}" '{https://github.com/canouil}'
 expect_in "LaTeX: user mention becomes a link" "${tex}" '{https://github.com/mcanouil}'
 expect_in "LaTeX: id listed in mentions becomes a link" "${tex}" '{https://github.com/jdoe}'
+expect_not_in "LaTeX: unknown key with an underscore is not a partial user link" "${tex}" '{https://github.com/smith}'
+expect_in "LaTeX: bracketed mention is a link" "${tex}" '{https://github.com/bracketuser}'
+expect_in "LaTeX: prefixed mention is a link" "${tex}" '{https://github.com/prefixuser}'
+expect_not_in "LaTeX: id ending with a hyphen is not a link" "${tex}" '{https://github.com/endhyphen'
 
 typ="typst.typ"
 expect_in "Typst: citation with an underscore stays a citation" "${typ}" "@canouil_nacho_2020"
 expect_not_in "Typst: citation is not turned into a user link" "${typ}" '"https://github.com/canouil"'
 expect_in "Typst: user mention becomes a link" "${typ}" '"https://github.com/mcanouil"'
 expect_in "Typst: id listed in mentions becomes a link" "${typ}" '"https://github.com/jdoe"'
+expect_in "Typst: prefixed mention is a link" "${typ}" '"https://github.com/prefixuser"'
+expect_in "Typst: several mentions are links" "${typ}" '"https://github.com/multib"'
+
+gitlab="gitlab.html"
+expect_in "GitLab: underscore mention is a full link" "${gitlab}" 'href="https://gitlab.com/john_doe"'
+expect_in "GitLab: underscore profile URL is a link" "${gitlab}" 'href="https://gitlab.com/jane_roe"'
+expect_not_in "GitLab: id ending with an underscore is not a link" "${gitlab}" 'href="https://gitlab.com/trailing'
+
+custom="custom.html"
+expect_in "Custom: anchored pattern still links" "${custom}" 'href="https://forge.example.org/alice"'
+expect_not_in "Custom: anchored pattern rejects a partial id" "${custom}" 'href="https://forge.example.org/alice_x"'
+
+expect_log() {
+	local label="${1}" text="${2}"
+	if grep -qF -- "${text}" <<<"${render_log}"; then
+		report "ok" "${label}"
+	else
+		report "FAIL" "${label}"
+	fi
+}
+
+expect_log "Schema: user pattern given as a list is rejected" 'User pattern must be a single string'
+expect_log "Schema: user pattern without @ is rejected" 'User pattern must start with "@"'
+if [[ "$(grep -cF -- 'User pattern must have exactly one capture group' <<<"${render_log}")" -eq 3 ]]; then
+	report "ok" "Schema: user patterns with no capture, a position capture, or two captures are rejected"
+else
+	report "FAIL" "Schema: user patterns with no capture, a position capture, or two captures are rejected"
+fi
+expect_not_in "Schema: invalid user patterns give no mention link" "bad-user.html" 'href="https://forge.example.org/alice"'
+expect_not_in "Schema: invalid user patterns do not fall back to GitHub links" "bad-user.html" 'href="https://github.com/alice"'
+expect_log "Schema: platform from a rejected file is reported as unsupported" "Unsupported platform: 'listuser'"
 
 typ_root="typst-root.typ"
 expect_in "Typst, path from the project root: citation stays a citation" "${typ_root}" "@canouil_nacho_2020"

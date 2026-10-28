@@ -442,11 +442,13 @@ local function get_repository(meta)
     if not ok then
       log.log_error(
         EXTENSION_NAME,
-        "Failed to load custom platforms from '" .. original_path .. "':\n" .. (err or 'unknown error')
+        "Failed to load custom platforms from '" .. original_path .. "':\n" ..
+        (err or 'unknown error') .. '\nUsing the built-in platforms only.'
       )
-      return meta
+      meta_custom_platforms = nil
     end
-  else
+  end
+  if str.is_empty(meta_custom_platforms) then
     local ok, err = platforms.initialise()
     if not ok then
       log.log_error(EXTENSION_NAME, "Failed to load built-in platforms:\n" .. (err or 'unknown error'))
@@ -598,32 +600,100 @@ local function get_references(doc)
   return doc
 end
 
+--- Remove the anchors a custom `user` pattern may already carry.
+--- @param pattern string The `user` pattern of a platform
+--- @return string The pattern without a leading `^` or a trailing unescaped `$`
+local function strip_anchors(pattern)
+  local stripped = pattern:gsub('^%^', '')
+  if stripped:sub(-1) == '$' and stripped:sub(-2, -2) ~= '%' then
+    stripped = stripped:sub(1, -2)
+  end
+  return stripped
+end
+
+--- Match a whole `@username` against the `user` pattern of a platform.
+--- A partial match does not count, and the username must end with a letter or digit.
+--- @param config table The platform configuration
+--- @param text string The text to match, such as `@mcanouil`
+--- @return string|nil The username, or nil if the text is not a valid mention
+local function match_username(config, text)
+  if not config.patterns.user then
+    return nil
+  end
+  local username = text:match('^' .. strip_anchors(config.patterns.user) .. '$')
+  if username and username:match('%w$') then
+    return username
+  end
+  return nil
+end
+
+--- Find the username a citation id stands for.
+--- An id listed in `gitlink.mentions` is used as is; an id in the bibliography is not a mention.
+--- @param config table The platform configuration
+--- @param id string The citation id
+--- @return string|nil The username, or nil if the citation is not a mention
+local function mention_username(config, id)
+  if force_mentions_set[id] then
+    return id
+  end
+  if references_ids_set[id] then
+    return nil
+  end
+  return match_username(config, '@' .. id)
+end
+
+--- Build the inlines for one mention: prefix, link, suffix.
+--- @param config table The platform configuration
+--- @param citation pandoc.Citation The citation
+--- @param username string The username
+--- @return pandoc.Inlines The prefix, the mention link, and the suffix
+local function mention_inlines(config, citation, username)
+  local uri = base_url .. config.url_formats.user:gsub('{username}', username)
+  local inlines = pandoc.Inlines({})
+  if #citation.prefix > 0 then
+    inlines:extend(citation.prefix)
+    inlines:insert(pandoc.Space())
+  end
+  inlines:insert(create_platform_link('@' .. username, uri, platform))
+  local suffix = citation.suffix
+  if #suffix > 0 then
+    local first = suffix[1]
+    local hugs_link = first.t == 'Space' or (first.t == 'Str' and first.text:match('^[,;:.%)%]]') ~= nil)
+    if not hugs_link then
+      inlines:insert(pandoc.Space())
+    end
+    inlines:extend(suffix)
+  end
+  return inlines
+end
+
 --- Process Git hosting mentions in citations.
 --- Distinguishes between actual bibliography citations and Git hosting @mentions.
 --- When the citation id appears in `gitlink.mentions`, the citation is forced
 --- to be treated as a mention even if a reference with that id exists.
+--- A citation with several ids becomes links only when every id is a mention.
 --- @param cite pandoc.Cite The citation element
---- @return pandoc.Cite|pandoc.Link The original citation or a Git hosting mention link
+--- @return pandoc.Cite|pandoc.Inlines The original citation or the mention inlines
 local function process_mentions(cite)
   if not is_enabled then
     return cite
   end
-  local cite_id = cite.citations[1] and cite.citations[1].id
-  if cite_id and not force_mentions_set[cite_id] and references_ids_set[cite_id] then
+  local config = get_platform_config(platform)
+  if not config then
     return cite
   end
-  local mention_text = str.stringify(cite.content)
-  local config = get_platform_config(platform)
-  if config and config.patterns.user then
-    local username = mention_text:match(config.patterns.user)
-    if username then
-      local url_format = config.url_formats.user
-      local uri = base_url .. url_format:gsub("{username}", username)
-      local link = create_platform_link(mention_text, uri, platform)
-      return link or cite
+  local inlines = pandoc.Inlines({})
+  for i, citation in ipairs(cite.citations) do
+    local username = mention_username(config, citation.id)
+    if not username then
+      return cite
     end
+    if i > 1 then
+      inlines:extend({ pandoc.Str(';'), pandoc.Space() })
+    end
+    inlines:extend(mention_inlines(config, citation, username))
   end
-  return cite
+  return inlines
 end
 
 
@@ -783,7 +853,6 @@ local function process_users(elem, current_platform)
   end
 
   local text = elem.text
-  local username = nil
 
   local all_platform_names = get_all_platform_names()
   for _, platform_name in ipairs(all_platform_names) do
@@ -791,15 +860,12 @@ local function process_users(elem, current_platform)
     if platform_config then
       local platform_base_url = platform_config.base_url
       local escaped_platform_url = str.escape_pattern(platform_base_url)
-      local url_pattern = '^' .. escaped_platform_url .. '/([%w%-%.]+)$'
-
-      if text:match(url_pattern) then
-        username = text:match(url_pattern)
-        if username then
-          local url_format = platform_config.url_formats.user
-          local uri = platform_base_url .. url_format:gsub('{username}', username)
-          return create_platform_link('@' .. username, uri, platform_name), platform_name, platform_base_url
-        end
+      local path = text:match('^' .. escaped_platform_url .. '/([^/]+)$')
+      local username = path and match_username(platform_config, '@' .. path)
+      if username then
+        local url_format = platform_config.url_formats.user
+        local uri = platform_base_url .. url_format:gsub('{username}', username)
+        return create_platform_link('@' .. username, uri, platform_name), platform_name, platform_base_url
       end
     end
   end

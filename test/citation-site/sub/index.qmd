@@ -17,6 +17,30 @@ Thanks to @mcanouil for the review.
 
 Forced mention @jdoe.
 
+Unknown key @smith_unknown_2021.
+
+Bracketed [@bracketuser].
+
+Prefixed [see @prefixuser].
+
+Locator [@locatoruser, p. 3].
+
+Suppressed -@suppressuser.
+
+Braced @{endhyphen-}.
+
+In-text locator @pageuser [p. 3].
+
+In-text note @noteuser [(see above)].
+
+Parenthesised [(see @parenuser)].
+
+Emphasised @emphuser [*see also*].
+
+Several [@multia; @multib].
+
+Mixed [@mixeduser; @canouil_nacho_2020].
+
 ## References {.unnumbered}
 
 ::: {#refs}
