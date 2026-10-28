@@ -53,6 +53,11 @@ expect_in "HTML: locator mention is a link" "${html}" 'href="https://github.com/
 expect_in "HTML: locator stays as text" "${html}" '</span>, p.&nbsp;3'
 expect_in "HTML: suppress-author mention is a link" "${html}" 'href="https://github.com/suppressuser"'
 expect_not_in "HTML: id ending with a hyphen is not a link" "${html}" 'href="https://github.com/endhyphen'
+expect_in "HTML: first of several mentions is a link" "${html}" 'href="https://github.com/multia"'
+expect_in "HTML: second of several mentions is a link" "${html}" 'href="https://github.com/multib"'
+expect_in "HTML: several mentions are joined with a semicolon" "${html}" '</span>; <span>'
+expect_not_in "HTML: mixed citation is not a link" "${html}" 'href="https://github.com/mixeduser"'
+expect_in "HTML: mixed citation stays a citation" "${html}" 'mixeduser?'
 
 tex="sub/index.tex"
 expect_in "LaTeX: citation with an underscore stays a citation" "${tex}" "Canouil et al., 2020"
@@ -69,6 +74,8 @@ expect_in "Typst: citation with an underscore stays a citation" "${typ}" "@canou
 expect_not_in "Typst: citation is not turned into a user link" "${typ}" '"https://github.com/canouil"'
 expect_in "Typst: user mention becomes a link" "${typ}" '"https://github.com/mcanouil"'
 expect_in "Typst: id listed in mentions becomes a link" "${typ}" '"https://github.com/jdoe"'
+expect_in "Typst: prefixed mention is a link" "${typ}" '"https://github.com/prefixuser"'
+expect_in "Typst: several mentions are links" "${typ}" '"https://github.com/multib"'
 
 typ_root="typst-root.typ"
 expect_in "Typst, path from the project root: citation stays a citation" "${typ_root}" "@canouil_nacho_2020"

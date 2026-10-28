@@ -669,22 +669,32 @@ end
 --- Distinguishes between actual bibliography citations and Git hosting @mentions.
 --- When the citation id appears in `gitlink.mentions`, the citation is forced
 --- to be treated as a mention even if a reference with that id exists.
+--- A citation with several ids becomes links only when every id is a mention.
 --- @param cite pandoc.Cite The citation element
 --- @return pandoc.Cite|pandoc.Inlines The original citation or the mention inlines
 local function process_mentions(cite)
-  if not is_enabled or #cite.citations ~= 1 then
+  if not is_enabled then
     return cite
   end
   local config = get_platform_config(platform)
   if not config then
     return cite
   end
-  local citation = cite.citations[1]
-  local username = mention_username(config, citation.id)
-  if not username then
-    return cite
+  local usernames = {}
+  for i, citation in ipairs(cite.citations) do
+    usernames[i] = mention_username(config, citation.id)
+    if not usernames[i] then
+      return cite
+    end
   end
-  return mention_inlines(config, citation, username)
+  local inlines = pandoc.Inlines({})
+  for i, citation in ipairs(cite.citations) do
+    if i > 1 then
+      inlines:extend({ pandoc.Str(';'), pandoc.Space() })
+    end
+    inlines:extend(mention_inlines(config, citation, usernames[i]))
+  end
+  return inlines
 end
 
 

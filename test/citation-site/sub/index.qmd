@@ -29,6 +29,10 @@ Suppressed -@suppressuser.
 
 Braced @{endhyphen-}.
 
+Several [@multia; @multib].
+
+Mixed [@mixeduser; @canouil_nacho_2020].
+
 ## References {.unnumbered}
 
 ::: {#refs}
