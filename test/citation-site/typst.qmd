@@ -1,0 +1,17 @@
+---
+title: "Citations and mentions in Typst"
+bibliography: refs.bib
+format:
+  typst:
+    keep-typ: true
+extensions:
+  gitlink:
+    mentions:
+      - jdoe
+---
+
+Published in 2020 [@canouil_nacho_2020].
+
+Thanks to @mcanouil for the review.
+
+Forced mention @jdoe.

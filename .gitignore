@@ -20,5 +20,9 @@
 /test/badge-site/_extensions/
 /test/badge-site/*.typ
 /test/badge-site/site_libs/
+/test/citation-site/.quarto/
+/test/citation-site/_extensions/
+/test/citation-site/*.typ
+/test/citation-site/sub/*.tex
 __pycache__/
 /tools/.venv/

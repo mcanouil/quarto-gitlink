@@ -1,0 +1,11 @@
+---
+title: "Bibliography path from the project root in Typst"
+bibliography: /refs.bib
+format:
+  typst:
+    keep-typ: true
+---
+
+Published in 2020 [@canouil_nacho_2020].
+
+Thanks to @mcanouil for the review.

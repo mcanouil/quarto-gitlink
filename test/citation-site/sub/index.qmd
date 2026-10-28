@@ -1,0 +1,23 @@
+---
+title: "Citations and mentions"
+bibliography: ../refs.bib
+format:
+  html: default
+  pdf:
+    keep-tex: true
+extensions:
+  gitlink:
+    mentions:
+      - jdoe
+---
+
+Published in 2020 [@canouil_nacho_2020].
+
+Thanks to @mcanouil for the review.
+
+Forced mention @jdoe.
+
+## References {.unnumbered}
+
+::: {#refs}
+:::

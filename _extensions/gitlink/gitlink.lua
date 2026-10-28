@@ -235,14 +235,14 @@ local function resolve_badge_text_colour(pages)
   return text
 end
 
---- Reset all module-level state to defaults.
+--- Reset module-level state to defaults.
 --- Quarto can render multiple documents in one process, so module-level state
 --- from a previous document must be cleared at the start of each Meta pass.
+--- `references_ids_set` is rebuilt by `get_references` in its own pass.
 local function reset_state()
   platform = 'github'
   repository_name = nil
   base_url = 'https://github.com'
-  references_ids_set = {}
   force_mentions_set = {}
   is_enabled = true
   show_platform_badge = true
@@ -553,14 +553,44 @@ local function get_repository(meta)
   return meta
 end
 
+--- Turn a Typst bibliography entry into a path that Pandoc can read.
+--- Quarto stores it as raw Typst, which `str.stringify` drops, and Typst reads
+--- a leading `/` from the project root.
+--- Remove when https://github.com/quarto-dev/quarto-cli/issues/11552 and
+--- https://github.com/quarto-dev/quarto-cli/issues/12553 are fixed.
+--- @param entry pandoc.MetaValue A bibliography entry
+--- @return string The bibliography path
+local function typst_bibliography_path(entry)
+  if pandoc.utils.type(entry) == 'Inlines' then
+    entry = entry:walk({
+      RawInline = function(raw) return pandoc.Str(raw.text) end
+    })
+  end
+  return paths.resolve_project_path(str.stringify(entry))
+end
+
 --- Extract and store reference IDs from the document
 --- This function collects all reference IDs from the document to distinguish
 --- between actual citations and Git hosting mentions
 --- @param doc pandoc.Pandoc The Pandoc document
 --- @return pandoc.Pandoc The document (unchanged)
 local function get_references(doc)
-  local references = pandoc.utils.references(doc)
-  for _, reference in ipairs(references) do
+  references_ids_set = {}
+  if not is_enabled then
+    return doc
+  end
+  local source = doc
+  local bibliography = doc.meta.bibliography
+  if bibliography and quarto.doc.is_format('typst') then
+    local meta = {}
+    for key, value in pairs(doc.meta) do
+      meta[key] = value
+    end
+    local entries = pandoc.utils.type(bibliography) == 'List' and bibliography or { bibliography }
+    meta.bibliography = pandoc.List.map(entries, typst_bibliography_path)
+    source = pandoc.Pandoc(doc.blocks, meta)
+  end
+  for _, reference in ipairs(pandoc.utils.references(source)) do
     if reference.id then
       references_ids_set[reference.id] = true
     end
@@ -1158,15 +1188,15 @@ end
 
 --- Pandoc filter configuration
 --- Defines the order of filter execution:
---- 1. Extract references from the document
---- 2. Get repository information from metadata
+--- 1. Get repository information from metadata
+--- 2. Extract references from the document, once `enabled` is known
 --- 3. Process inline containers for Bitbucket multi-word patterns
 --- 4. Process link elements to shorten URLs used as link text
 --- 5. Process string elements for Git hosting patterns
 --- 6. Process citations for Git hosting mentions
 return {
-  { Pandoc = get_references },
   { Meta = get_repository },
+  { Pandoc = get_references },
   { Plain = process_inlines, Para = process_inlines },
   envelope_safe_pass({ Link = process_link }),
   envelope_safe_pass({ Str = process_gitlink_topdown }),
