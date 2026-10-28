@@ -6,7 +6,7 @@
 
 - fix: Keep a citation whose id is in the bibliography as a citation, unless the id is listed in `mentions`. Every citation was turned into a user mention link, such as `[@canouil_nacho_2020]` linking to `https://github.com/canouil`.
 - fix: Render Typst documents that have a bibliography. The filter stopped with "File '' not found in resource path" because Quarto passes the bibliography paths to Typst as raw text.
-- fix: Read a bibliography path that starts with `/` from the project root, as Typst does. The filter stopped with "does not exist" because it looked for the file at the root of the file system.
+- fix: Read a Typst bibliography path that starts with `/` from the project root, as Typst does. The filter stopped with "does not exist" because it looked for the file at the root of the file system.
 
 ## 1.11.2 (2026-10-05)
 
