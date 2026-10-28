@@ -553,13 +553,49 @@ local function get_repository(meta)
   return meta
 end
 
+--- Turn a bibliography metadata entry into a path that Pandoc can read.
+--- For Typst, Quarto stores each bibliography path as a raw Typst inline,
+--- which `pandoc.utils.stringify` drops, so the raw text is kept here.
+--- Quarto stores raw Typst because of the escaping in
+--- https://github.com/quarto-dev/quarto-cli/issues/11552.
+--- A path that starts with `/` and is not an existing file is relative to the
+--- project root, as Typst reads it.
+--- Remove when https://github.com/quarto-dev/quarto-cli/issues/12553 is fixed.
+--- @param entry pandoc.MetaValue A bibliography entry
+--- @return string The bibliography path
+local function bibliography_path(entry)
+  local path
+  if pandoc.utils.type(entry) == 'Inlines' then
+    path = pandoc.utils.stringify(entry:walk({
+      RawInline = function(raw) return pandoc.Str(raw.text) end
+    }))
+  else
+    path = pandoc.utils.stringify(entry)
+  end
+  local file = io.open(path, 'r')
+  if file then
+    file:close()
+    return path
+  end
+  return paths.resolve_project_path(path)
+end
+
 --- Extract and store reference IDs from the document
 --- This function collects all reference IDs from the document to distinguish
 --- between actual citations and Git hosting mentions
 --- @param doc pandoc.Pandoc The Pandoc document
 --- @return pandoc.Pandoc The document (unchanged)
 local function get_references(doc)
-  local references = pandoc.utils.references(doc)
+  local meta = {}
+  for key, value in pairs(doc.meta) do
+    meta[key] = value
+  end
+  local bibliography = doc.meta.bibliography
+  if bibliography then
+    local entries = pandoc.utils.type(bibliography) == 'List' and bibliography or { bibliography }
+    meta.bibliography = pandoc.List.map(entries, bibliography_path)
+  end
+  local references = pandoc.utils.references(pandoc.Pandoc(doc.blocks, meta))
   for _, reference in ipairs(references) do
     if reference.id then
       references_ids_set[reference.id] = true
@@ -1158,15 +1194,15 @@ end
 
 --- Pandoc filter configuration
 --- Defines the order of filter execution:
---- 1. Extract references from the document
---- 2. Get repository information from metadata
+--- 1. Get repository information from metadata (resets module-level state)
+--- 2. Extract references from the document, after the reset so they are kept
 --- 3. Process inline containers for Bitbucket multi-word patterns
 --- 4. Process link elements to shorten URLs used as link text
 --- 5. Process string elements for Git hosting patterns
 --- 6. Process citations for Git hosting mentions
 return {
-  { Pandoc = get_references },
   { Meta = get_repository },
+  { Pandoc = get_references },
   { Plain = process_inlines, Para = process_inlines },
   envelope_safe_pass({ Link = process_link }),
   envelope_safe_pass({ Str = process_gitlink_topdown }),
