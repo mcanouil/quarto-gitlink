@@ -2,8 +2,6 @@
 
 ## Unreleased
 
-## 1.11.3 (2026-10-28)
-
 ### Bug Fixes
 
 - fix: Keep a citation whose id is in the bibliography as a citation, unless the id is listed in `mentions`. Every citation was turned into a user mention link, such as `[@canouil_nacho_2020]` linking to `https://github.com/canouil`. (#74)
