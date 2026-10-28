@@ -4,6 +4,8 @@
 
 ### Bug Fixes
 
+- fix: Accept the name of a custom platform in `platform` without a schema error. The platform worked, but every render logged "platform: must be one of". (#79)
+- fix: Link a fork commit such as `jane-doe@1a2b3c4` when the user name has a hyphen. The user name now follows the same rule as a mention. (#79)
 - fix: Link a user mention only when the whole id is a valid username on the platform. `@canouil_nacho_2020` linked to `https://github.com/canouil`, and `[@mcanouil; @canouil_nacho_2020]` lost the citation. (#78)
 - fix: Reject a custom platforms file whose `user` pattern is a list, does not start with `@`, or does not have exactly one capture group. Such a pattern could crash the filter or link the wrong username. Gitlink now reports the error and uses the built-in platforms only, so a document that asks for a platform from that file gets no links. (#78)
 - fix: Keep a citation whose id is in the bibliography as a citation, unless the id is listed in `mentions`. Every citation was turned into a user mention link, such as `[@canouil_nacho_2020]` linking to `https://github.com/canouil`. (#74)

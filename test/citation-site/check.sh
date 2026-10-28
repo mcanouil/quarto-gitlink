@@ -62,6 +62,7 @@ expect_in "HTML: second of several mentions is a link" "${html}" 'href="https://
 expect_in "HTML: several mentions are joined with a semicolon" "${html}" '</span>; <span>'
 expect_not_in "HTML: mixed citation is not a link" "${html}" 'href="https://github.com/mixeduser"'
 expect_in "HTML: mixed citation stays a citation" "${html}" 'mixeduser?'
+expect_in "HTML: fork commit from a hyphenated user is a link" "${html}" 'href="https://github.com/jane-doe/quarto-gitlink/commit/1a2b3c4d"'
 
 tex="sub/index.tex"
 expect_in "LaTeX: citation with an underscore stays a citation" "${tex}" "Canouil et al., 2020"
@@ -99,6 +100,16 @@ expect_log() {
 	fi
 }
 
+expect_not_log() {
+	local label="${1}" text="${2}"
+	if grep -qF -- "${text}" <<<"${render_log}"; then
+		report "FAIL" "${label}"
+	else
+		report "ok" "${label}"
+	fi
+}
+
+expect_not_log "Schema: a custom platform name is accepted" "platform: must be one of"
 expect_log "Schema: user pattern given as a list is rejected" 'User pattern must be a single string'
 expect_log "Schema: user pattern without @ is rejected" 'User pattern must start with "@"'
 if [[ "$(grep -cF -- 'User pattern must have exactly one capture group' <<<"${render_log}")" -eq 3 ]]; then

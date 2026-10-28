@@ -41,6 +41,8 @@ Several [@multia; @multib].
 
 Mixed [@mixeduser; @canouil_nacho_2020].
 
+Fork commit jane-doe@1a2b3c4d.
+
 ## References {.unnumbered}
 
 ::: {#refs}
