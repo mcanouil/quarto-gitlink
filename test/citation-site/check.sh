@@ -53,6 +53,8 @@ expect_in "HTML: locator mention is a link" "${html}" 'href="https://github.com/
 expect_in "HTML: locator stays as text" "${html}" '</span>, p.&nbsp;3'
 expect_in "HTML: suppress-author mention is a link" "${html}" 'href="https://github.com/suppressuser"'
 expect_not_in "HTML: id ending with a hyphen is not a link" "${html}" 'href="https://github.com/endhyphen'
+expect_in "HTML: in-text locator is separated from the link" "${html}" '</span> p.&nbsp;3'
+expect_in "HTML: in-text note in brackets is separated from the link" "${html}" '</span> (see above)'
 expect_in "HTML: first of several mentions is a link" "${html}" 'href="https://github.com/multia"'
 expect_in "HTML: second of several mentions is a link" "${html}" 'href="https://github.com/multib"'
 expect_in "HTML: several mentions are joined with a semicolon" "${html}" '</span>; <span>'
