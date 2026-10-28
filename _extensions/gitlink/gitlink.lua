@@ -600,8 +600,8 @@ local function get_references(doc)
   return doc
 end
 
---- Remove the anchors a custom `user` pattern may already carry.
---- @param pattern string The `user` pattern of a platform
+--- Remove the anchors a custom pattern may already carry.
+--- @param pattern string A `user`, `issue`, `merge-request` or `commit` pattern of a platform
 --- @return string The pattern without a leading `^` or a trailing unescaped `$`
 local function strip_anchors(pattern)
   local stripped = pattern:gsub('^%^', '')
@@ -697,6 +697,58 @@ local function process_mentions(cite)
 end
 
 
+--- Match a whole token against a list of issue or merge request patterns.
+--- One capture is a number in the configured repository; two captures are a repository and a number.
+--- @param patterns table|nil The patterns, tried in order
+--- @param text string The token text
+--- @param separator string The character shown between repository and number (`#` or `!`)
+--- @return string|nil repo The repository
+--- @return string|nil number The issue or merge request number
+--- @return string|nil short_link The link text
+local function match_numbered_reference(patterns, text, separator)
+  for _, pattern in ipairs(patterns or {}) do
+    local first, second = text:match('^' .. strip_anchors(pattern) .. '$')
+    if second then
+      return first, second, first .. separator .. second
+    elseif first then
+      return repository_name, first, separator .. first
+    end
+  end
+  return nil, nil, nil
+end
+
+--- Match a whole token against the commit patterns of a platform.
+--- One capture is a SHA in the configured repository.
+--- Two captures are a repository (`owner/repo`) or a user (their fork), then a SHA.
+--- @param config table The platform configuration
+--- @param text string The token text
+--- @return string|nil repo The repository
+--- @return string|nil sha The commit SHA
+--- @return string|nil short_link The link text
+local function match_commit_reference(config, text)
+  for _, pattern in ipairs(config.patterns.commit) do
+    local first, second = text:match('^' .. strip_anchors(pattern) .. '$')
+    local sha = second or first
+    local valid_sha = sha and sha:match('^%x+$')
+      and #sha >= COMMIT_SHA_MIN_LENGTH and #sha <= COMMIT_SHA_FULL_LENGTH
+    if valid_sha then
+      local short_sha = sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
+      if not second then
+        return repository_name, sha, short_sha
+      elseif first:find('/', 1, true) then
+        return first, sha, first .. '@' .. short_sha
+      else
+        local user = match_username(config, '@' .. first)
+        local repo_part = repository_name and repository_name:match('/(.+)')
+        if user and repo_part then
+          return user .. '/' .. repo_part, sha, user .. '@' .. short_sha
+        end
+      end
+    end
+  end
+  return nil, nil, nil
+end
+
 --- Process issues and merge requests
 --- @param elem pandoc.Str The string element to process
 --- @param current_platform string The current platform name
@@ -718,41 +770,13 @@ local function process_issues_and_mrs(elem, current_platform, current_base_url)
   local matched_platform = current_platform
   local matched_base_url = current_base_url
 
-  for _, pattern in ipairs(config.patterns.issue) do
-    if pattern == "#(%d+)" and text:match("^#(%d+)$") then
-      number = text:match("^#(%d+)$")
-      repo = repository_name
-      ref_type = "issue"
-      short_link = "#" .. number
-      break
-    elseif pattern == "([^/]+/[^/#]+)#(%d+)" and text:match("^([^/]+/[^/#]+)#(%d+)$") then
-      repo, number = text:match("^([^/]+/[^/#]+)#(%d+)$")
-      ref_type = "issue"
-      short_link = repo .. "#" .. number
-      break
-    elseif pattern == "GH%-(%d+)" and text:match("^GH%-(%d+)$") then
-      number = text:match("^GH%-(%d+)$")
-      repo = repository_name
-      ref_type = "issue"
-      short_link = "#" .. number
-      break
-    end
-  end
-
-  if not number and config.patterns.merge_request then
-    for _, pattern in ipairs(config.patterns.merge_request) do
-      if pattern == "!(%d+)" and text:match("^!(%d+)$") then
-        number = text:match("^!(%d+)$")
-        repo = repository_name
-        ref_type = "merge_request"
-        short_link = "!" .. number
-        break
-      elseif pattern == "([^/]+/[^/#]+)!(%d+)" and text:match("^([^/]+/[^/#]+)!(%d+)$") then
-        repo, number = text:match("^([^/]+/[^/#]+)!(%d+)$")
-        ref_type = "merge_request"
-        short_link = repo .. "!" .. number
-        break
-      end
+  repo, number, short_link = match_numbered_reference(config.patterns.issue, text, '#')
+  if number then
+    ref_type = 'issue'
+  else
+    repo, number, short_link = match_numbered_reference(config.patterns.merge_request, text, '!')
+    if number then
+      ref_type = 'merge_request'
     end
   end
 
@@ -893,34 +917,7 @@ local function process_commits(elem, current_platform, current_base_url)
   local matched_platform = current_platform
   local matched_base_url = current_base_url
 
-  for _, pattern in ipairs(config.patterns.commit) do
-    if pattern == "^(%x+)$" and text:match("^(%x+)$") and text:len() >= COMMIT_SHA_MIN_LENGTH and text:len() <= COMMIT_SHA_FULL_LENGTH then
-      commit_sha = text:match("^(%x+)$")
-      repo = repository_name
-      short_link = commit_sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
-      break
-    elseif pattern == "([^/]+/[^/@]+)@(%x+)" and text:match("^([^/]+/[^/@]+)@(%x+)$") then
-      local r, sha = text:match("^([^/]+/[^/@]+)@(%x+)$")
-      if sha:len() >= COMMIT_SHA_MIN_LENGTH and sha:len() <= COMMIT_SHA_FULL_LENGTH then
-        repo = r
-        commit_sha = sha
-        short_link = repo .. "@" .. commit_sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
-        break
-      end
-    elseif pattern == "(%w+)@(%x+)" and text:match("^([^/@]+)@(%x+)$") then
-      local candidate, sha = text:match("^([^/@]+)@(%x+)$")
-      local user = match_username(config, '@' .. candidate)
-      if user and repository_name and sha:len() >= COMMIT_SHA_MIN_LENGTH and sha:len() <= COMMIT_SHA_FULL_LENGTH then
-        local repo_part = repository_name:match("/(.+)")
-        if repo_part then
-          repo = user .. "/" .. repo_part
-          commit_sha = sha
-          short_link = user .. "@" .. sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
-          break
-        end
-      end
-    end
-  end
+  repo, commit_sha, short_link = match_commit_reference(config, text)
 
   if not commit_sha then
     local all_platform_names = get_all_platform_names()

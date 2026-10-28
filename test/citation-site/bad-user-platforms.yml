@@ -105,3 +105,45 @@ platforms:
       pull: "/{repo}/merge_requests/{number}"
       commit: "/{repo}/commit/{sha}"
       user: "/{username}"
+  threecap:
+    display-name: Forge
+    base-url: https://forge.example.org
+    patterns:
+      issue:
+        - "(%w+)/(%w+)#(%d+)"
+        - "([^/]+/[^/#]+)#(%d+)"
+      merge-request:
+        - "!(%d+)"
+        - "([^/]+/[^/#]+)!(%d+)"
+      commit:
+        - "^(%x+)$"
+        - "([^/]+/[^/@]+)@(%x+)"
+        - "(%w+)@(%x+)"
+      user: "@([%w]+)"
+    url-formats:
+      issue: "/{repo}/issues/{number}"
+      merge-request: "/{repo}/merge_requests/{number}"
+      pull: "/{repo}/merge_requests/{number}"
+      commit: "/{repo}/commit/{sha}"
+      user: "/{username}"
+  posmix:
+    display-name: Forge
+    base-url: https://forge.example.org
+    patterns:
+      issue:
+        - "()#(%d+)"
+        - "([^/]+/[^/#]+)#(%d+)"
+      merge-request:
+        - "!(%d+)"
+        - "([^/]+/[^/#]+)!(%d+)"
+      commit:
+        - "^(%x+)$"
+        - "([^/]+/[^/@]+)@(%x+)"
+        - "(%w+)@(%x+)"
+      user: "@()([%w]+)"
+    url-formats:
+      issue: "/{repo}/issues/{number}"
+      merge-request: "/{repo}/merge_requests/{number}"
+      pull: "/{repo}/merge_requests/{number}"
+      commit: "/{repo}/commit/{sha}"
+      user: "/{username}"

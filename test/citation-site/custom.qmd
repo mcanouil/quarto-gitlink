@@ -9,3 +9,11 @@ extensions:
 ---
 
 Hello @alice and @alice_x.
+
+Ticket PROJ-42.
+
+Short ticket JIRA-12.
+
+Revision rev:1a2b3c4d.
+
+Issue #7, request !8, commit 1a2b3c4d5e, cross other/proj#9.

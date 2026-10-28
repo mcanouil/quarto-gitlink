@@ -163,6 +163,20 @@ end
 -- SCHEMA VALIDATORS
 -- ============================================================================
 
+--- Count the capture groups of a Lua pattern.
+--- Escaped characters, balanced matches (`%b()`) and character classes count as one plain character.
+--- A position capture `()` returns a number, which the filter cannot use, so it makes the pattern invalid.
+--- @param pattern string The Lua pattern
+--- @return integer|nil The number of capture groups, or nil if the pattern has a position capture
+local function count_captures(pattern)
+  local structure = pattern:gsub('%%b..', 'x'):gsub('%%.', 'x'):gsub('%[%^?%]?[^%]]*%]', 'x')
+  if structure:find('()', 1, true) then
+    return nil
+  end
+  local _, opening = structure:gsub('%(', '')
+  return opening
+end
+
 --- Validate a pattern object (array of patterns or single string for user)
 --- @param patterns any The patterns to validate
 --- @param pattern_type string The type of pattern (for error messages)
@@ -185,12 +199,8 @@ local function validate_patterns(patterns, pattern_type, result)
       add_error(result, string.format('Invalid Lua regex in user: %s (e.g., "@([%%w%%-%%%%]+)")', err))
     elseif not patterns:match('^%^?@') then
       add_error(result, 'User pattern must start with "@" (e.g., "@([%w%-]+)")')
-    else
-      local structure = patterns:gsub('%%.', ''):gsub('%[%^?%]?[^%]]*%]', '')
-      local _, capture_count = structure:gsub('%(', '')
-      if capture_count ~= 1 or structure:find('()', 1, true) then
-        add_error(result, 'User pattern must have exactly one capture group, for the username (e.g., "@([%w%-]+)")')
-      end
+    elseif count_captures(patterns) ~= 1 then
+      add_error(result, 'User pattern must have exactly one capture group, for the username (e.g., "@([%w%-]+)")')
     end
     return
   end
@@ -215,6 +225,12 @@ local function validate_patterns(patterns, pattern_type, result)
     local valid, err = is_valid_lua_pattern(pattern)
     if not valid then
       add_error(result, string.format('Invalid Lua regex in %s[%d]: %s', pattern_type:gsub('_', '-'), i, err))
+    else
+      local captures = count_captures(pattern)
+      if captures ~= 1 and captures ~= 2 then
+        local label = pattern_type:gsub('_', '-'):gsub('^%l', string.upper)
+        add_error(result, string.format('%s pattern must have one or two capture groups: %s', label, pattern))
+      end
     end
   end
 end

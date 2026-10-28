@@ -17,7 +17,7 @@ platforms:
       commit:
         - "^(%x+)$"
         - "([^/]+/[^/@]+)@(%x+)"
-        - "(%w+)@(%x+)"
+        - "([^/@]+)@(%x+)"
       user: "@(%w[%w%-]*)"
     url-formats:
       issue: "/{repo}/issues/{number}"
@@ -57,7 +57,7 @@ platforms:
       commit:
         - "^(%x+)$"
         - "([^/]+/[^/@]+)@(%x+)"
-        - "(%w+)@(%x+)"
+        - "([^/@]+)@(%x+)"
       user: "@(%w[%w%-%._]*)"
     url-formats:
       issue: "/{repo}/-/issues/{number}"
@@ -92,7 +92,7 @@ platforms:
       commit:
         - "^(%x+)$"
         - "([^/]+/[^/@]+)@(%x+)"
-        - "(%w+)@(%x+)"
+        - "([^/@]+)@(%x+)"
       user: "@(%w[%w%-%._]*)"
     url-formats:
       issue: "/{repo}/issues/{number}"
@@ -125,7 +125,7 @@ platforms:
       commit:
         - "^(%x+)$"
         - "([^/]+/[^/@]+)@(%x+)"
-        - "(%w+)@(%x+)"
+        - "([^/@]+)@(%x+)"
       user: "@(%w[%w%-%._]*)"
     url-formats:
       issue: "/{repo}/issues/{number}"
@@ -158,7 +158,7 @@ platforms:
       commit:
         - "^(%x+)$"
         - "([^/]+/[^/@]+)@(%x+)"
-        - "(%w+)@(%x+)"
+        - "([^/@]+)@(%x+)"
       user: "@([%l%d][%l%d%-_]*)"
     url-formats:
       issue: "/{repo}/issues/{number}"

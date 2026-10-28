@@ -372,7 +372,7 @@ platforms:
       commit:
         - '^(%x+)$'
         - '([^/]+/[^/@]+)@(%x+)'
-        - '(%w+)@(%x+)'
+        - '([^/@]+)@(%x+)'
       user: '@(%w[%w%-%._]*)'
     url-formats:
       issue: '/{repo}/issues/{number}'
@@ -384,6 +384,14 @@ platforms:
 
 The `user` pattern is a single string that starts with `@` and has exactly one capture group, for the username.
 A mention becomes a link only when the pattern matches the full name and the name ends with a letter or a digit.
+
+Each `issue`, `merge-request` and `commit` pattern must match the whole word, and the filter tries them in the order of the list.
+The number of capture groups tells the filter what the pattern finds:
+
+- An `issue` or `merge-request` pattern with one capture finds a number in the configured repository, for example `'PROJ%-(%d+)'`. The link shows `#42` for an issue and `!42` for a merge request, as `GH-42` already does.
+- An `issue` or `merge-request` pattern with two captures finds a repository and a number, for example `'([^/]+/[^/#]+)#(%d+)'`.
+- A `commit` pattern with one capture finds a SHA in the configured repository.
+- A `commit` pattern with two captures finds a repository (`owner/repo`) or a user (their fork), then a SHA.
 
 **Using Custom Platforms**:
 

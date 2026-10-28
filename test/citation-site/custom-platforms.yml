@@ -6,6 +6,8 @@ platforms:
       issue:
         - "#(%d+)"
         - "([^/]+/[^/#]+)#(%d+)"
+        - "PROJ%-(%d+)"
+        - "JIRA%-(%d%d)"
       merge-request:
         - "!(%d+)"
         - "([^/]+/[^/#]+)!(%d+)"
@@ -13,6 +15,7 @@ platforms:
         - "^(%x+)$"
         - "([^/]+/[^/@]+)@(%x+)"
         - "(%w+)@(%x+)"
+        - "rev:(%x+)"
       user: "^@([%w]+)$"
     url-formats:
       issue: "/{repo}/issues/{number}"
@@ -27,6 +30,7 @@ platforms:
       issue:
         - "#(%d+)"
         - "([^/]+/[^/#]+)#(%d+)"
+        - "%b()(%d+)"
       merge-request:
         - "!(%d+)"
         - "([^/]+/[^/#]+)!(%d+)"
