@@ -1,0 +1,14 @@
+---
+title: "GitLab mentions"
+format: html
+extensions:
+  gitlink:
+    platform: gitlab
+    repository-name: owner/repo
+---
+
+Mention @john_doe.
+
+Profile https://gitlab.com/jane_roe.
+
+Trailing @{trailing_}.

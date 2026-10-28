@@ -854,7 +854,6 @@ local function process_users(elem, current_platform)
   end
 
   local text = elem.text
-  local username = nil
 
   local all_platform_names = get_all_platform_names()
   for _, platform_name in ipairs(all_platform_names) do
@@ -862,15 +861,12 @@ local function process_users(elem, current_platform)
     if platform_config then
       local platform_base_url = platform_config.base_url
       local escaped_platform_url = str.escape_pattern(platform_base_url)
-      local url_pattern = '^' .. escaped_platform_url .. '/([%w%-%.]+)$'
-
-      if text:match(url_pattern) then
-        username = text:match(url_pattern)
-        if username then
-          local url_format = platform_config.url_formats.user
-          local uri = platform_base_url .. url_format:gsub('{username}', username)
-          return create_platform_link('@' .. username, uri, platform_name), platform_name, platform_base_url
-        end
+      local path = text:match('^' .. escaped_platform_url .. '/([^/]+)$')
+      local username = path and match_username(platform_config, '@' .. path)
+      if username then
+        local url_format = platform_config.url_formats.user
+        local uri = platform_base_url .. url_format:gsub('{username}', username)
+        return create_platform_link('@' .. username, uri, platform_name), platform_name, platform_base_url
       end
     end
   end

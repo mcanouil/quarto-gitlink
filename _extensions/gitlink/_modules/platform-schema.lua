@@ -179,6 +179,8 @@ local function validate_patterns(patterns, pattern_type, result)
     local valid, err = is_valid_lua_pattern(patterns)
     if not valid then
       add_error(result, string.format('Invalid Lua regex in user: %s (e.g., "@([%%w%%-%%%%]+)")', err))
+    elseif not patterns:match('^%^?@') then
+      add_error(result, 'User pattern must start with "@" (e.g., "@([%w%-]+)")')
     end
     return
   end

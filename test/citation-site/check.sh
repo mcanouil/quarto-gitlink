@@ -77,6 +77,15 @@ expect_in "Typst: id listed in mentions becomes a link" "${typ}" '"https://githu
 expect_in "Typst: prefixed mention is a link" "${typ}" '"https://github.com/prefixuser"'
 expect_in "Typst: several mentions are links" "${typ}" '"https://github.com/multib"'
 
+gitlab="gitlab.html"
+expect_in "GitLab: underscore mention is a full link" "${gitlab}" 'href="https://gitlab.com/john_doe"'
+expect_in "GitLab: underscore profile URL is a link" "${gitlab}" 'href="https://gitlab.com/jane_roe"'
+expect_not_in "GitLab: id ending with an underscore is not a link" "${gitlab}" 'href="https://gitlab.com/trailing'
+
+custom="custom.html"
+expect_in "Custom: anchored pattern still links" "${custom}" 'href="https://forge.example.org/alice"'
+expect_not_in "Custom: anchored pattern rejects a partial id" "${custom}" 'href="https://forge.example.org/alice_x"'
+
 typ_root="typst-root.typ"
 expect_in "Typst, path from the project root: citation stays a citation" "${typ_root}" "@canouil_nacho_2020"
 expect_not_in "Typst, path from the project root: citation is not turned into a user link" "${typ_root}" '"https://github.com/canouil"'

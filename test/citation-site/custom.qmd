@@ -1,0 +1,11 @@
+---
+title: "Custom platform mentions"
+format: html
+extensions:
+  gitlink:
+    custom-platforms-file: custom-platforms.yml
+    platform: forge
+    repository-name: owner/repo
+---
+
+Hello @alice and @alice_x.
