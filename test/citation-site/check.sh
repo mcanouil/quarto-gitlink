@@ -90,6 +90,12 @@ expect_not_in "GitLab: id ending with an underscore is not a link" "${gitlab}" '
 custom="custom.html"
 expect_in "Custom: anchored pattern still links" "${custom}" 'href="https://forge.example.org/alice"'
 expect_not_in "Custom: anchored pattern rejects a partial id" "${custom}" 'href="https://forge.example.org/alice_x"'
+expect_in "Custom: custom issue pattern links" "${custom}" 'href="https://forge.example.org/owner/repo/issues/42"'
+expect_in "Custom: custom commit pattern links" "${custom}" 'href="https://forge.example.org/owner/repo/commit/1a2b3c4d"'
+expect_in "Custom: built-in issue form still links" "${custom}" 'href="https://forge.example.org/owner/repo/issues/7"'
+expect_in "Custom: built-in merge request form still links" "${custom}" 'href="https://forge.example.org/owner/repo/merge_requests/8"'
+expect_in "Custom: built-in bare commit still links" "${custom}" 'href="https://forge.example.org/owner/repo/commit/1a2b3c4d5e"'
+expect_in "Custom: built-in cross-repository issue still links" "${custom}" 'href="https://forge.example.org/other/proj/issues/9"'
 
 expect_log() {
 	local label="${1}" text="${2}"
@@ -110,6 +116,7 @@ expect_not_log() {
 }
 
 expect_not_log "Schema: a custom platform name is accepted" "platform: must be one of"
+expect_log "Schema: issue pattern with three captures is rejected" 'Issue pattern must have one or two capture groups'
 expect_log "Schema: user pattern given as a list is rejected" 'User pattern must be a single string'
 expect_log "Schema: user pattern without @ is rejected" 'User pattern must start with "@"'
 if [[ "$(grep -cF -- 'User pattern must have exactly one capture group' <<<"${render_log}")" -eq 3 ]]; then
