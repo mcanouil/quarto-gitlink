@@ -598,32 +598,93 @@ local function get_references(doc)
   return doc
 end
 
+--- Remove the anchors a custom `user` pattern may already carry.
+--- @param pattern string The `user` pattern of a platform
+--- @return string The pattern without a leading `^` or a trailing unescaped `$`
+local function strip_anchors(pattern)
+  local stripped = pattern:gsub('^%^', '')
+  if stripped:sub(-1) == '$' and stripped:sub(-2, -2) ~= '%' then
+    stripped = stripped:sub(1, -2)
+  end
+  return stripped
+end
+
+--- Match a whole `@username` against the `user` pattern of a platform.
+--- A partial match does not count, and the username must end with a letter or digit.
+--- @param config table The platform configuration
+--- @param text string The text to match, such as `@mcanouil`
+--- @return string|nil The username, or nil if the text is not a valid mention
+local function match_username(config, text)
+  if not config.patterns.user then
+    return nil
+  end
+  local username = text:match('^' .. strip_anchors(config.patterns.user) .. '$')
+  if username and username:match('%w$') then
+    return username
+  end
+  return nil
+end
+
+--- Find the username a citation id stands for.
+--- An id listed in `gitlink.mentions` is used as is; an id in the bibliography is not a mention.
+--- @param config table The platform configuration
+--- @param id string The citation id
+--- @return string|nil The username, or nil if the citation is not a mention
+local function mention_username(config, id)
+  if force_mentions_set[id] then
+    return id
+  end
+  if references_ids_set[id] then
+    return nil
+  end
+  return match_username(config, '@' .. id)
+end
+
+--- Build the inlines for one mention: prefix, link, suffix.
+--- @param config table The platform configuration
+--- @param citation pandoc.Citation The citation
+--- @param username string The username
+--- @return pandoc.Inlines The prefix, the mention link, and the suffix
+local function mention_inlines(config, citation, username)
+  local uri = base_url .. config.url_formats.user:gsub('{username}', username)
+  local inlines = pandoc.Inlines({})
+  if #citation.prefix > 0 then
+    inlines:extend(citation.prefix)
+    inlines:insert(pandoc.Space())
+  end
+  inlines:insert(create_platform_link('@' .. username, uri, platform))
+  local suffix = citation.suffix
+  if #suffix > 0 then
+    local first = suffix[1]
+    local starts_with_punctuation = first.t == 'Str' and first.text:match('^%p') ~= nil
+    if first.t ~= 'Space' and not starts_with_punctuation then
+      inlines:insert(pandoc.Space())
+    end
+    inlines:extend(suffix)
+  end
+  return inlines
+end
+
 --- Process Git hosting mentions in citations.
 --- Distinguishes between actual bibliography citations and Git hosting @mentions.
 --- When the citation id appears in `gitlink.mentions`, the citation is forced
 --- to be treated as a mention even if a reference with that id exists.
 --- @param cite pandoc.Cite The citation element
---- @return pandoc.Cite|pandoc.Link The original citation or a Git hosting mention link
+--- @return pandoc.Cite|pandoc.Inlines The original citation or the mention inlines
 local function process_mentions(cite)
-  if not is_enabled then
+  if not is_enabled or #cite.citations ~= 1 then
     return cite
   end
-  local cite_id = cite.citations[1] and cite.citations[1].id
-  if cite_id and not force_mentions_set[cite_id] and references_ids_set[cite_id] then
-    return cite
-  end
-  local mention_text = str.stringify(cite.content)
   local config = get_platform_config(platform)
-  if config and config.patterns.user then
-    local username = mention_text:match(config.patterns.user)
-    if username then
-      local url_format = config.url_formats.user
-      local uri = base_url .. url_format:gsub("{username}", username)
-      local link = create_platform_link(mention_text, uri, platform)
-      return link or cite
-    end
+  if not config then
+    return cite
   end
-  return cite
+  local citation = cite.citations[1]
+  local username = mention_username(config, citation.id)
+  if not username then
+    return cite
+  end
+  return mention_inlines(config, citation, username)
 end
 
 

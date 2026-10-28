@@ -17,6 +17,18 @@ Thanks to @mcanouil for the review.
 
 Forced mention @jdoe.
 
+Unknown key @smith_unknown_2021.
+
+Bracketed [@bracketuser].
+
+Prefixed [see @prefixuser].
+
+Locator [@locatoruser, p. 3].
+
+Suppressed -@suppressuser.
+
+Braced @{endhyphen-}.
+
 ## References {.unnumbered}
 
 ::: {#refs}
