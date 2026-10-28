@@ -5,7 +5,7 @@
 ### Bug Fixes
 
 - fix: Link a user mention only when the whole id is a valid username on the platform. `@canouil_nacho_2020` linked to `https://github.com/canouil`, and `[@mcanouil; @canouil_nacho_2020]` lost the citation.
-- fix: Reject a custom platforms file whose `user` pattern is a list, does not start with `@`, or does not have exactly one capture group. Such a pattern could crash the filter or link the wrong username. The filter is now off for the document until the pattern is fixed.
+- fix: Reject a custom platforms file whose `user` pattern is a list, does not start with `@`, or does not have exactly one capture group. Such a pattern could crash the filter or link the wrong username. Gitlink now reports the error and uses the built-in platforms only, so a document that asks for a platform from that file gets no links.
 - fix: Keep a citation whose id is in the bibliography as a citation, unless the id is listed in `mentions`. Every citation was turned into a user mention link, such as `[@canouil_nacho_2020]` linking to `https://github.com/canouil`. (#74)
 - fix: Render Typst documents that have a bibliography. The filter stopped with "File '' not found in resource path" because Quarto passes the bibliography paths to Typst as raw text. (#74)
 - fix: Read a Typst bibliography path that starts with `/` from the project root, as Typst does. The filter stopped with "does not exist" because it looked for the file at the root of the file system. (#74)

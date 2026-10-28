@@ -186,8 +186,9 @@ local function validate_patterns(patterns, pattern_type, result)
     elseif not patterns:match('^%^?@') then
       add_error(result, 'User pattern must start with "@" (e.g., "@([%w%-]+)")')
     else
-      local _, capture_count = patterns:gsub('%%.', ''):gsub('%(', '')
-      if capture_count ~= 1 then
+      local structure = patterns:gsub('%%.', ''):gsub('%[%^?%]?[^%]]*%]', '')
+      local _, capture_count = structure:gsub('%(', '')
+      if capture_count ~= 1 or structure:find('()', 1, true) then
         add_error(result, 'User pattern must have exactly one capture group, for the username (e.g., "@([%w%-]+)")')
       end
     end

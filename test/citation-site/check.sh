@@ -56,6 +56,7 @@ expect_not_in "HTML: id ending with a hyphen is not a link" "${html}" 'href="htt
 expect_in "HTML: in-text locator is separated from the link" "${html}" '</span> p.&nbsp;3'
 expect_in "HTML: in-text note in brackets is separated from the link" "${html}" '</span> (see above)'
 expect_in "HTML: closing bracket in a suffix follows the link" "${html}" '</span>).</p>'
+expect_in "HTML: emphasised suffix is separated from the link" "${html}" '</span> <em>see also</em>'
 expect_in "HTML: first of several mentions is a link" "${html}" 'href="https://github.com/multia"'
 expect_in "HTML: second of several mentions is a link" "${html}" 'href="https://github.com/multib"'
 expect_in "HTML: several mentions are joined with a semicolon" "${html}" '</span>; <span>'
@@ -100,12 +101,14 @@ expect_log() {
 
 expect_log "Schema: user pattern given as a list is rejected" 'User pattern must be a single string'
 expect_log "Schema: user pattern without @ is rejected" 'User pattern must start with "@"'
-if [[ "$(grep -cF -- 'User pattern must have exactly one capture group' <<<"${render_log}")" -eq 2 ]]; then
-	report "ok" "Schema: user patterns with no capture or two captures are rejected"
+if [[ "$(grep -cF -- 'User pattern must have exactly one capture group' <<<"${render_log}")" -eq 3 ]]; then
+	report "ok" "Schema: user patterns with no capture, a position capture, or two captures are rejected"
 else
-	report "FAIL" "Schema: user patterns with no capture or two captures are rejected"
+	report "FAIL" "Schema: user patterns with no capture, a position capture, or two captures are rejected"
 fi
 expect_not_in "Schema: invalid user patterns give no mention link" "bad-user.html" 'href="https://forge.example.org/alice"'
+expect_not_in "Schema: invalid user patterns do not fall back to GitHub links" "bad-user.html" 'href="https://github.com/alice"'
+expect_log "Schema: platform from a rejected file is reported as unsupported" "Unsupported platform: 'listuser'"
 
 typ_root="typst-root.typ"
 expect_in "Typst, path from the project root: citation stays a citation" "${typ_root}" "@canouil_nacho_2020"

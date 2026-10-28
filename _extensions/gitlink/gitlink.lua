@@ -442,11 +442,13 @@ local function get_repository(meta)
     if not ok then
       log.log_error(
         EXTENSION_NAME,
-        "Failed to load custom platforms from '" .. original_path .. "':\n" .. (err or 'unknown error')
+        "Failed to load custom platforms from '" .. original_path .. "':\n" ..
+        (err or 'unknown error') .. '\nUsing the built-in platforms only.'
       )
-      return meta
+      meta_custom_platforms = nil
     end
-  else
+  end
+  if str.is_empty(meta_custom_platforms) then
     local ok, err = platforms.initialise()
     if not ok then
       log.log_error(EXTENSION_NAME, "Failed to load built-in platforms:\n" .. (err or 'unknown error'))
@@ -656,8 +658,8 @@ local function mention_inlines(config, citation, username)
   local suffix = citation.suffix
   if #suffix > 0 then
     local first = suffix[1]
-    local starts_with_word = first.t == 'Str' and first.text:match('^[%w(%[]') ~= nil
-    if starts_with_word then
+    local hugs_link = first.t == 'Space' or (first.t == 'Str' and first.text:match('^[,;:.%)%]]') ~= nil)
+    if not hugs_link then
       inlines:insert(pandoc.Space())
     end
     inlines:extend(suffix)

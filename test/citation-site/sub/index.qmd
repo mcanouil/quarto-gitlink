@@ -35,6 +35,8 @@ In-text note @noteuser [(see above)].
 
 Parenthesised [(see @parenuser)].
 
+Emphasised @emphuser [*see also*].
+
 Several [@multia; @multib].
 
 Mixed [@mixeduser; @canouil_nacho_2020].
