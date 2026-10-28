@@ -5,6 +5,7 @@
 ### Bug Fixes
 
 - fix: Link a user mention only when the whole id is a valid username on the platform. `@canouil_nacho_2020` linked to `https://github.com/canouil`, and `[@mcanouil; @canouil_nacho_2020]` lost the citation.
+- fix: Report an error when the `user` pattern of a custom platform does not start with `@`. Such a pattern gave no mention links and no message.
 - fix: Keep a citation whose id is in the bibliography as a citation, unless the id is listed in `mentions`. Every citation was turned into a user mention link, such as `[@canouil_nacho_2020]` linking to `https://github.com/canouil`. (#74)
 - fix: Render Typst documents that have a bibliography. The filter stopped with "File '' not found in resource path" because Quarto passes the bibliography paths to Typst as raw text. (#74)
 - fix: Read a Typst bibliography path that starts with `/` from the project root, as Typst does. The filter stopped with "does not exist" because it looked for the file at the root of the file system. (#74)

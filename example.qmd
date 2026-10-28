@@ -48,7 +48,6 @@ extensions:
 ---
 ```
 
-
 :::: {.callout-tip}
 
 For best results, wrap URLs in angle brackets (`<URL>`) rather than using bare URLs.
@@ -374,7 +373,7 @@ platforms:
         - '^(%x+)$'
         - '([^/]+/[^/@]+)@(%x+)'
         - '(%w+)@(%x+)'
-      user: '@([%w%-%.]+)'
+      user: '@(%w[%w%-%._]*)'
     url-formats:
       issue: '/{repo}/issues/{number}'
       merge-request: '/{repo}/pull/{number}'
@@ -382,6 +381,9 @@ platforms:
       commit: '/{repo}/commit/{sha}'
       user: '/{username}'
 ```
+
+The `user` pattern must start with `@`, and its capture is the username.
+A mention becomes a link only when the pattern matches the full name and the name ends with a letter or a digit.
 
 **Using Custom Platforms**:
 

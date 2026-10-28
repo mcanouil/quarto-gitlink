@@ -60,6 +60,8 @@ GitLab is the one that separates the two: an issue is `#1` and a merge request i
 Everywhere else both are `#1`, and the filter resolves them to that platform's issue URL.
 
 Commits and mentions take the same forms on every platform.
+The rule for a valid username is different on each platform.
+For example, GitHub does not accept `_` or `.` in a username, and GitLab accepts both.
 
 | Form | Links to | Shown as |
 | --- | --- | --- |
@@ -88,6 +90,14 @@ Text inside a code span, and a hash that sits in the middle of a longer token, a
 
 An `@name` is ambiguous: it may be a mention or a citation.
 A name that matches a bibliography entry is left to Pandoc as a citation; `mentions` forces the ones that should be links instead.
+
+A name that is not in the bibliography becomes a link only when the full name is a valid username on the platform.
+Otherwise, it stays a citation.
+For example, on GitHub `@canouil_nacho_2020` stays a citation, because a GitHub username cannot contain `_`.
+
+- A prefix or a suffix stays as text around the link: `[see @mcanouil, p. 3]` shows `see @mcanouil, p. 3`.
+- The brackets are removed: `[@mcanouil]` shows `@mcanouil`.
+- A citation with more than one name becomes links only when each name is a mention: `[@mcanouil; @jdoe]` shows `@mcanouil; @jdoe`.
 
 ## The repository widget
 
