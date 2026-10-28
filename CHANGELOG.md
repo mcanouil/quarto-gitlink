@@ -4,7 +4,7 @@
 
 ### Bug Fixes
 
-- fix: Use the `issue`, `merge-request` and `commit` patterns of a custom platform. The filter only knew the built-in patterns and ignored any other, such as `PROJ%-(%d+)`.
+- fix: Use the `issue`, `merge-request` and `commit` patterns of a custom platform. The filter only knew the built-in patterns and ignored any other, such as `PROJ%-(%d+)`. A pattern must now have one or two capture groups, and a file with a pattern that does not is rejected. (#80)
 - fix: Accept the name of a custom platform in `platform` without a schema error. The platform worked, but every render logged "platform: must be one of". (#79)
 - fix: Link a fork commit such as `jane-doe@1a2b3c4` when the user name has a hyphen. The user name now follows the same rule as a mention. (#79)
 - fix: Link a user mention only when the whole id is a valid username on the platform. `@canouil_nacho_2020` linked to `https://github.com/canouil`, and `[@mcanouil; @canouil_nacho_2020]` lost the citation. (#78)

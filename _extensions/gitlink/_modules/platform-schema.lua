@@ -164,12 +164,12 @@ end
 -- ============================================================================
 
 --- Count the capture groups of a Lua pattern.
---- Escaped characters and character classes count as one plain character.
+--- Escaped characters, balanced matches (`%b()`) and character classes count as one plain character.
 --- A position capture `()` returns a number, which the filter cannot use, so it makes the pattern invalid.
 --- @param pattern string The Lua pattern
 --- @return integer|nil The number of capture groups, or nil if the pattern has a position capture
 local function count_captures(pattern)
-  local structure = pattern:gsub('%%.', 'x'):gsub('%[%^?%]?[^%]]*%]', 'x')
+  local structure = pattern:gsub('%%b..', 'x'):gsub('%%.', 'x'):gsub('%[%^?%]?[^%]]*%]', 'x')
   if structure:find('()', 1, true) then
     return nil
   end
