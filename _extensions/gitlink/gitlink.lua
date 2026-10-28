@@ -907,9 +907,10 @@ local function process_commits(elem, current_platform, current_base_url)
         short_link = repo .. "@" .. commit_sha:sub(1, COMMIT_SHA_SHORT_LENGTH)
         break
       end
-    elseif pattern == "(%w+)@(%x+)" and text:match("^(%w+)@(%x+)$") then
-      local user, sha = text:match("^(%w+)@(%x+)$")
-      if repository_name and sha:len() >= COMMIT_SHA_MIN_LENGTH and sha:len() <= COMMIT_SHA_FULL_LENGTH then
+    elseif pattern == "(%w+)@(%x+)" and text:match("^([^/@]+)@(%x+)$") then
+      local candidate, sha = text:match("^([^/@]+)@(%x+)$")
+      local user = match_username(config, '@' .. candidate)
+      if user and repository_name and sha:len() >= COMMIT_SHA_MIN_LENGTH and sha:len() <= COMMIT_SHA_FULL_LENGTH then
         local repo_part = repository_name:match("/(.+)")
         if repo_part then
           repo = user .. "/" .. repo_part
