@@ -456,8 +456,11 @@ local function get_repository(meta)
     end
   end
 
-  -- Parse repo-url from project metadata (website/book)
-  local project_repo_url = meta_mod.get_project_repo_url()
+  -- Parse repo-url from project metadata (website/book). That configuration
+  -- is not in the document metadata, so read it once and share it with the
+  -- widget.
+  local project_meta = meta_mod.get_project_metadata()
+  local project_repo_url = project_meta and meta_mod.get_project_repo_url(project_meta)
   local parsed_platform, parsed_base_url, parsed_repo_name = nil, nil, nil
   if project_repo_url then
     parsed_platform, parsed_base_url, parsed_repo_name = parse_repo_url(project_repo_url)
@@ -548,6 +551,7 @@ local function get_repository(meta)
       platform_config = config,
       base_url = base_url,
       repository_name = repository_name,
+      format_meta = project_meta,
       display_name = platforms.get_platform_display_name(platform),
     })
   end

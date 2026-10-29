@@ -93,25 +93,9 @@ end
 
 --- Tell whether the website or book metadata has a widget placeholder
 --- anywhere, as widget.js replaces every link to it on the page.
---- The navigation is not in the document metadata, so it is read from the
---- QUARTO_EXECUTE_INFO file, as the project repo-url is.
+--- @param format_meta table|nil The project format.metadata table
 --- @return boolean
-local function has_placeholder()
-  local path = os.getenv('QUARTO_EXECUTE_INFO')
-  if not path then
-    return false
-  end
-  local file = io.open(path, 'r')
-  if not file then
-    return false
-  end
-  local content = file:read('*a')
-  file:close()
-  local ok, info = pcall(quarto.json.decode, content)
-  if not ok or type(info) ~= 'table' or type(info['format']) ~= 'table' then
-    return false
-  end
-  local format_meta = info['format']['metadata']
+local function has_placeholder(format_meta)
   if type(format_meta) ~= 'table' then
     return false
   end
@@ -453,7 +437,7 @@ end
 --- widget placeholder, as the widget would show nowhere else.
 --- @param spec table Fields: extension_name (string), widget_meta (table),
 --- platform (string), platform_config (table), base_url (string),
---- repository_name (string|nil), display_name (string)
+--- repository_name (string|nil), format_meta (table|nil), display_name (string)
 --- @return nil
 function widget_module.setup(spec)
   if not quarto.doc.is_format('html:js') then
@@ -461,7 +445,7 @@ function widget_module.setup(spec)
   end
 
   if str.is_empty(spec.repository_name) then
-    if has_placeholder() then
+    if has_placeholder(spec.format_meta) then
       log.log_warning(
         spec.extension_name,
         "Widget is enabled but no repository could be resolved. " ..
