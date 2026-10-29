@@ -1,0 +1,5 @@
+---
+title: "About"
+---
+
+A second page, so a warning per page shows as more than one.
