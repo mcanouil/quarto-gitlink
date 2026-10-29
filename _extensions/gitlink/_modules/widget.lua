@@ -71,17 +71,17 @@ local function to_boolean(value, default)
   return str.stringify(value):lower() == 'true'
 end
 
---- Tell whether a decoded metadata value holds an item whose href ends with
---- the widget placeholder, at any depth, as widget.js matches it.
+--- Tell whether a decoded metadata value holds a string that ends with the
+--- widget placeholder, at any depth, as widget.js matches an href. This
+--- covers an `href` key and the bare-string form of a navigation item.
 --- @param value any A value decoded from JSON
 --- @return boolean
 local function holds_placeholder(value)
+  if type(value) == 'string' then
+    return value:sub(-#WIDGET_PLACEHOLDER) == WIDGET_PLACEHOLDER
+  end
   if type(value) ~= 'table' then
     return false
-  end
-  local href = value['href']
-  if type(href) == 'string' and href:sub(-#WIDGET_PLACEHOLDER) == WIDGET_PLACEHOLDER then
-    return true
   end
   for _, child in pairs(value) do
     if holds_placeholder(child) then

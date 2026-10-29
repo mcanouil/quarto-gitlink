@@ -34,6 +34,12 @@ render_log="$(quarto render "${site_dir}" --profile placeholder 2>&1)" || {
 }
 expect_warnings "placeholder, one warning per page" 2 "${render_log}"
 
+render_log="$(quarto render "${site_dir}" --profile bare 2>&1)" || {
+	printf '%s\n' "${render_log}" >&2
+	exit 1
+}
+expect_warnings "bare-string placeholder, one warning per page" 2 "${render_log}"
+
 if [[ "${failures}" -gt 0 ]]; then
 	printf '\n%d check(s) failed.\n' "${failures}" >&2
 	exit 1
