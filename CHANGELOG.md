@@ -6,6 +6,10 @@
 
 - fix: Warn that no repository could be resolved only when the website or book navigation has a `#gitlink-widget` item. With the widget on and no such item, every page logged the warning, though the widget would show nowhere. (#83)
 
+### Refactoring
+
+- refactor: Read the project metadata once per page with `get_project_metadata` from the vendored Lua modules, now at 2.7.0. The widget used to read and decode the same file a second time. (#84)
+
 ## 1.11.3 (2026-10-28)
 
 ### Bug Fixes
