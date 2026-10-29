@@ -48,6 +48,7 @@ For `repository-name`, the filter then uses the `origin` remote of the git repos
 Quarto gives the project metadata to the filter in a file.
 If the filter cannot read this file, it shows a warning with the cause and the path of the file.
 The filter then ignores the project `repo-url`.
+It also cannot find a `#gitlink-widget` item, so it does not show the widget warning below.
 
 ## Platforms
 
