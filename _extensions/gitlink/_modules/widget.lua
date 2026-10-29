@@ -71,15 +71,16 @@ local function to_boolean(value, default)
   return str.stringify(value):lower() == 'true'
 end
 
---- Tell whether a decoded metadata value holds an item whose href is the
---- widget placeholder, at any depth.
+--- Tell whether a decoded metadata value holds an item whose href ends with
+--- the widget placeholder, at any depth, as widget.js matches it.
 --- @param value any A value decoded from JSON
 --- @return boolean
 local function holds_placeholder(value)
   if type(value) ~= 'table' then
     return false
   end
-  if value['href'] == WIDGET_PLACEHOLDER then
+  local href = value['href']
+  if type(href) == 'string' and href:sub(-#WIDGET_PLACEHOLDER) == WIDGET_PLACEHOLDER then
     return true
   end
   for _, child in pairs(value) do
@@ -90,8 +91,8 @@ local function holds_placeholder(value)
   return false
 end
 
---- Tell whether the website navigation (navbar, sidebar tools, or sidebar
---- contents) has a widget placeholder.
+--- Tell whether the website or book metadata has a widget placeholder
+--- anywhere, as widget.js replaces every link to it on the page.
 --- The navigation is not in the document metadata, so it is read from the
 --- QUARTO_EXECUTE_INFO file, as the project repo-url is.
 --- @return boolean
@@ -108,7 +109,8 @@ local function has_placeholder()
   file:close()
   local ok, info = pcall(quarto.json.decode, content)
   local format_meta = ok and type(info) == 'table' and info['format'] and info['format']['metadata']
-  return holds_placeholder(format_meta and format_meta['website'])
+  return format_meta ~= nil
+      and (holds_placeholder(format_meta['website']) or holds_placeholder(format_meta['book']))
 end
 
 --- Percent-encode a string for use as a URL path segment.

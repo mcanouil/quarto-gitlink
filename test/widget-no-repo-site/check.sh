@@ -11,14 +11,9 @@ failures=0
 GIT_CEILING_DIRECTORIES="$(dirname "${site_dir}")"
 export GIT_CEILING_DIRECTORIES
 
-count_warnings() {
-	local log
-	log="$(quarto render "${site_dir}" "$@" 2>&1)"
-	{ grep -oF -- "${warning}" <<<"${log}" || true; } | wc -l | tr -d ' '
-}
-
 expect_warnings() {
-	local label="${1}" wanted="${2}" found="${3}"
+	local label="${1}" wanted="${2}" render_log="${3}" found
+	found="$(grep -cF -- "${warning}" <<<"${render_log}" || true)"
 	if [[ "${found}" -eq "${wanted}" ]]; then
 		printf '%-4s %s\n' "ok" "${label}"
 	else
@@ -27,8 +22,17 @@ expect_warnings() {
 	fi
 }
 
-expect_warnings "no placeholder, no warning" 0 "$(count_warnings)"
-expect_warnings "placeholder, one warning per page" 2 "$(count_warnings --profile placeholder)"
+render_log="$(quarto render "${site_dir}" 2>&1)" || {
+	printf '%s\n' "${render_log}" >&2
+	exit 1
+}
+expect_warnings "no placeholder, no warning" 0 "${render_log}"
+
+render_log="$(quarto render "${site_dir}" --profile placeholder 2>&1)" || {
+	printf '%s\n' "${render_log}" >&2
+	exit 1
+}
+expect_warnings "placeholder, one warning per page" 2 "${render_log}"
 
 if [[ "${failures}" -gt 0 ]]; then
 	printf '\n%d check(s) failed.\n' "${failures}" >&2
