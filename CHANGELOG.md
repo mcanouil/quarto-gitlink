@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Bug Fixes
+
+- fix: Warn that no repository could be resolved only when the website or book navigation has a `#gitlink-widget` item. With the widget on and no such item, every page logged the warning, though the widget would show nowhere. (#83)
+
 ## 1.11.3 (2026-10-28)
 
 ### Bug Fixes
