@@ -17,6 +17,7 @@
 ### Refactoring
 
 - refactor: Read the project metadata once per page with `get_project_metadata` from the vendored Lua modules, now at 2.8.0. The widget used to read and decode the same file a second time. (#84)
+- build: Update the vendored schema validator to `schema-v2.3.0`. It adds a check for code cell options, which gitlink does not use yet. (#87)
 
 ## 1.11.3 (2026-10-28)
 
