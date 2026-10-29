@@ -8,13 +8,17 @@ warning="Could not read the project metadata"
 failures=0
 
 expect_warnings() {
-	local mode="${1}" wanted="${2}" reason="${3:-}" render_log found
+	local mode="${1}" wanted="${2}" reason="${3:-}" expected render_log found
+	expected="${warning}"
+	if [[ -n "${reason}" ]]; then
+		expected="${warning} (${reason}) from '"
+	fi
 	rm -f "${site_dir}/index.html"
 	render_log="$(quarto render "${site_dir}" -M "break-execute-info:${mode}" 2>&1)" || {
 		printf '%s\n' "${render_log}" >&2
 		exit 1
 	}
-	found="$(grep -cF -- "${warning}${reason:+ (${reason})}" <<<"${render_log}" || true)"
+	found="$(grep -cF -- "${expected}" <<<"${render_log}" || true)"
 	if [[ "${found}" -eq "${wanted}" ]]; then
 		printf '%-4s %s\n' "ok" "${mode}: ${wanted} warning(s)"
 	else
