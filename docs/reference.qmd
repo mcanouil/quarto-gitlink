@@ -28,7 +28,7 @@ extensions:
 | --- | --- | --- |
 | `enabled` | `true` | Whether in-text rewriting runs. Set `false` in a draft or a template. The widget has its own switch and is unaffected. |
 | `platform` | `github` | The hosting platform: `github`, `gitlab`, `codeberg`, `gitea`, `bitbucket`, or a custom name. |
-| `repository-name` | detected | The repository as `owner/repo`. Taken from the git remote when unset. |
+| `repository-name` | detected | The repository as `owner/repo`. Taken from the project `repo-url`, then from the git remote, when unset. |
 | `base-url` | platform default | For a self-hosted instance. |
 | `custom-platforms-file` | | A YAML file defining further platforms. |
 | `show-platform-badge` | `true` | Show a badge beside a generated link. |
@@ -41,6 +41,13 @@ extensions:
 | `widget` | `false` | The repository widget. See below. |
 
 : Document and project options. {.striped .hover tbl-colwidths="[26,16,58]"}
+
+If `platform`, `base-url`, or `repository-name` is not set, the filter reads the project `repo-url`: `website.repo-url` first, then `book.repo-url`.
+For `repository-name`, the filter then uses the `origin` remote of the git repository.
+
+Quarto gives the project metadata to the filter in a file.
+If the filter cannot read this file, it shows a warning with the cause and the path of the file.
+The filter then ignores the project `repo-url`.
 
 ## Platforms
 
@@ -140,6 +147,9 @@ extensions:
 An entry a platform defines no path for is left out, whatever it is set to.
 
 It replaces any navbar item, sidebar tool, or sidebar entry whose `href` is `#gitlink-widget`, which is how it reaches the sidebar of this site.
+
+If the filter finds no repository, it does not add the widget.
+It shows a warning only when the website or book navigation has a `#gitlink-widget` item.
 
 Star and fork counts are fetched by the browser, so the widget is HTML only.
 Bitbucket exposes no star count through its API, so the widget renders there without the counters.
