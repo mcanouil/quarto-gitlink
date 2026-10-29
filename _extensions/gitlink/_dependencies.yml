@@ -3,7 +3,7 @@ sources:
   quarto-lua-modules:
     origin: "https://github.com/mcanouil/quarto-lua-modules"
     fetch: "{origin}/releases/download/{version}/{file}"
-    version: "2.7.0"
+    version: "2.8.0"
     licence: MIT
     files:
       colour.lua:
@@ -19,7 +19,7 @@ sources:
         sha256: "5d99ceb89c813fbe4491310e42b4a4cff62e11dda42f01b4f61f969aa58e0706"
         runtime: any
       metadata.lua:
-        sha256: "36483e3db7eb7375bcc81762f029af247107da4863dfecb7613749ccf402dfd3"
+        sha256: "29d7a6c7568d5e2e03838fdd9f175de98a185d139cd83813d33ee2164cdb5f2e"
         runtime: any
       paths.lua:
         sha256: "c880f09e3367bd6e871e0890952447c13cc3f0f715b86e2b49c2ea59d1cdea05"

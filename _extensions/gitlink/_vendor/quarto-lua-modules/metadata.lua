@@ -195,8 +195,13 @@ end
 --- The file is read on every call; pass the result on rather than calling twice.
 --- @return table|nil format_meta The format.metadata table, or nil if unavailable
 --- @return string|nil reason Why the file could not be used when
----   QUARTO_EXECUTE_INFO is set; nil when it is unset or empty
---- @usage local format_meta, reason = M.get_project_metadata()
+---   QUARTO_EXECUTE_INFO is set; nil when it is unset or empty.
+---   The reasons are a stable API: callers can compare against them, and a
+---   change to any of them is a breaking change. They are exactly
+---   "file is unreadable", "file is empty", "invalid JSON" and
+---   "no format.metadata table".
+--- @return string|nil path The QUARTO_EXECUTE_INFO path, with every reason
+--- @usage local format_meta, reason, path = M.get_project_metadata()
 --- @note quarto-cli's decoder raises on bad JSON, while q2's (pandoc.json)
 ---   returns nil, so a nil result is also reported as invalid JSON.
 function M.get_project_metadata()
@@ -204,19 +209,19 @@ function M.get_project_metadata()
   if str.is_empty(path) then return nil end
 
   local file = io.open(path, "r")
-  if not file then return nil, "file is unreadable" end
+  if not file then return nil, "file is unreadable", path end
 
   local content = file:read("*a")
   file:close()
 
-  if str.is_empty(content) then return nil, "file is empty" end
+  if str.is_empty(content) then return nil, "file is empty", path end
 
   local ok, info = pcall(quarto.json.decode, content)
-  if not ok or info == nil then return nil, "invalid JSON" end
+  if not ok or info == nil then return nil, "invalid JSON", path end
 
   if type(info) ~= "table" or type(info["format"]) ~= "table"
       or type(info["format"]["metadata"]) ~= "table" then
-    return nil, "no format.metadata table"
+    return nil, "no format.metadata table", path
   end
 
   return info["format"]["metadata"]
