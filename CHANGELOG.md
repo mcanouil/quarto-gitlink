@@ -2,13 +2,17 @@
 
 ## Unreleased
 
+### New Features
+
+- feat: Warn when Quarto's project metadata file can't be read, and name the file and what that changes. Gitlink then ignores `website.repo-url` and `book.repo-url` and skips the widget placeholder check, which it used to do without a word. (#85)
+
 ### Bug Fixes
 
 - fix: Warn that no repository could be resolved only when the website or book navigation has a `#gitlink-widget` item. With the widget on and no such item, every page logged the warning, though the widget would show nowhere. (#83)
 
 ### Refactoring
 
-- refactor: Read the project metadata once per page with `get_project_metadata` from the vendored Lua modules, now at 2.7.0. The widget used to read and decode the same file a second time. (#84)
+- refactor: Read the project metadata once per page with `get_project_metadata` from the vendored Lua modules, now at 2.8.0. The widget used to read and decode the same file a second time. (#84)
 
 ## 1.11.3 (2026-10-28)
 

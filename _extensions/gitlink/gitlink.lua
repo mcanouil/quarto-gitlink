@@ -459,7 +459,16 @@ local function get_repository(meta)
   -- Parse repo-url from project metadata (website/book). That configuration
   -- is not in the document metadata, so read it once and share it with the
   -- widget.
-  local project_meta = meta_mod.get_project_metadata()
+  local project_meta, project_meta_error, project_meta_path = meta_mod.get_project_metadata()
+  if project_meta_error then
+    log.log_warning(
+      EXTENSION_NAME,
+      "Could not read the project metadata (" .. project_meta_error .. ") from '" ..
+      project_meta_path .. "'. " ..
+      "'website.repo-url' and 'book.repo-url' are ignored, " ..
+      "and the widget placeholder check is skipped."
+    )
+  end
   local project_repo_url = project_meta and meta_mod.get_project_repo_url(project_meta)
   local parsed_platform, parsed_base_url, parsed_repo_name = nil, nil, nil
   if project_repo_url then
