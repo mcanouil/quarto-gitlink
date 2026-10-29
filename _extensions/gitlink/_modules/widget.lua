@@ -108,9 +108,14 @@ local function has_placeholder()
   local content = file:read('*a')
   file:close()
   local ok, info = pcall(quarto.json.decode, content)
-  local format_meta = ok and type(info) == 'table' and info['format'] and info['format']['metadata']
-  return format_meta ~= nil
-      and (holds_placeholder(format_meta['website']) or holds_placeholder(format_meta['book']))
+  if not ok or type(info) ~= 'table' or type(info['format']) ~= 'table' then
+    return false
+  end
+  local format_meta = info['format']['metadata']
+  if type(format_meta) ~= 'table' then
+    return false
+  end
+  return holds_placeholder(format_meta['website']) or holds_placeholder(format_meta['book'])
 end
 
 --- Percent-encode a string for use as a URL path segment.
