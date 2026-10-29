@@ -9,6 +9,9 @@
 /test/widget-site/_site/
 /test/widget-site/.quarto/
 /test/widget-site/_extensions/
+/test/widget-no-repo-site/_site/
+/test/widget-no-repo-site/.quarto/
+/test/widget-no-repo-site/_extensions/
 /test/sidebar-site/_site/
 /test/sidebar-site/.quarto/
 /test/sidebar-site/_extensions/

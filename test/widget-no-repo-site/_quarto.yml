@@ -1,0 +1,30 @@
+project:
+  type: website
+  # Transient copy of the extension so the filter resolves like a real
+  # installation; removed again after render. Entries run without a shell,
+  # so one command per line, and the copy is an idempotent overlay so no
+  # destructive command runs before the render.
+  pre-render:
+    - mkdir -p _extensions/gitlink
+    - cp -R ../../_extensions/gitlink/. _extensions/gitlink/
+  post-render:
+    - rm -rf _extensions
+
+# No `repo-url`, no `repository-name`, and check.sh hides the git remote, so
+# no repository resolves.
+website:
+  title: "Gitlink Widget Without Repository"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: about.qmd
+        text: About
+
+filters:
+  - gitlink
+
+extensions:
+  gitlink:
+    widget:
+      enabled: true

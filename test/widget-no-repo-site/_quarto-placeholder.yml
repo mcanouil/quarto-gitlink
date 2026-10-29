@@ -1,0 +1,5 @@
+website:
+  navbar:
+    right:
+      - text: "Repository"
+        href: "#gitlink-widget"

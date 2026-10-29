@@ -1,0 +1,4 @@
+website:
+  navbar:
+    right:
+      - "#gitlink-widget"
