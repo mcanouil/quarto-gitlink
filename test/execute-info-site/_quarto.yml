@@ -1,0 +1,20 @@
+project:
+  # Transient copy of the extension so the filter resolves like a real
+  # installation; removed again after render. Entries run without a shell,
+  # so one command per line, and the copy is an idempotent overlay so no
+  # destructive command runs before the render.
+  pre-render:
+    - mkdir -p _extensions/gitlink
+    - cp -R ../../_extensions/gitlink/. _extensions/gitlink/
+  post-render:
+    - rm -rf _extensions
+
+# break-execute-info.lua runs first and damages the QUARTO_EXECUTE_INFO file
+# in the way that `-M break-execute-info:<mode>` names.
+filters:
+  - break-execute-info.lua
+  - gitlink
+
+extensions:
+  gitlink:
+    repository-name: mcanouil/quarto-gitlink

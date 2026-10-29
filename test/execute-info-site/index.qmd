@@ -1,0 +1,5 @@
+---
+title: "Project metadata"
+---
+
+The reference #1 still converts when the project metadata cannot be read.
