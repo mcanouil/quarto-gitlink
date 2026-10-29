@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.12.0 (2026-10-29)
+
 ### New Features
 
 - feat: Warn when Quarto's project metadata file can't be read, and name the file and what that changes. Gitlink then ignores `website.repo-url` and `book.repo-url` and skips the widget placeholder check, which it used to do without a word. (#85)
