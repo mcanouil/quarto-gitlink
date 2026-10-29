@@ -44,7 +44,7 @@ extensions:
 
 If `platform`, `base-url`, or `repository-name` is not set, the filter reads the project `repo-url`: `website.repo-url` first, then `book.repo-url`.
 For `repository-name`, the filter then uses the `origin` remote of the git repository.
-If the host of the `repo-url` matches no known platform, the filter shows a warning and ignores the `repo-url`.
+If the `repo-url` does not start with the base URL of a known platform, the filter shows a warning and ignores the `repo-url`.
 
 Quarto gives the project metadata to the filter in a file.
 If the filter cannot read this file, it shows a warning with the cause and the path of the file.
