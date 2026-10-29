@@ -8,13 +8,13 @@ warning="Could not read the project metadata"
 failures=0
 
 expect_warnings() {
-	local mode="${1}" wanted="${2}" render_log found
+	local mode="${1}" wanted="${2}" reason="${3:-}" render_log found
 	rm -f "${site_dir}/index.html"
 	render_log="$(quarto render "${site_dir}" -M "break-execute-info:${mode}" 2>&1)" || {
 		printf '%s\n' "${render_log}" >&2
 		exit 1
 	}
-	found="$(grep -cF -- "${warning}" <<<"${render_log}" || true)"
+	found="$(grep -cF -- "${warning}${reason:+ (${reason})}" <<<"${render_log}" || true)"
 	if [[ "${found}" -eq "${wanted}" ]]; then
 		printf '%-4s %s\n' "ok" "${mode}: ${wanted} warning(s)"
 	else
@@ -28,10 +28,10 @@ expect_warnings() {
 }
 
 expect_warnings none 0
-expect_warnings unreadable 1
-expect_warnings empty 1
-expect_warnings invalid-json 1
-expect_warnings no-metadata 1
+expect_warnings unreadable 1 "file is unreadable"
+expect_warnings empty 1 "file is empty"
+expect_warnings invalid-json 1 "invalid JSON"
+expect_warnings no-metadata 1 "no format.metadata table"
 
 if [[ "${failures}" -gt 0 ]]; then
 	printf '\n%d check(s) failed.\n' "${failures}" >&2
