@@ -9,6 +9,7 @@ failures=0
 
 expect_warnings() {
 	local mode="${1}" wanted="${2}" render_log found
+	rm -f "${site_dir}/index.html"
 	render_log="$(quarto render "${site_dir}" -M "break-execute-info:${mode}" 2>&1)" || {
 		printf '%s\n' "${render_log}" >&2
 		exit 1
