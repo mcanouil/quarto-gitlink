@@ -13,9 +13,6 @@ local str = require(quarto.utils.resolve_path('_vendor/quarto-lua-modules/string
 local log = require(quarto.utils.resolve_path('_vendor/quarto-lua-modules/logging.lua'):gsub('%.lua$', ''))
 local html_mod = require(quarto.utils.resolve_path('_vendor/quarto-lua-modules/html.lua'):gsub('%.lua$', ''))
 
---- @type string Version used for the injected HTML dependency
-local WIDGET_DEPENDENCY_VERSION = '1.9.0'
-
 --- @type string The href of a navigation item that widget.js replaces
 local WIDGET_PLACEHOLDER = '#gitlink-widget'
 
@@ -462,7 +459,6 @@ function widget_module.setup(spec)
 
   html_mod.ensure_html_dependency({
     name = 'quarto-gitlink-widget',
-    version = WIDGET_DEPENDENCY_VERSION,
     scripts = { quarto.utils.resolve_path('widget.js') },
     stylesheets = stylesheets,
   })

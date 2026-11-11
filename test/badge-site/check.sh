@@ -121,6 +121,13 @@ expect_typst "Typst badge converts a named text colour to hex" "typst" '#003366'
 expect_typst "Typst badge takes the computed text colour" "typst-computed" '#003366cc' '#ffffff'
 expect_typst "Typst faint badge picks text for the white page" "typst-faint" '#00000040' '#000000'
 
+extension_version="$(sed -n 's/^version:[[:space:]]*//p' "${site_dir}/../../_extensions/gitlink/_extension.yml")"
+if grep -qF -- "quarto-gitlink-${extension_version}/gitlink.css" "${site_dir}/_site/index.html"; then
+	report "ok" "HTML dependency folder carries the extension version"
+else
+	report "FAIL" "HTML dependency folder carries the extension version"
+fi
+
 if [[ "${failures}" -gt 0 ]]; then
 	printf '\n%d check(s) failed.\n' "${failures}" >&2
 	exit 1
