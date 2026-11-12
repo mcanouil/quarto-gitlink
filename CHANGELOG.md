@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.13.0 (2026-11-12)
+
 ### New Features
 
 - feat: The widget menu shows the star and fork counts next to "Add a Star" and "Create a Fork". The numbers come from the same request as the button, so nothing extra is fetched. (#91)
