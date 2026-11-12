@@ -219,6 +219,15 @@
       label.className = "gitlink-widget-item-label";
       buildLabelInto(label, link.label);
       item.appendChild(label);
+      if (typeof link.stat === "string") {
+        // Filled by showStats; stays hidden until a real count arrives, so
+        // the menu never shows a placeholder.
+        const count = document.createElement("span");
+        count.className = "gitlink-widget-item-count";
+        count.dataset.stat = link.stat;
+        count.hidden = true;
+        item.appendChild(count);
+      }
       const newTabHint = document.createElement("span");
       newTabHint.className = "gitlink-widget-sr-only";
       newTabHint.textContent = " (opens in new tab)";
@@ -248,6 +257,13 @@
     };
     setCount('.gitlink-widget-count[data-stat="stars"]', stats.stars);
     setCount('.gitlink-widget-count[data-stat="forks"]', stats.forks);
+
+    widget.querySelectorAll(".gitlink-widget-item-count").forEach((node) => {
+      const value = stats[node.dataset.stat];
+      if (typeof value !== "number") return;
+      node.textContent = formatCount(value);
+      node.hidden = false;
+    });
 
     // Surface the counts to assistive technology; the visual counters are
     // bare numbers with mouse-only tooltips.

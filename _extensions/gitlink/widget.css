@@ -175,6 +175,17 @@
   gap: 6px;
 }
 
+.gitlink-widget .gitlink-widget-item .gitlink-widget-item-count {
+  margin-left: auto;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.gitlink-widget .gitlink-widget-item .gitlink-widget-item-count[hidden] {
+  display: none;
+}
+
 .gitlink-widget .gitlink-widget-item:hover,
 .gitlink-widget .gitlink-widget-item:focus-visible {
   background: var(--gitlink-widget-accent-soft, color-mix(in srgb, var(--gitlink-widget-accent, var(--bs-link-color, #0d6efd)) 15%, transparent));
