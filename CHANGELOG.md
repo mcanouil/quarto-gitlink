@@ -2,8 +2,13 @@
 
 ## Unreleased
 
-- fix: The HTML dependency folder now uses the extension version, so browsers load the new files after an upgrade. (#90)
+### New Features
+
 - feat: The widget menu shows the star and fork counts next to "Add a Star" and "Create a Fork". The numbers come from the same request as the button, so nothing extra is fetched. (#91)
+
+### Bug Fixes
+
+- fix: The HTML dependency folder now uses the extension version, so browsers load the new files after an upgrade. (#90)
 
 ## 1.12.0 (2026-10-29)
 
