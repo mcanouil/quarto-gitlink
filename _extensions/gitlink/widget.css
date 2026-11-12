@@ -175,11 +175,23 @@
   gap: 6px;
 }
 
+/* Count badge: a pill tinted with the item's own text colour, so the number
+   keeps the item's contrast in every theme and on hover. */
 .gitlink-widget .gitlink-widget-item .gitlink-widget-item-count {
   margin-left: auto;
-  font-size: 0.75rem;
+  padding: 0.15em 0.45em;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+}
+
+/* The badge's padding would wrap "Create a Fork" in a narrow sidebar. */
+.gitlink-widget .gitlink-widget-item:has(.gitlink-widget-item-count) .gitlink-widget-item-label {
+  white-space: nowrap;
 }
 
 .gitlink-widget .gitlink-widget-item:hover,
