@@ -226,7 +226,14 @@
         count.className = "gitlink-widget-item-count";
         count.dataset.stat = link.stat;
         count.hidden = true;
+        count.setAttribute("aria-hidden", "true");
         item.appendChild(count);
+        // The bare number has no unit, so assistive technology hears
+        // "1.2k stars" from this text instead.
+        const spoken = document.createElement("span");
+        spoken.className = "gitlink-widget-sr-only gitlink-widget-item-count-spoken";
+        spoken.dataset.stat = link.stat;
+        item.appendChild(spoken);
       }
       const newTabHint = document.createElement("span");
       newTabHint.className = "gitlink-widget-sr-only";
@@ -263,6 +270,11 @@
       if (typeof value !== "number") return;
       node.textContent = formatCount(value);
       node.hidden = false;
+    });
+    widget.querySelectorAll(".gitlink-widget-item-count-spoken").forEach((node) => {
+      const value = stats[node.dataset.stat];
+      if (typeof value !== "number") return;
+      node.textContent = " " + formatCount(value) + " " + node.dataset.stat;
     });
 
     // Surface the counts to assistive technology; the visual counters are
