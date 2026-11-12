@@ -154,6 +154,8 @@ If the filter finds no repository, it does not add the widget.
 It shows a warning only when the website or book navigation has a `#gitlink-widget` item.
 
 Star and fork counts are fetched by the browser, so the widget is HTML only.
+The menu also shows each count next to "Add a Star" and "Create a Fork".
+If no count is available, the menu shows no number for it.
 Bitbucket exposes no star count through its API, so the widget renders there without the counters.
 
 ## Limitations
