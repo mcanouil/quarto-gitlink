@@ -46,6 +46,11 @@
     return String(value);
   };
 
+  // A count with its unit for assistive technology: "1.2k stars", "1 star".
+  // `unit` is the plural stat name.
+  const spokenCount = (value, unit) =>
+    formatCount(value) + " " + (value === 1 ? unit.slice(0, -1) : unit);
+
   // Read and parse the cached stats, or null. Freshness is judged by the
   // caller so expired data can still serve as a fallback on a failed refresh.
   const readCache = (cacheKey) => {
@@ -221,19 +226,18 @@
       item.appendChild(label);
       if (typeof link.stat === "string") {
         // Filled by showStats; stays hidden until a real count arrives, so
-        // the menu never shows a placeholder.
+        // the menu never shows a placeholder. The bare number is hidden from
+        // assistive technology, which hears the counted unit instead.
         const count = document.createElement("span");
         count.className = "gitlink-widget-item-count";
         count.dataset.stat = link.stat;
         count.hidden = true;
-        count.setAttribute("aria-hidden", "true");
-        item.appendChild(count);
-        // The bare number has no unit, so assistive technology hears
-        // "1.2k stars" from this text instead.
+        const shown = document.createElement("span");
+        shown.setAttribute("aria-hidden", "true");
         const spoken = document.createElement("span");
-        spoken.className = "gitlink-widget-sr-only gitlink-widget-item-count-spoken";
-        spoken.dataset.stat = link.stat;
-        item.appendChild(spoken);
+        spoken.className = "gitlink-widget-sr-only";
+        count.append(shown, spoken);
+        item.appendChild(count);
       }
       const newTabHint = document.createElement("span");
       newTabHint.className = "gitlink-widget-sr-only";
@@ -268,20 +272,17 @@
     widget.querySelectorAll(".gitlink-widget-item-count").forEach((node) => {
       const value = stats[node.dataset.stat];
       if (typeof value !== "number") return;
-      node.textContent = formatCount(value);
+      const [shown, spoken] = node.children;
+      shown.textContent = formatCount(value);
+      spoken.textContent = " " + spokenCount(value, node.dataset.stat);
       node.hidden = false;
-    });
-    widget.querySelectorAll(".gitlink-widget-item-count-spoken").forEach((node) => {
-      const value = stats[node.dataset.stat];
-      if (typeof value !== "number") return;
-      node.textContent = " " + formatCount(value) + " " + node.dataset.stat;
     });
 
     // Surface the counts to assistive technology; the visual counters are
     // bare numbers with mouse-only tooltips.
     const spoken = [];
-    if (typeof stats.stars === "number") spoken.push(formatCount(stats.stars) + " stars");
-    if (typeof stats.forks === "number") spoken.push(formatCount(stats.forks) + " forks");
+    if (typeof stats.stars === "number") spoken.push(spokenCount(stats.stars, "stars"));
+    if (typeof stats.forks === "number") spoken.push(spokenCount(stats.forks, "forks"));
     if (spoken.length > 0) {
       const trigger = widget.querySelector(".gitlink-widget-trigger");
       if (trigger) {
