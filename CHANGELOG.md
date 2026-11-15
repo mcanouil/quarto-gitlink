@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.14.0 (2026-11-15)
+
 ### New Features
 
 - feat: Themes can set the widget count badge background with `--gitlink-widget-count-bg` and the shadow of the drop-down menu with `--gitlink-widget-menu-shadow`. Without them, the badge takes a light tint of the menu text colour, which no longer changes on hover. (#94)
