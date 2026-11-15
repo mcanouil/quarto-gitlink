@@ -73,8 +73,12 @@
   display: none;
 }
 
-/* The trigger is a native <button>; reset its font so it follows the navbar. */
+/* The trigger is a native <button>; reset its font so it follows the navbar.
+   It sits on the navbar or sidebar, not on the menu, so its fallbacks come
+   from that surface: the border from its own text colour, and the hover from
+   Quarto's navbar hover colour, which Quarto computes against the navbar. */
 .gitlink-widget-trigger {
+  --_gitlink-widget-control-accent: var(--gitlink-widget-accent, var(--bs-navbar-hover-color, var(--bs-link-color, #0d6efd)));
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -93,9 +97,9 @@
 .gitlink-widget-trigger:hover,
 .gitlink-widget-trigger:focus-visible,
 .gitlink-widget-open .gitlink-widget-trigger {
-  background: var(--gitlink-widget-accent-soft, color-mix(in srgb, var(--gitlink-widget-accent, var(--bs-navbar-hover-color, var(--bs-link-color, #0d6efd))) 15%, transparent));
-  border-color: var(--gitlink-widget-accent, var(--bs-navbar-hover-color, var(--bs-link-color, #0d6efd)));
-  color: var(--gitlink-widget-accent, var(--bs-navbar-hover-color, var(--bs-link-color, #0d6efd)));
+  background: var(--gitlink-widget-accent-soft, color-mix(in srgb, var(--_gitlink-widget-control-accent) 15%, transparent));
+  border-color: var(--_gitlink-widget-control-accent);
+  color: var(--_gitlink-widget-control-accent);
 }
 
 .gitlink-widget-platform-icon {
