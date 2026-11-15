@@ -3,6 +3,17 @@
    custom properties, which fall back to Bootstrap tokens so unthemed Quarto
    sites work out of the box. */
 
+/* Page-level fallbacks for the menu, resolved on the root element. Quarto
+   puts `data-bs-theme="dark"` on every navbar, which swaps the Bootstrap
+   tokens inside it for Bootstrap's dark defaults; read there, the menu would
+   ignore the theme. Resolved here, it matches the page in every theme. */
+:root {
+  --_gitlink-widget-page-bg: var(--bs-body-bg, #ffffff);
+  --_gitlink-widget-page-fg: var(--bs-body-color, #212529);
+  --_gitlink-widget-page-border: var(--bs-border-color-translucent, rgba(128, 128, 128, 0.3));
+  --_gitlink-widget-page-link: var(--bs-link-color, #0d6efd);
+}
+
 .gitlink-widget {
   position: relative;
   display: inline-flex;
@@ -82,9 +93,9 @@
 .gitlink-widget-trigger:hover,
 .gitlink-widget-trigger:focus-visible,
 .gitlink-widget-open .gitlink-widget-trigger {
-  background: var(--gitlink-widget-accent-soft, color-mix(in srgb, var(--gitlink-widget-accent, var(--bs-link-color, #0d6efd)) 15%, transparent));
-  border-color: var(--gitlink-widget-accent, var(--bs-link-color, #0d6efd));
-  color: var(--gitlink-widget-accent, var(--bs-link-color, #0d6efd));
+  background: var(--gitlink-widget-accent-soft, color-mix(in srgb, var(--gitlink-widget-accent, var(--bs-navbar-hover-color, var(--bs-link-color, #0d6efd))) 15%, transparent));
+  border-color: var(--gitlink-widget-accent, var(--bs-navbar-hover-color, var(--bs-link-color, #0d6efd)));
+  color: var(--gitlink-widget-accent, var(--bs-navbar-hover-color, var(--bs-link-color, #0d6efd)));
 }
 
 .gitlink-widget-platform-icon {
@@ -131,8 +142,8 @@
   top: calc(100% + 6px);
   right: 0;
   min-width: 14rem;
-  background: var(--gitlink-widget-menu-bg, var(--bs-body-bg, #ffffff));
-  border: 1px solid var(--gitlink-widget-border, var(--bs-border-color-translucent, rgba(128, 128, 128, 0.3)));
+  background: var(--gitlink-widget-menu-bg, var(--_gitlink-widget-page-bg));
+  border: 1px solid var(--gitlink-widget-border, var(--_gitlink-widget-page-border));
   border-radius: 0.5rem;
   box-shadow: 0 12px 30px -16px rgba(0, 0, 0, 0.55);
   padding: 0.35rem;
@@ -154,7 +165,7 @@
   align-items: center;
   gap: 10px;
   padding: 0.4rem 0.7rem;
-  color: var(--gitlink-widget-menu-fg, var(--bs-body-color, #212529));
+  color: var(--gitlink-widget-menu-fg, var(--_gitlink-widget-page-fg));
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 500;
@@ -196,15 +207,15 @@
 
 .gitlink-widget .gitlink-widget-item:hover,
 .gitlink-widget .gitlink-widget-item:focus-visible {
-  background: var(--gitlink-widget-accent-soft, color-mix(in srgb, var(--gitlink-widget-accent, var(--bs-link-color, #0d6efd)) 15%, transparent));
-  color: var(--gitlink-widget-accent, var(--bs-link-color, #0d6efd));
+  background: var(--gitlink-widget-accent-soft, color-mix(in srgb, var(--gitlink-widget-accent, var(--_gitlink-widget-page-link)) 15%, transparent));
+  color: var(--gitlink-widget-accent, var(--_gitlink-widget-page-link));
   text-decoration: none;
 }
 
 .gitlink-widget .gitlink-widget-divider {
   height: 1px;
   margin: 0.35rem 0;
-  background: var(--gitlink-widget-border, var(--bs-border-color-translucent, rgba(128, 128, 128, 0.3)));
+  background: var(--gitlink-widget-border, var(--_gitlink-widget-page-border));
 }
 
 /* Sidebar navigation item (`sidebar.contents`). Quarto's sidebar is an

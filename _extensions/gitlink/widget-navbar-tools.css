@@ -18,9 +18,9 @@
 .navbar #quarto-search .aa-DetachedSearchButton:focus-visible,
 .navbar .quarto-navbar-tools .quarto-color-scheme-toggle:hover,
 .navbar .quarto-navbar-tools .quarto-color-scheme-toggle:focus-visible {
-  background: var(--gitlink-widget-accent-soft, color-mix(in srgb, var(--gitlink-widget-accent, var(--bs-link-color, #0d6efd)) 15%, transparent));
-  border-color: var(--gitlink-widget-accent, var(--bs-link-color, #0d6efd));
-  color: var(--gitlink-widget-accent, var(--bs-link-color, #0d6efd));
+  background: var(--gitlink-widget-accent-soft, color-mix(in srgb, var(--gitlink-widget-accent, var(--bs-navbar-hover-color, var(--bs-link-color, #0d6efd))) 15%, transparent));
+  border-color: var(--gitlink-widget-accent, var(--bs-navbar-hover-color, var(--bs-link-color, #0d6efd)));
+  color: var(--gitlink-widget-accent, var(--bs-navbar-hover-color, var(--bs-link-color, #0d6efd)));
 }
 
 @media (prefers-reduced-motion: reduce) {
