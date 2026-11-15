@@ -7,7 +7,7 @@
 .navbar #quarto-search .aa-DetachedSearchButton,
 .navbar .quarto-navbar-tools .quarto-color-scheme-toggle {
   background: var(--gitlink-widget-pill-bg, transparent);
-  border: 1px solid var(--gitlink-widget-border, var(--bs-border-color-translucent, rgba(128, 128, 128, 0.3)));
+  border: 1px solid var(--gitlink-widget-border, color-mix(in srgb, currentColor 35%, transparent));
   border-radius: 0.375rem;
   color: inherit;
   cursor: pointer;

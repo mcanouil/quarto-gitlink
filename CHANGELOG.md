@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- fix: The widget menu in the navbar now uses the theme's own colours, like the sidebar menu. The trigger hover uses Quarto's navbar hover colour, so it stays readable on a coloured navbar.
+- fix: The widget menu in the navbar now uses the theme's own colours, like the sidebar menu. The widget trigger and the buttons styled by `widget.style-navbar-tools` get a visible border, and their hover uses Quarto's navbar hover colour, so they stay readable on a coloured navbar.
 
 ## 1.13.0 (2026-11-12)
 
