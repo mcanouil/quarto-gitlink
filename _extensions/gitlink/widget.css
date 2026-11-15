@@ -149,7 +149,7 @@
   background: var(--gitlink-widget-menu-bg, var(--_gitlink-widget-page-bg));
   border: 1px solid var(--gitlink-widget-border, var(--_gitlink-widget-page-border));
   border-radius: 0.5rem;
-  box-shadow: 0 12px 30px -16px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--gitlink-widget-menu-shadow, 0 12px 30px -16px rgba(0, 0, 0, 0.55));
   padding: 0.35rem;
   opacity: 0;
   visibility: hidden;
@@ -190,13 +190,14 @@
   gap: 6px;
 }
 
-/* Count badge: a pill tinted with the item's own text colour, so the number
-   keeps the item's contrast in every theme and on hover. */
+/* Count badge: a pill set by `--gitlink-widget-count-bg`, or else tinted with
+   the menu text colour, so the number keeps the menu's contrast in every
+   theme. */
 .gitlink-widget .gitlink-widget-item .gitlink-widget-item-count {
   margin-left: auto;
   padding: 0.15em 0.45em;
   border-radius: 999px;
-  background: color-mix(in srgb, currentColor 14%, transparent);
+  background: var(--gitlink-widget-count-bg, color-mix(in srgb, var(--gitlink-widget-menu-fg, var(--_gitlink-widget-page-fg)) 14%, transparent));
   font-size: 0.72rem;
   font-weight: 600;
   line-height: 1;
