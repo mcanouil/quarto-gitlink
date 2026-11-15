@@ -2,8 +2,13 @@
 
 ## Unreleased
 
-- fix: The widget menu in the navbar now uses the theme's own colours, like the sidebar menu. The widget trigger and the buttons styled by `widget.style-navbar-tools` get a visible border, and their hover uses Quarto's navbar hover colour, so they stay readable on a coloured navbar. (#93)
+### New Features
+
 - feat: Themes can set the widget count badge background with `--gitlink-widget-count-bg` and the shadow of the drop-down menu with `--gitlink-widget-menu-shadow`. Without them, the badge takes a light tint of the menu text colour, which no longer changes on hover. (#94)
+
+### Bug Fixes
+
+- fix: The widget menu in the navbar now uses the theme's own colours, like the sidebar menu. The widget trigger and the buttons styled by `widget.style-navbar-tools` get a visible border, and their hover uses Quarto's navbar hover colour, so they stay readable on a coloured navbar. (#93)
 
 ## 1.13.0 (2026-11-12)
 
