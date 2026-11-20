@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Bug Fixes
+
+- fix: The sidebar tools row no longer moves after the page loads. The row is stacked and the placeholder link has the size of the widget from the first paint.
+
 ## 1.14.0 (2026-11-15)
 
 ### New Features
