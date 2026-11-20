@@ -300,6 +300,7 @@
   align-items: center;
   justify-content: center;
   box-sizing: content-box;
+  font-size: 0.85rem;
   height: 1lh;
   padding-block: calc(0.3rem + 1px);
 }
