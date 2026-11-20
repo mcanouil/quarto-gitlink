@@ -9,5 +9,5 @@ authors:
 repository-code: "https://github.com/mcanouil/quarto-gitlink"
 url: "http://m.canouil.dev/quarto-gitlink/"
 license: "MIT"
-date-released: "2026-11-15"
-version: 1.14.0
+date-released: "2026-11-20"
+version: 1.14.1
