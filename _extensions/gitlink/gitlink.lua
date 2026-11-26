@@ -10,6 +10,7 @@ local EXTENSION_NAME = 'gitlink'
 local str = require(quarto.utils.resolve_path('_vendor/quarto-lua-modules/string.lua'):gsub('%.lua$', ''))
 local log = require(quarto.utils.resolve_path('_vendor/quarto-lua-modules/logging.lua'):gsub('%.lua$', ''))
 local meta_mod = require(quarto.utils.resolve_path('_vendor/quarto-lua-modules/metadata.lua'):gsub('%.lua$', ''))
+local engine = require(quarto.utils.resolve_path('_vendor/quarto-lua-modules/engine.lua'):gsub('%.lua$', ''))
 local html_mod = require(quarto.utils.resolve_path('_vendor/quarto-lua-modules/html.lua'):gsub('%.lua$', ''))
 local paths = require(quarto.utils.resolve_path('_vendor/quarto-lua-modules/paths.lua'):gsub('%.lua$', ''))
 local git = require(quarto.utils.resolve_path('_vendor/quarto-lua-modules/git.lua'):gsub('%.lua$', ''))
@@ -455,9 +456,8 @@ local function get_repository(meta)
     end
   end
 
-  -- Parse repo-url from project metadata (website/book). That configuration
-  -- is not in the document metadata, so read it once and share it with the
-  -- widget.
+  -- Read the project metadata (website/book) once, for the widget placeholder
+  -- check. Quarto 1 gives it through QUARTO_EXECUTE_INFO only.
   local project_meta, project_meta_error, project_meta_path = meta_mod.get_project_metadata()
   if project_meta_error then
     log.log_warning(
@@ -468,7 +468,8 @@ local function get_repository(meta)
       "and the widget placeholder check is skipped."
     )
   end
-  local project_repo_url = project_meta and meta_mod.get_project_repo_url(project_meta)
+  -- engine reads repo-url on Quarto 1 and Quarto 2 alike.
+  local project_repo_url = engine.project_repo_url(meta)
   local parsed_platform, parsed_base_url, parsed_repo_name = nil, nil, nil
   if project_repo_url then
     parsed_platform, parsed_base_url, parsed_repo_name = parse_repo_url(project_repo_url)
