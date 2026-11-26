@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- fix: Keep the render going when `pandoc.utils.references` is missing, as in Quarto 2. With a bibliography, citations then stay citations unless they are forced as mentions.
+
 ## 1.14.1 (2026-11-20)
 
 ### Bug Fixes

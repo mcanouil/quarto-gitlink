@@ -41,6 +41,12 @@ local base_url = 'https://github.com'
 --- @type table<string, boolean> Set of reference IDs from the document
 local references_ids_set = {}
 
+--- Whether citations might be references that `pandoc.utils.references` cannot
+--- list. Quarto 2 has no such function, so with a bibliography every citation
+--- that is not forced as a mention is kept as a citation.
+--- @type boolean
+local references_unknown = false
+
 --- @type table<string, boolean> Set of citation IDs forced to be treated as mentions
 local force_mentions_set = {}
 
@@ -590,7 +596,12 @@ end
 --- @return pandoc.Pandoc The document (unchanged)
 local function get_references(doc)
   references_ids_set = {}
+  references_unknown = false
   if not is_enabled then
+    return doc
+  end
+  if pandoc.utils.references == nil then
+    references_unknown = doc.meta.bibliography ~= nil or doc.meta.references ~= nil
     return doc
   end
   local source = doc
@@ -648,7 +659,7 @@ local function mention_username(config, id)
   if force_mentions_set[id] then
     return id
   end
-  if references_ids_set[id] then
+  if references_ids_set[id] or references_unknown then
     return nil
   end
   return match_username(config, '@' .. id)
