@@ -44,6 +44,8 @@ local references_ids_set = {}
 --- Whether citations might be references that `pandoc.utils.references` cannot
 --- list. Quarto 2 has no such function, so with a bibliography every citation
 --- that is not forced as a mention is kept as a citation.
+--- Use the q2 API instead once https://github.com/quarto-dev/q2/issues/1407
+--- adds one.
 --- @type boolean
 local references_unknown = false
 
